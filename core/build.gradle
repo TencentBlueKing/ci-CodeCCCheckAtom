@@ -1,0 +1,9 @@
+group 'com.tencent.bk.devops'
+version 'unspecified'
+
+//dependencies {
+//    compile project(":ext:tencent")
+//}
+
+// 固定入口类 不要改
+mainClassName = "com.tencent.bk.devops.atom.AtomRunner"

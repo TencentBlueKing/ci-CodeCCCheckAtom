@@ -1,0 +1,156 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url " " }   //仓库地址
+    }
+
+    dependencies {
+        classpath "com.github.jengelman.gradle.plugins:shadow:2.0.2"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.50"
+        classpath "org.jetbrains.kotlin:kotlin-allopen:1.2.10"
+    }
+
+    ext {
+        bouncyCastleVersion = "1.46"
+        svnkitVersion = "1.9.3"
+        commonExecVersion = "1.3"
+        jacksonVersion = "2.9.2"
+        compressVersion = "1.15"
+    }
+}
+
+configurations {
+    ktlint
+}
+//plugins {
+//    id 'org.jetbrains.kotlin.jvm' version '1.3.0'
+//}
+apply plugin: "kotlin"
+apply plugin: "com.github.johnrengelman.shadow"
+apply plugin: "application"
+group 'com.tencent.bk.devops'
+
+repositories {
+    mavenLocal()
+    maven { url "" }
+    maven { url "" }
+    maven { url "" }
+}
+
+dependencies {
+//    compile "com.tencent.bk.devops.atom:java-atom-sdk:1.0.25-2020032705-SNAPSHOT"
+    compile "com.tencent.bk.devops.atom:java-atom-sdk:1.1.3-20200802401"
+//    compile "com.tencent.bk.devops.atom:java-atom-sdk:1.0.24"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    ktlint "com.github.shyiko:ktlint:0.34.2"
+    compile group: 'com.squareup.okhttp3', name: 'okhttp'
+    compile "org.bouncycastle:bcprov-jdk16:$bouncyCastleVersion"
+    compile "org.apache.commons:commons-exec:$commonExecVersion"
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+    compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion"
+    compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
+    compile "org.apache.commons:commons-compress:$compressVersion"
+    compile "org.hashids:hashids:1.0.3"
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+//    testCompile "com.tencent.bk.devops.atom:java-atom-sdk:1.0.25-2020032705-SNAPSHOT"
+    testCompile "com.tencent.bk.devops.atom:java-atom-sdk:1.0.25-2020052802-SNAPSHOT"
+//    testCompile "com.tencent.bk.devops.atom:java-atom-sdk:1.0.24"
+    compile("org.apache.commons:commons-compress:1.15")
+
+//    compile project(":core")
+    compile project(":ext:tencent")
+
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+// 固定入口类 不要改
+mainClassName = "com.tencent.bk.devops.atom.AtomRunner"
+
+//clean{
+//    delete fileTree('src/main/resources/codecc_agent.zip')
+//}
+
+//task zip(type: Zip) {
+//    from ('src/main/codecc_agent')
+//    archiveName 'codecc_agent.zip'
+//    into 'codecc_agent'
+//    destinationDir(file('src/main/resources/'))
+//}
+
+shadowJar {
+    // baseName为插件默认打包名+".jar"，bkdevops-plugin.jar
+    // 如果修改，则要一同修改插件task.json中的target启动命令
+    // 为了省事，建议不用修改
+    baseName = "bkdevops-plugin"
+    classifier = null
+    zip64 true
+}
+//shadowJar.dependsOn(zip)
+
+task ktlint(type: JavaExec, group: "verification") {
+    description = "Check Kotlin code style."
+    classpath = configurations.ktlint
+    main = "com.pinterest.ktlint.Main"
+    args "src/**/*.kt"
+}
+check.dependsOn ktlint
+
+task ktlintFormat(type: JavaExec, group: "formatting") {
+    description = "Fix Kotlin code style deviations."
+    classpath = configurations.ktlint
+    main = "com.pinterest.ktlint.Main"
+    args "-F", "src/**/*.kt"
+}
+
+
+
+allprojects {
+    group 'com.tencent.bk.devops'
+
+    repositories {
+        mavenLocal()
+        maven { url "" }
+        maven { url "" }
+        maven { url "" }
+    }
+}
+subprojects {
+    apply plugin: "kotlin"
+    apply plugin: "com.github.johnrengelman.shadow"
+    apply plugin: "application"
+
+
+
+    configurations {
+        ktlint
+    }
+
+    dependencies {
+//    compile "com.tencent.bk.devops.atom:java-atom-sdk:1.0.25-2020032705-SNAPSHOT"
+        compile "com.tencent.bk.devops.atom:java-atom-sdk:1.1.3-20200802401"
+//    compile "com.tencent.bk.devops.atom:java-atom-sdk:1.0.24"
+        compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+//        ktlint "com.github.shyiko:ktlint:0.34.2"
+        compile group: 'com.squareup.okhttp3', name: 'okhttp'
+        compile "org.bouncycastle:bcprov-jdk16:$bouncyCastleVersion"
+        compile "org.apache.commons:commons-exec:$commonExecVersion"
+        compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+        compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion"
+        compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
+        compile "org.apache.commons:commons-compress:$compressVersion"
+        compile "org.hashids:hashids:1.0.3"
+        testCompile group: 'junit', name: 'junit', version: '4.12'
+//    testCompile "com.tencent.bk.devops.atom:java-atom-sdk:1.0.25-2020032705-SNAPSHOT"
+        testCompile "com.tencent.bk.devops.atom:java-atom-sdk:1.0.25-2020052802-SNAPSHOT"
+//    testCompile "com.tencent.bk.devops.atom:java-atom-sdk:1.0.24"
+        compile("org.apache.commons:commons-compress:1.15")
+    }
+
+
+}

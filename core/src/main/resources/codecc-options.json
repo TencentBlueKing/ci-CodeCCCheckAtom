@@ -1,0 +1,1622 @@
+{
+  "COVERITY": {
+    "title": "Coverity",
+    "normalLegend": [
+      {
+        "key": "新增",
+        "value": "latest_new_add_count"
+      },
+      {
+        "key": "关闭",
+        "value": "latest_closed_count"
+      }
+    ],
+    "normalKey": "关闭",
+    "normalVal": "latest_closed_count",
+    "activeKey": "新增",
+    "activeVal": "latest_new_add_count",
+    "mainKey": "遗留问题数",
+    "mainVal": "latest_exist_count",
+    "charts": [
+      {
+        "type": "Pie",
+        "title": "所有问题状态",
+        "color": [
+          "#ffb400",
+          "#30d878",
+          "#3c96ff",
+          "#dde4eb"
+        ],
+        "opts": [
+          {
+            "key": "total_new",
+            "text": "待修复"
+          },
+          {
+            "key": "total_close",
+            "text": "已修复"
+          },
+          {
+            "key": "total_ignore",
+            "text": "已忽略"
+          },
+          {
+            "key": "total_excluded",
+            "text": "已屏蔽"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "total_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "KLOCWORK": {
+    "title": "Klocwork",
+    "normalLegend": [
+      {
+        "key": "新增",
+        "value": "latest_new_add_count"
+      },
+      {
+        "key": "关闭",
+        "value": "latest_closed_count"
+      }
+    ],
+    "normalKey": "关闭",
+    "normalVal": "latest_closed_count",
+    "activeKey": "新增",
+    "activeVal": "latest_new_add_count",
+    "mainKey": "遗留问题数",
+    "mainVal": "latest_exist_count",
+    "charts": [
+      {
+        "type": "Pie",
+        "title": "所有问题状态",
+        "color": [
+          "#ffb400",
+          "#30d878",
+          "#3c96ff",
+          "#dde4eb"
+        ],
+        "opts": [
+          {
+            "key": "total_new",
+            "text": "待修复"
+          },
+          {
+            "key": "total_close",
+            "text": "已修复"
+          },
+          {
+            "key": "total_ignore",
+            "text": "已忽略"
+          },
+          {
+            "key": "total_excluded",
+            "text": "已屏蔽"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "total_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "PINPOINT": {
+    "title": "Pinpoint",
+    "normalLegend": [
+      {
+        "key": "新增",
+        "value": "latest_new_add_count"
+      },
+      {
+        "key": "关闭",
+        "value": "latest_closed_count"
+      }
+    ],
+    "normalKey": "关闭",
+    "normalVal": "latest_closed_count",
+    "activeKey": "新增",
+    "activeVal": "latest_new_add_count",
+    "mainKey": "遗留问题数",
+    "mainVal": "latest_exist_count",
+    "charts": [
+      {
+        "type": "Pie",
+        "title": "所有问题状态",
+        "color": [
+          "#ffb400",
+          "#30d878",
+          "#3c96ff",
+          "#dde4eb"
+        ],
+        "opts": [
+          {
+            "key": "total_new",
+            "text": "待修复"
+          },
+          {
+            "key": "total_close",
+            "text": "已修复"
+          },
+          {
+            "key": "total_ignore",
+            "text": "已忽略"
+          },
+          {
+            "key": "total_excluded",
+            "text": "已屏蔽"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "total_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "CPPLINT": {
+    "title": "CppLint",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Bar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "FLAKE8": {
+    "title": "Flake8",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Bar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "PYLINT": {
+    "title": "PyLint",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#a1eaee"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "TSCLUA": {
+    "title": "TSCLUA",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#a1eaee"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "TSCCPP": {
+    "title": "TSC-Cpp",
+    "normalKey": "关闭",
+    "normalVal": "latest_closed_count",
+    "activeKey": "新增",
+    "activeVal": "latest_new_add_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ]
+      }
+    ]
+  },
+  "ESLINT": {
+    "title": "ESLint",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "CHECKSTYLE": {
+    "title": "Checkstyle",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "STYLECOP": {
+    "title": "StyleCop",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "DETEKT": {
+    "title": "detekt",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "PHPCS": {
+    "title": "PHPCS",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "SENSITIVE": {
+    "title": "敏感信息检测",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Bar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "OCCHECK": {
+    "title": "OCCheck",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "GOML": {
+    "title": "Gometalinter",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "GOCILINT": {
+    "title": "GolangCI-Lint",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "CCN": {
+    "title": "圈复杂度",
+    "normalLegend": [
+      {
+        "key": "风险函数",
+        "value": "total_risk_func_count"
+      },
+      {
+        "key": "平均圈复杂度",
+        "value": "average_ccn"
+      }
+    ],
+    "normalKey": "平均圈复杂度",
+    "normalVal": "average_ccn",
+    "normalChange": "changed_ccn",
+    "activeKey": "风险函数",
+    "activeVal": "total_risk_func_count",
+    "activeChange": "changed_risk_func_count",
+    "mainKey": "平均圈复杂度",
+    "mainVal": "average_ccn",
+    "hasChange": true,
+    "changeNormalVal": "changed_ccn",
+    "changeActiveVal": "changed_risk_func_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "风险函数级别分布",
+        "opts": [
+          {
+            "key": "super_high",
+            "text": "极高风险",
+            "color": "#dde4eb"
+          },
+          {
+            "key": "high",
+            "text": "高风险",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "medium",
+            "text": "中风险",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "low",
+            "text": "低风险",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Line",
+        "title": "平均圈复杂度趋势",
+        "opts": "average_ccn_chart",
+        "xkey": "date",
+        "ykey": "averageCCN",
+        "enable": true
+      }
+    ]
+  },
+  "DUPC": {
+    "title": "代码重复率",
+    "normalLegend": [
+      {
+        "key": "重复文件",
+        "value": "total_dupfile_count"
+      },
+      {
+        "key": "代码重复率",
+        "value": "current_dup_rate"
+      }
+    ],
+    "normalKey": "代码重复率",
+    "normalVal": "current_dup_rate",
+    "normalChange": "changed_dup_rate",
+    "activeKey": "重复文件",
+    "activeVal": "total_dupfile_count",
+    "activeChange": "changed_dupfile_count",
+    "mainKey": "代码重复率",
+    "mainVal": "current_dup_rate",
+    "hasChange": true,
+    "changeNormalVal": "changed_dup_rate",
+    "changeActiveVal": "changed_dupfile_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "重复文件级别分布",
+        "opts": [
+          {
+            "key": "super_high",
+            "text": "极高风险",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "high",
+            "text": "高风险",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "medium",
+            "text": "中风险",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Line",
+        "title": "代码重复率趋势",
+        "opts": "dupc_chart",
+        "xkey": "date",
+        "ykey": "averageCCN",
+        "enable": true
+      }
+    ]
+  },
+  "HORUSPY": {
+    "title": "荷鲁斯高危组件",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Bar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "WOODPECKER_SENSITIVE": {
+    "title": "啄木鸟敏感信息",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Bar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "RIPS": {
+    "title": "RIPS",
+    "normalLegend": [
+      {
+        "key": "问题数",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "文件数",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "文件数",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "问题数",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "问题总数",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "待修复问题级别",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "待修复问题作者",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "严重",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "一般",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "提示",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  }
+}

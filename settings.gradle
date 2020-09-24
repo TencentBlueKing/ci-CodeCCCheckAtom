@@ -1,0 +1,8 @@
+rootProject.name = 'CodeccCheckAtomDebug'
+
+include ":core"
+
+include ":ext"
+include ":ext:tencent"
+
+
