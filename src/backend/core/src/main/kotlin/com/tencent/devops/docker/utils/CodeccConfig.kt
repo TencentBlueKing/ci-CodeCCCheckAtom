@@ -23,7 +23,8 @@ object CodeccConfig {
 
     fun loadToolMeta(landunParam: LandunParam, apiWebServer: String, aesKey: String) {
         loadProperties() // 先取配置文件，再用后台配置刷新，防止后台有问题导致不能跑
-
+        loadMsUriProperties() // 获取微服务根路径配置
+        
         LogUtils.printDebugLog("apiWebServer: $apiWebServer")
         propertiesInfo["CODECC_API_WEB_SERVER"] = apiWebServer
 
@@ -92,6 +93,21 @@ object CodeccConfig {
     private fun loadProperties(): Map<String, String> {
         try {
             val input = Thread.currentThread().contextClassLoader.getResourceAsStream("config.properties")
+            val p = Properties()
+            p.load(input)
+
+            for (name in p.stringPropertyNames()) {
+                propertiesInfo[name] = p.getProperty(name)
+            }
+        } catch (e: Exception) {
+            println("Load config exception: ${e.message}")
+        }
+        return propertiesInfo
+    }
+
+    private fun loadMsUriProperties(): Map<String, String> {
+        try {
+            val input = Thread.currentThread().contextClassLoader.getResourceAsStream("ms_uri.properties")
             val p = Properties()
             p.load(input)
 

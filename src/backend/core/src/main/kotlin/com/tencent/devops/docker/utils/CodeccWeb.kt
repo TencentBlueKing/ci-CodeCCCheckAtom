@@ -74,7 +74,7 @@ object CodeccWeb : BaseApi() {
     fun download(filePath: String, resultName: String, downloadType: String, landunParam: LandunParam): Boolean {
         var size = 0L
         val headers = getHeader(landunParam)
-        val downloadUrl = "${CodeccConfig.getServerHost()}/ms/schedule/api/build/fs/download/fileSize"
+        val downloadUrl = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("schedule_uri")}/api/build/fs/download/fileSize"
         val params = mapOf(
             "fileName" to resultName,
             "downloadType" to downloadType
@@ -102,7 +102,7 @@ object CodeccWeb : BaseApi() {
                 var isStop = false
                 val btyesBuffer = 100 * 1024 * 1024L
 
-                val url = "${CodeccConfig.getServerHost()}/ms/schedule/api/build/fs/download"
+                val url = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("schedule_uri")}/api/build/fs/download"
                 while (true) {
                     if (retainSize > btyesBuffer) {
                         retainSize -= btyesBuffer
@@ -161,7 +161,7 @@ object CodeccWeb : BaseApi() {
                 "fileName" to resultName,
                 "downloadType" to downloadType
             )
-            val url = "${CodeccConfig.getServerHost()}/ms/schedule/api/build/fs/download/fileInfo"
+            val url = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("schedule_uri")}/api/build/fs/download/fileInfo"
             val body = jacksonObjectMapper().writeValueAsString(param)
             val responseStr = sendPostRequest(url, headers, body)
             val data = jacksonObjectMapper().readValue<Map<String, Any?>>(responseStr)
@@ -193,19 +193,19 @@ object CodeccWeb : BaseApi() {
 
     fun codeccConfigByStream(landunParam: LandunParam, streamName: String): String {
         val headers = getHeader(landunParam)
-        val path = "${CodeccConfig.getServerHost()}/ms/task/api/build/task/streamName/$streamName"
+        val path = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("task_uri")}/api/build/task/streamName/$streamName"
         return sendGetRequest(path, headers)
     }
 
     fun codeccTaskInfoByTaskId(landunParam: LandunParam, taskId: Long): String {
         val headers = getHeader(landunParam)
-        val path = "${CodeccConfig.getServerHost()}/ms/task/api/build/task/taskId/$taskId"
+        val path = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("task_uri")}/api/build/task/taskId/$taskId"
         return sendGetRequest(path, headers)
     }
 
     fun getMD5ForBlame(landunParam: LandunParam, taskId: Long, tool: String): String {
         val headers = getHeader(landunParam)
-        val path = "${CodeccConfig.getServerHost()}/ms/report/api/build/scm/file/list?taskId=$taskId&toolName=$tool"
+        val path = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("report_uri")}/api/build/scm/file/list?taskId=$taskId&toolName=$tool"
         return sendGetRequest(path, headers)
     }
 
@@ -218,7 +218,7 @@ object CodeccWeb : BaseApi() {
     ) {
         val headers = getHeader(landunParam)
         val buildId = landunParam.buildId
-        val url = "${CodeccConfig.getServerHost()}/ms/report/api/build/parse/notify/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/$buildId"
+        val url = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("report_uri")}/api/build/parse/notify/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/$buildId"
         val body = jacksonObjectMapper().writeValueAsString(mapOf<String, String>())
         LogUtils.printDebugLog("notifyCodeccFinish request url: $url")
         LogUtils.printDebugLog("notifyCodeccFinish request body: $body")
@@ -233,7 +233,7 @@ object CodeccWeb : BaseApi() {
     ): Boolean {
         val headers = getHeader(landunParam)
         val buildId = landunParam.buildId
-        val url = "${CodeccConfig.getServerHost()}/ms/report/api/build/parse/reportStatus/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/$buildId"
+        val url = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("report_uri")}/api/build/parse/reportStatus/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/$buildId"
         val responseMap = JsonUtil.getObjectMapper().readValue<Map<String, Any>>(sendGetRequest(url, headers))
         if (responseMap["data"] == "PROCESSING") return false
         return true
@@ -246,7 +246,7 @@ object CodeccWeb : BaseApi() {
         uploadType: String
     ) {
         val headers = getHeader(landunParam)
-        val uploadUrl = "${CodeccConfig.getServerHost()}/ms/schedule/api/build/fs/upload"
+        val uploadUrl = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("schedule_uri")}/api/build/fs/upload"
 
         val file = File(filePath)
         val fis = FileInputStream(file)
@@ -323,7 +323,7 @@ object CodeccWeb : BaseApi() {
                 "chunks" to chunks.toString()
             )
             val mergeJson = JsonUtil.toJson(mergeParams)
-            val mergeUrl = "${CodeccConfig.getServerHost()}/ms/schedule/api/build/fs/merge"
+            val mergeUrl = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("schedule_uri")}/api/build/fs/merge"
             val mergeRequest = Request.Builder()
                 .url(mergeUrl)
                 .headers(Headers.of(headers))
@@ -351,7 +351,7 @@ object CodeccWeb : BaseApi() {
     ) {
         try {
             val headers = getHeader(landunParam)
-            val path = "${CodeccConfig.getServerHost()}/ms/schedule/api/build/fs/index/$storgeType/$fileName"
+            val path = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("schedule_uri")}/api/build/fs/index/$storgeType/$fileName"
             val responseBody = sendGetRequest(path, headers)
 
             val responseResult: Result<FileIndex> = jacksonObjectMapper().readValue(responseBody)
@@ -370,7 +370,7 @@ object CodeccWeb : BaseApi() {
     ) {
         val headers = getHeader(landunParam)
         val requestBody = jacksonObjectMapper().writeValueAsString(params)
-        val path = "${CodeccConfig.getServerHost()}/ms/report/api/build/defects/repositories"
+        val path = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("report_uri")}/api/build/defects/repositories"
         LogUtils.printDebugLog("request url: $path")
         LogUtils.printDebugLog("request body: $requestBody")
         val responseContent = sendPostRequest(path, headers, requestBody, false)
@@ -399,7 +399,7 @@ object CodeccWeb : BaseApi() {
                 "repoWhiteList" to commandParam.subCodePathList
             )
 
-            val path = "${CodeccConfig.getServerHost()}/ms/task/api/build/tool/config/streamName/$streamName/toolType/${toolName.toUpperCase()}"
+            val path = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("task_uri")}/api/build/tool/config/streamName/$streamName/toolType/${toolName.toUpperCase()}"
             val jsonBody = jacksonObjectMapper().writeValueAsString(body)
             val response = sendPostRequest(
                 url = path,
@@ -425,7 +425,7 @@ object CodeccWeb : BaseApi() {
         toolName: String
     ): TaskLogVO? {
         val header = getHeader(landunParam)
-        val url = "${CodeccConfig.getServerHost()}/ms/report/api/build/tasklog/taskId/${taskId}/toolName/$toolName/buildId/${landunParam.buildId}"
+        val url = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("report_uri")}/api/build/tasklog/taskId/${taskId}/toolName/$toolName/buildId/${landunParam.buildId}"
         val responseBody = sendGetRequest(url, header)
         val responseResult: Result<TaskLogVO> = jacksonObjectMapper().readValue(responseBody)
         return responseResult.data
@@ -441,7 +441,7 @@ object CodeccWeb : BaseApi() {
     ): String {
         val headers = getHeader(landunParam)
         val requestBody = getUploadTaskLogReqParam(taskId, streamName, toolName, landunParam, stepNum, flag)
-        val path = "${CodeccConfig.getServerHost()}/ms/report/api/build/tasklog"
+        val path = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("report_uri")}/api/build/tasklog"
 
         var countFailed = 0
         while (true) {
@@ -471,7 +471,7 @@ object CodeccWeb : BaseApi() {
     ) {
         val headers = getHeader(landunParam)
         val requestBody = getChangeScanTypeReqParam(taskId, streamName, toolName, landunParam)
-        val path = "${CodeccConfig.getServerHost()}/ms/build/toolBuildInfo/tasks/$taskId/forceFullScanSymbol"
+        val path = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("build_uri")}/toolBuildInfo/tasks/$taskId/forceFullScanSymbol"
         val responseContent = sendPostRequest(path, headers, requestBody)
         LogUtils.printDebugLog("response body: $responseContent")
     }
@@ -606,9 +606,9 @@ object CodeccWeb : BaseApi() {
     ): Boolean {
         val header = getHeader(landunParam)
         val url = if(toolName == ToolConstants.COVERITY && null != openSource && openSource){
-            "${CodeccConfig.getServerHost()}/ms/schedule/api/build/push/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/${landunParam.buildId}?createFrom=gongfeng_scan"
+            "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("schedule_uri")}/api/build/push/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/${landunParam.buildId}?createFrom=gongfeng_scan"
         } else {
-            "${CodeccConfig.getServerHost()}/ms/schedule/api/build/push/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/${landunParam.buildId}"
+            "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("schedule_uri")}/api/build/push/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/${landunParam.buildId}"
         }
         val responseBody = sendGetRequest(url, header)
         val responseResult: Result<Boolean> = jacksonObjectMapper().readValue(responseBody)
@@ -621,7 +621,7 @@ object CodeccWeb : BaseApi() {
     ): List<ToolMetaDetailVO>? {
         return try {
             val header = getHeader(landunParam)
-            val url = "${serverHost}/ms/task/api/build/toolmeta/list"
+            val url = "${serverHost}${CodeccConfig.getConfig("task_uri")}/api/build/toolmeta/list"
             val responseBody = sendGetRequest(url, header)
             val responseResult: Result<List<ToolMetaDetailVO>?> = jacksonObjectMapper().readValue(responseBody)
             responseResult.data
