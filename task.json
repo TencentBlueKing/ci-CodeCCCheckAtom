@@ -1,5 +1,5 @@
 {
-  "atomCode": "CodeccCheckAtomDebug",
+  "atomCode": "CodeccCheckAtom",
   "execution": {
     "language": "java",
     "minimumVersion": "1.8",

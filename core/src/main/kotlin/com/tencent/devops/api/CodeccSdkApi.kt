@@ -97,7 +97,7 @@ object CodeccSdkApi : BaseApi() {
                 "devopsToolParams" to devopsToolParams,
                 "checkerSetList" to getRuleSetV3(param),
                 "nameCn" to pipelineName,
-                "atomCode" to "CodeccCheckAtomDebug",
+                "atomCode" to "CodeccCheckAtom",
                 "projectBuildCommand" to script,
                 "projectBuildType" to if (getOS() == OSType.WINDOWS) "BAT" else "SHELL",
                 "compilePlat" to getOS().name,
