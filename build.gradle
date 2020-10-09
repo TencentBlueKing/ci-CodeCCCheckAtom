@@ -1,7 +1,15 @@
 buildscript {
+    def mavenRepoUrl = System.getProperty("mavenRepoUrl")
+    if (mavenRepoUrl == null) {
+        mavenRepoUrl = System.getenv("mavenRepoUrl")
+    }
+    if (mavenRepoUrl == null) {
+        mavenRepoUrl = MAVEN_REPO_URL
+    }
+    println("mavenRepoUrl=" + mavenRepoUrl)
     repositories {
         mavenLocal()
-        maven { url " " }   //仓库地址
+        maven { url mavenRepoUrl }
     }
 
     dependencies {
@@ -30,11 +38,38 @@ apply plugin: "com.github.johnrengelman.shadow"
 apply plugin: "application"
 group 'com.tencent.bk.devops'
 
+static def getValue(String key, Object defaultValue) {
+    def value = System.getProperty(key)
+    if (value == null) {
+        value = System.getenv(key)
+    }
+    if (value == null) {
+        value = defaultValue.toString()
+    }
+    return value
+}
+
+def mavenCredUserName = getValue("mavenCredUserName", getProperty("MAVEN_CRED_USERNAME"))
+def mavenCredPassword = getValue("mavenCredPassword", getProperty("MAVEN_CRED_PASSWORD"))
+
 repositories {
+    def mavenRepoUrl = System.getProperty("mavenRepoUrl")
+    if (mavenRepoUrl == null) {
+        mavenRepoUrl = System.getenv("mavenRepoUrl")
+    }
+    if (mavenRepoUrl == null) {
+        mavenRepoUrl = MAVEN_REPO_URL
+    }
+    println("mavenRepoUrl=" + mavenRepoUrl)
     mavenLocal()
-    maven { url "" }
-    maven { url "" }
-    maven { url "" }
+    maven {
+        url "https://maven.pkg.github.com/ci-plugins/java-plugin-sdk"
+        credentials {
+            username = mavenCredUserName
+            password = mavenCredPassword
+        }
+    }
+    maven { url mavenRepoUrl }
 }
 
 dependencies {
@@ -87,7 +122,7 @@ shadowJar {
     // baseName为插件默认打包名+".jar"，bkdevops-plugin.jar
     // 如果修改，则要一同修改插件task.json中的target启动命令
     // 为了省事，建议不用修改
-    baseName = "bkdevops-plugin"
+    baseName = "CodeccCheckAtom"
     classifier = null
     zip64 true
 }
