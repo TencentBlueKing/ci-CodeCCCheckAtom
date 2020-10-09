@@ -50,7 +50,7 @@ object CodeccRepoHelper {
         "CODE_GITLAB",
         "GITHUB"
     )
-    private val codeccElementType = "CodeccCheckAtomDebug"
+    private val codeccElementType = "CodeccCheckAtom"
     private val pipelineBuildTaskApi = PipelineTaskResourceApi()
 
     fun getCodeccRepos(variables: Map<String, String>): List<CodeccExecuteConfig.RepoItem> {
