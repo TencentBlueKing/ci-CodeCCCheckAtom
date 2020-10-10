@@ -2,7 +2,3 @@ rootProject.name = 'CodeccCheckAtom'
 
 include ":core"
 
-include ":ext"
-include ":ext:tencent"
-
-

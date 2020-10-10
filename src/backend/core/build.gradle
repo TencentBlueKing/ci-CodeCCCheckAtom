@@ -1,6 +1,2 @@
 group 'com.tencent.bk.devops'
 version 'unspecified'
-
-//dependencies {
-//    compile project(":ext:tencent")
-//}

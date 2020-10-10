@@ -1,6 +1,6 @@
 {
   "codeccScriptFile": "build_tool_external_rule_prod.py",
-  "codeccHost": "xxxx",
-  "codeccFrontHost": "xxxx",
-  "codeccDetail": "xxxx"
+  "codeccHost": "__CODECC_GATEWAY_HOST__",
+  "codeccFrontHost": "__DEVOPS_GATEWAY_HOST__",
+  "codeccDetail": "__CODECC_GATEWAY_HOST__"
 }
