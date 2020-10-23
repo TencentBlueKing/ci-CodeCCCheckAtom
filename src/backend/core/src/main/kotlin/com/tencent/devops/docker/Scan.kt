@@ -141,14 +141,14 @@ class Scan(
 
         // 获取diff文件的map
         val diffFileMap = mutableMapOf<String /* file name */, MutableSet<Long> /* file line */>()
-        JsonUtil.fromJson<Map<String, List<ScmDiffItem>>>(diffOutputFile.readText())["scm_increment"]?.forEach { scmDiffItem ->
+        JsonUtil.fromJson(diffOutputFile.readText(), object : TypeReference<Map<String, List<ScmDiffItem>>>(){})["scm_increment"]?.forEach { scmDiffItem ->
             scmDiffItem.diffFileList.map { diffFile ->
                 val lineSet = diffFileMap[File(diffFile.filePath).canonicalPath] ?: mutableSetOf()
                 lineSet.addAll(diffFile.diffLineList)
                 diffFileMap[File(diffFile.filePath).canonicalPath] = lineSet
             }
         }
-        val outputFileList = JsonUtil.fromJson<ToolOutputItem>(outputFile.readText()).defects
+        val outputFileList = JsonUtil.fromJson(outputFile.readText(), object : TypeReference<ToolOutputItem>(){}).defects
 
         // 过滤没用的文件
         val filterOutputFileList = if (toolName.equals(ToolConstants.CCN, true)) {
@@ -173,7 +173,7 @@ class Scan(
         LogUtils.printDebugLog("generate no diff output file: ${noDiffOutputFile.canonicalPath}")
 
         // 重新填充defects字段
-        val newOutputFileMap = JsonUtil.fromJson<Map<String, Any>>(outputFile.readText()).toMutableMap()
+        val newOutputFileMap = JsonUtil.fromJson(outputFile.readText(), object : TypeReference<Map<String, Any>>(){}).toMutableMap()
         newOutputFileMap["defects"] = filterOutputFileList
         outputFile.writeText(JsonUtil.toJson(newOutputFileMap))
     }

@@ -66,7 +66,7 @@ object CodeccReportUtils {
         indexHtmlBody.append("<div class=\"code-check-header-wrapper\">\n")
 
         val json = BufferedReader(ClassLoader.getSystemClassLoader().getResourceAsStream("codecc-options.json").reader()).readText()
-        val codeccOptionMap = JsonUtil.fromJson<Map<String, Map<String, Any>>>(json)
+        val codeccOptionMap = JsonUtil.fromJson(json, object : TypeReference<Map<String, Map<String, Any>>>(){})
         reportData.toolSnapshotList.forEach {
             val toolNameEn = it["tool_name_en"] as String
             val codeccOptions = codeccOptionMap[toolNameEn] ?: mapOf()

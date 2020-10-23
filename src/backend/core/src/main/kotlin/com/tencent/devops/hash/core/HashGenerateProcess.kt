@@ -17,7 +17,7 @@ object HashGenerateProcess {
             return
         }
         val hashInputList = try {
-            JsonUtil.fromJson<Map<String, List<HashGenerateInputFile>>>(inputFile.readText())["defects"]
+            JsonUtil.fromJson(inputFile.readText(), object : TypeReference<Map<String, List<HashGenerateInputFile>>>(){})["defects"]
         } catch (e: Exception) {
             println("deserialize input file fail!")
             return

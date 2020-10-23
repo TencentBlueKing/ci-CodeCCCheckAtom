@@ -161,7 +161,7 @@ object CodeccSdkApi : BaseApi() {
         return if (param is CodeccCheckAtomParamV3) {
             if (param.languageRuleSetMap.isNullOrBlank()) return listOf()
             val languageRuleSetMap =
-                JsonUtil.fromJson<Map<String, List<String>>>(param.languageRuleSetMap!!)
+                JsonUtil.fromJson(param.languageRuleSetMap!!, object : TypeReference<Map<String, List<String>>>(){})
             val ruleSetIds = mutableSetOf<String>()
             languageRuleSetMap.values.forEach { ruleSetIds.addAll(it) }
             return ruleSetIds.map { RuleSetCheckV3(it) }
