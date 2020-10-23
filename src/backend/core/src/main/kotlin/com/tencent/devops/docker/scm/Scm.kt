@@ -8,6 +8,7 @@ import com.tencent.devops.docker.utils.CodeccWeb
 import com.tencent.devops.docker.utils.CommonUtils
 import com.tencent.devops.pojo.exception.CodeccTaskExecException
 import com.tencent.devops.pojo.exception.CodeccUserConfigException
+import org.apache.commons.lang3.StringUtils
 import java.io.File
 
 abstract class Scm(
@@ -18,7 +19,7 @@ abstract class Scm(
 ) {
 
     fun scmOperate(): Boolean {
-        if (commandParam.repoUrlMap.isBlank()) {
+        if (StringUtils.isBlank(commandParam.repoUrlMap)) {
             LogUtils.printLog("no scm element, return")
             return true
         }
@@ -36,7 +37,7 @@ abstract class Scm(
         val imageParam = CodeccConfig.getImage("scm")
         imageParam.command = cmd
         try {
-            DockerRun.runImage(imageParam, commandParam)
+            DockerRun.runImage(imageParam, commandParam, toolName)
         } catch (e: Throwable) {
             LogUtils.printLog("Scm operate exception, message: ${e.message}")
             scmOpFail(inputFile)

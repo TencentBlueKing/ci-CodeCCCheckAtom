@@ -29,7 +29,7 @@ package com.tencent.devops.utils
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.AtomContext
 import com.tencent.bk.devops.atom.api.SdkEnv
-import com.tencent.bk.devops.plugin.utils.JsonUtil
+import com.tencent.bk.devops.atom.utils.json.JsonUtil
 import com.tencent.devops.docker.Build
 import com.tencent.devops.docker.pojo.CommandParam
 import com.tencent.devops.docker.pojo.LandunParam
@@ -106,8 +106,8 @@ open class CodeccUtils {
     private fun initData(config: CodeccExecuteConfig, codeccWorkspace: File) {
 //        coverityStartFile = CodeccParamsHelper.getCovPyFile(config.scriptType, codeccWorkspace)
 //        toolsStartFile = CodeccParamsHelper.getToolPyFile(config.scriptType, codeccWorkspace)
-        codeccStartFile = CodeccScriptUtils().downloadScriptFile(config, codeccWorkspace).canonicalPath
-        println("CodeCC start file($codeccStartFile)")
+//        codeccStartFile = CodeccScriptUtils().downloadScriptFile(config, codeccWorkspace).canonicalPath
+//        println("CodeCC start file($codeccStartFile)")
     }
 
     open fun doPreCodeccSingleCommand(command: MutableList<String>, codeccExecuteConfig: CodeccExecuteConfig) {
@@ -200,8 +200,7 @@ open class CodeccUtils {
         map["IS_SPEC_CONFIG"] = "true"
         map["COVERITY_RESULT_PATH"] = codeccWorkspace.canonicalPath
 
-        val buildCmd = when (CodeccParamsHelper.getProjectType(JsonUtil.getObjectMapper().readValue(param.languages
-            ?: "[]"))) {
+        val buildCmd = when (CodeccParamsHelper.getProjectType(JsonUtil.fromJson(param.languages ?: "[]"))) {
             CoverityProjectType.UN_COMPILE -> {
                 "--no-command --fs-capture-search ."
             }
@@ -406,8 +405,7 @@ open class CodeccUtils {
         command.add("-DIS_SPEC_CONFIG=true")
         command.add("-DCOVERITY_RESULT_PATH=${codeccWorkspace.canonicalPath}")
 
-        val buildCmd = when (CodeccParamsHelper.getProjectType(JsonUtil.getObjectMapper().readValue(param.languages
-            ?: "[]"))) {
+        val buildCmd = when (CodeccParamsHelper.getProjectType(JsonUtil.fromJson(param.languages ?: "[]"))) {
             CoverityProjectType.UN_COMPILE -> {
                 "--no-command --fs-capture-search ."
             }

@@ -45,12 +45,17 @@ class RepositoryConfig(
             RepositoryType.ID -> if (repositoryHashId.isNullOrBlank()) {
                 throw CodeccUserConfigException("代码库HashId为空")
             } else {
-                repositoryHashId!!
+                repositoryHashId
             }
             RepositoryType.NAME -> if (repositoryName.isNullOrBlank()) {
                 throw CodeccUserConfigException("代码库名为空")
             } else {
-                repositoryName!!
+                repositoryName
+            }
+            RepositoryType.URL -> if (repositoryName.isNullOrBlank()) {
+                throw CodeccUserConfigException("代码库URL为空")
+            } else {
+                repositoryName
             }
         }
     }

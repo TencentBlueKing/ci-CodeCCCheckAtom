@@ -26,9 +26,11 @@
 
 package com.tencent.devops.utils.common
 
+import org.apache.commons.lang3.StringUtils
+
 object EnvUtils {
     fun parseEnv(command: String, data: Map<String, String>, replaceWithEmpty: Boolean = false, isEscape: Boolean = false): String {
-        if (command.isBlank()) {
+        if (StringUtils.isBlank(command)) {
             return command
         }
         val newValue = StringBuilder()

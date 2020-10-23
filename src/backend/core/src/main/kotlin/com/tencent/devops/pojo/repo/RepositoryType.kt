@@ -28,12 +28,13 @@ package com.tencent.devops.pojo.repo
 
 enum class RepositoryType {
     ID,
-    NAME;
+    NAME,
+    URL;
 
     companion object {
         fun parseType(type: String?): RepositoryType {
             if (type.isNullOrBlank()) return ID
-            return valueOf(type!!)
+            return valueOf(type)
         }
     }
 }

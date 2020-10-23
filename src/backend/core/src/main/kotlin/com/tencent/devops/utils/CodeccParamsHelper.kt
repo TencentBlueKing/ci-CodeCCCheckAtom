@@ -30,7 +30,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.AtomContext
 import com.tencent.bk.devops.atom.api.SdkEnv
-import com.tencent.bk.devops.plugin.common.OS
 import com.tencent.devops.docker.pojo.LandunParam
 import com.tencent.devops.docker.utils.CodeccWeb
 import com.tencent.devops.pojo.BuildType
@@ -104,7 +103,7 @@ object CodeccParamsHelper {
             map["DEVOPS_AGENT_ID"] = agentId
             map["DEVOPS_AGENT_SECRET_KEY"] = agentSecretKey
             map["DEVOPS_AGENT_VM_SID"] = ""
-        } else if (AgentEnv.getBuildType() == OS.MACOS.name) {
+        } else if (AgentEnv.getBuildType() == "MACOS") {
             println("检测到这是Macos 公共构建机")
             map["DEVOPS_PROJECT_ID"] = param.projectName
             map["DEVOPS_BUILD_TYPE"] = BuildType.MACOS.name

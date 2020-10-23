@@ -4,7 +4,9 @@ import java.lang.RuntimeException
 
 open class CodeccException constructor(
     open val errorCode: Int = CodeccException.errorCode,
-    open val errorMsg: String?
+    open val errorMsg: String,
+    open val toolName: String = "",
+    override val cause: Throwable? = null
 ): RuntimeException(errorMsg) {
     companion object {
         const val errorCode = 2199001

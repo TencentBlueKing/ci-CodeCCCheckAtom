@@ -3,7 +3,6 @@ package com.tencent.devops.docker.pojo
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.tencent.bk.devops.plugin.pojo.artifactory.ChannelCode
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class LandunParam(

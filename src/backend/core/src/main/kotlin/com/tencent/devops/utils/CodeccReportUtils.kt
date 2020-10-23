@@ -1,10 +1,10 @@
 package com.tencent.devops.utils
 
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.core.type.TypeReference
 import com.tencent.bk.devops.atom.AtomContext
 import com.tencent.bk.devops.atom.pojo.ArtifactData
 import com.tencent.bk.devops.atom.pojo.ReportData
-import com.tencent.bk.devops.plugin.utils.JsonUtil
+import com.tencent.bk.devops.atom.utils.json.JsonUtil
 import com.tencent.devops.api.CodeccReportApi
 import com.tencent.devops.pojo.CodeccCheckAtomParamV3
 import com.tencent.devops.pojo.report.CodeccCallback
@@ -66,7 +66,7 @@ object CodeccReportUtils {
         indexHtmlBody.append("<div class=\"code-check-header-wrapper\">\n")
 
         val json = BufferedReader(ClassLoader.getSystemClassLoader().getResourceAsStream("codecc-options.json").reader()).readText()
-        val codeccOptionMap = JsonUtil.getObjectMapper().readValue<Map<String, Map<String, Any>>>(json)
+        val codeccOptionMap = JsonUtil.fromJson<Map<String, Map<String, Any>>>(json)
         reportData.toolSnapshotList.forEach {
             val toolNameEn = it["tool_name_en"] as String
             val codeccOptions = codeccOptionMap[toolNameEn] ?: mapOf()

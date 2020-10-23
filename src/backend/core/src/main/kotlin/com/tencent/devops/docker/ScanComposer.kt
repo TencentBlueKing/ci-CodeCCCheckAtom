@@ -3,7 +3,7 @@ package com.tencent.devops.docker
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.tencent.bk.devops.plugin.utils.JsonUtil
+import com.tencent.bk.devops.atom.utils.json.JsonUtil
 import com.tencent.devops.common.factory.SubProcessorFactory
 import com.tencent.devops.docker.pojo.AnalyzeConfigInfo
 import com.tencent.devops.docker.pojo.CommandParam
@@ -25,6 +25,7 @@ import com.tencent.devops.pojo.exception.CodeccTaskExecException
 import com.tencent.devops.utils.CompressUtils
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
+import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.lang.reflect.Field
 import java.text.SimpleDateFormat
@@ -55,7 +56,7 @@ object ScanComposer {
         LogUtils.printDebugLog("Get properties info from server...")
         val analyzeConfigInfo = CodeccWeb.getConfigDataByCodecc(streamName, toolName, commandParam)
         LogUtils.printDebugLog("Get properties info from server success")
-        if (commandParam.repoUrlMap.isBlank()) {
+        if (StringUtils.isBlank(commandParam.repoUrlMap)) {
             LogUtils.printDebugLog("No scm change scan type to full scan")
             analyzeConfigInfo.scanType = ScanType.FULL
         }
@@ -288,7 +289,7 @@ object ScanComposer {
         try {
             val outputFile = File(generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "tool_scan_output.json")
             if (outputFile.exists()) {
-                val outputData = JsonUtil.to(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
+                val outputData = JsonUtil.fromJson(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
                 val defects = outputData["defects"]
                 if (defects is List<*>) {
                     defects.forEachIndexed { index, it ->
@@ -297,7 +298,7 @@ object ScanComposer {
                             return
                         }
                         val defectStr = jacksonObjectMapper().writeValueAsString(it)
-                        val defect = JsonUtil.to(defectStr, object : TypeReference<DefectsEntity>() {})
+                        val defect = JsonUtil.fromJson(defectStr, object : TypeReference<DefectsEntity>() {})
                         LogUtils.printDefect(defect)
                     }
                 }
@@ -320,7 +321,7 @@ object ScanComposer {
             if (outputFile.exists()) {
                 val bakFile = File(generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "tool_scan_output_bak.json")
                 outputFile.copyTo(bakFile, true)
-                val outputData = JsonUtil.to(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
+                val outputData = JsonUtil.fromJson(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
                 val defects = outputData["defects"]
                 val fileData = mutableMapOf<String, Any>()
                 if (defects != null) {
@@ -405,7 +406,7 @@ object ScanComposer {
             }
             val md5Info = mutableMapOf<String, String>()
             md5Info["filePath"] = filePahth
-            if (commandParam.repoRelPathMap.filterNot { it.key.isBlank() }.isNotEmpty()) {
+            if (commandParam.repoRelPathMap.filterNot { StringUtils.isBlank(it.key) }.isNotEmpty()) {
                 commandParam.repoRelPathMap.forEach { repoRelPath ->
                     val codePath = CommonUtils.changePathToDocker(File(commandParam.landunParam.streamCodePath, repoRelPath.value).canonicalPath)
                     val re = Regex(codePath)

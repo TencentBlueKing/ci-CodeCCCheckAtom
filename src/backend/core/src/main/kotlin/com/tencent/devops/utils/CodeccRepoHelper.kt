@@ -50,7 +50,7 @@ object CodeccRepoHelper {
         "CODE_GITLAB",
         "GITHUB"
     )
-    private val codeccElementType = "CodeccCheckAtom"
+    private val codeccElementType = "CodeccCheckAtomDebug"
     private val pipelineBuildTaskApi = PipelineTaskResourceApi()
 
     fun getCodeccRepos(variables: Map<String, String>): List<CodeccExecuteConfig.RepoItem> {
@@ -92,7 +92,7 @@ object CodeccRepoHelper {
                     )
                 }
                 else -> {
-                    throw CodeccUserConfigException("get codecc task fail with repo type: ${it.taskType}")
+                    throw CodeccUserConfigException("get codecc task fail with repo type: ${it.taskType}", "")
                 }
             }
             repoItemList.add(item)
@@ -113,12 +113,13 @@ object CodeccRepoHelper {
                 val url = getEndWithValue(variables, "bk_repo_code_url_$taskId")!!
                 val authType = getEndWithValue(variables, "bk_repo_auth_type_$taskId")!!
                 CodeccExecuteConfig.RepoItem(
-                    repositoryConfig = null,
+                    repositoryConfig = buildConfig(url, RepositoryType.URL),
                     type = repoType,
                     relPath = localPath,
                     relativePath = relativePath,
                     url = url,
-                    authType = authType
+                    authType = authType,
+                    repoHashId = taskId
                 )
             } else {
                 val value = if (repoConfigType == RepositoryType.ID.name) {
@@ -127,7 +128,7 @@ object CodeccRepoHelper {
                     getEndWithValue(variables, "bk_repo_name_$taskId")
                 }
                 CodeccExecuteConfig.RepoItem(
-                    repositoryConfig = buildConfig(value!!, RepositoryType.valueOf(repoConfigType!!)),
+                    repositoryConfig = buildConfig(value!!, RepositoryType.valueOf(repoConfigType)),
                     type = repoType,
                     relPath = localPath,
                     relativePath = relativePath
@@ -137,16 +138,16 @@ object CodeccRepoHelper {
         }
 
         val newRepoItemList = repoItemList.map {
-            if (it.repositoryConfig != null) {
+            if (it.repositoryConfig != null && it.repositoryConfig.repositoryType != RepositoryType.URL) {
                 val repo = RepositoryUtils.getRepository(it.repositoryConfig)
                 val authType = when (repo) {
                     is CodeGitRepository -> {
                         val authType = repo.authType?.name?.toUpperCase()
-                        if (authType.isNullOrBlank()) "HTTP" else authType!!
+                        if (authType.isNullOrBlank()) "HTTP" else authType
                     }
                     is CodeSvnRepository -> {
                         val authType = repo.svnType?.toUpperCase()
-                        if (authType.isNullOrBlank()) "SSH" else authType!!
+                        if (authType.isNullOrBlank()) "SSH" else authType
                     }
                     is CodeGitlabRepository -> "HTTP"
                     is GithubRepository -> "HTTP"
@@ -201,7 +202,7 @@ object CodeccRepoHelper {
                     task.getTaskParam("repositoryName"),
                     RepositoryType.parseType(task.getTaskParam("repositoryType"))
                 )
-            else -> throw CodeccUserConfigException("Unknown code element -> ${task.taskType}")
+            else -> throw CodeccUserConfigException("Unknown code element -> ${task.taskType}", "")
         }
     }
 
@@ -212,11 +213,17 @@ object CodeccRepoHelper {
                 repositoryName = null,
                 repositoryType = RepositoryType.ID
             )
-        } else {
+        } else if (repositoryType == RepositoryType.NAME) {
             RepositoryConfig(
                 repositoryHashId = null,
                 repositoryName = repositoryId,
                 repositoryType = RepositoryType.NAME
+            )
+        } else {
+            RepositoryConfig(
+                repositoryHashId = null,
+                repositoryName = repositoryId,
+                repositoryType = RepositoryType.URL
             )
         }
 
@@ -225,7 +232,7 @@ object CodeccRepoHelper {
             if (!repositoryConfig.repositoryName.isNullOrBlank()) {
                 return RepositoryConfig(
                     repositoryHashId = repositoryConfig.repositoryHashId,
-                    repositoryName = EnvUtils.parseEnv(repositoryConfig.repositoryName!!, variables),
+                    repositoryName = EnvUtils.parseEnv(repositoryConfig.repositoryName, variables),
                     repositoryType = repositoryConfig.repositoryType
                 )
             }

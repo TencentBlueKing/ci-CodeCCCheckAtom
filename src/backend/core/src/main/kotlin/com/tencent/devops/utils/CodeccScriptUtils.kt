@@ -1,9 +1,10 @@
 package com.tencent.devops.utils
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.api.BaseApi
-import com.tencent.bk.devops.plugin.utils.JsonUtil
-import com.tencent.bk.devops.plugin.utils.OkhttpUtils
+import com.tencent.bk.devops.atom.utils.http.OkHttpUtils
+import com.tencent.bk.devops.atom.utils.json.JsonUtil
 import com.tencent.devops.pojo.CodeccExecuteConfig
 import com.tencent.devops.pojo.exception.CodeccDependentException
 import okhttp3.MediaType
@@ -24,13 +25,13 @@ class CodeccScriptUtils : BaseApi() {
             "fileName" to CODECC_SCRIPT_NAME,
             "downloadType" to "BUILD_SCRIPT"
         )
-        val fileSizeRequest = buildPost(fileSizeUrl, RequestBody.create(MediaType.parse("application/json; charset=utf-8"), JsonUtil.getObjectMapper().writeValueAsString(fileSizeParams)), mutableMapOf())
+        val fileSizeRequest = buildPost(fileSizeUrl, RequestBody.create(MediaType.parse("application/json; charset=utf-8"), JsonUtil.toJson(fileSizeParams)), mutableMapOf())
             .newBuilder()
             .url("$CODECC_HOST$fileSizeUrl")
             .build()
-        val fileSize = OkhttpUtils.doHttp(fileSizeRequest).use {
+        val fileSize = OkHttpUtils.doHttpRaw(fileSizeRequest).use {
             val data = it.body()!!.string()
-            val jsonData = JsonUtil.getObjectMapper().readValue<Map<String, Any>>(data)
+            val jsonData = JsonUtil.fromJson(data, object : TypeReference<Map<String, Any>>() {})
             if (jsonData["status"] != 0) {
                 throw CodeccDependentException("get file size fail!: $jsonData")
             }
@@ -46,11 +47,11 @@ class CodeccScriptUtils : BaseApi() {
             "beginIndex" to "0",
             "btyeSize" to fileSize
         )
-        val downloadRequest = buildPost(downloadUrl, RequestBody.create(MediaType.parse("application/json; charset=utf-8"), JsonUtil.getObjectMapper().writeValueAsString(downloadParams)), mutableMapOf())
+        val downloadRequest = buildPost(downloadUrl, RequestBody.create(MediaType.parse("application/json; charset=utf-8"), JsonUtil.toJson(downloadParams)), mutableMapOf())
             .newBuilder()
             .url("$CODECC_HOST$downloadUrl")
             .build()
-        OkhttpUtils.doHttp(downloadRequest).use {
+        OkHttpUtils.doHttpRaw(downloadRequest).use {
             val data = it.body()!!.string()
             print("[初始化] 下载CodeCC script成功,")
             val file = File(codeccWorkspace, CODECC_SCRIPT_NAME)

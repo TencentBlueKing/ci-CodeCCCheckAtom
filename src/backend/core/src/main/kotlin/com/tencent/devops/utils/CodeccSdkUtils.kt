@@ -1,9 +1,9 @@
 package com.tencent.devops.utils
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.AtomContext
-import com.tencent.bk.devops.plugin.pojo.artifactory.ChannelCode
-import com.tencent.bk.devops.plugin.utils.JsonUtil
+import com.tencent.bk.devops.atom.utils.json.JsonUtil
 import com.tencent.devops.api.CodeccSdkApi
 import com.tencent.devops.docker.pojo.CodeYaml
 import com.tencent.devops.docker.tools.LogUtils
@@ -19,6 +19,7 @@ import com.tencent.devops.pojo.sdk.ScanConfiguration
 import com.tencent.devops.utils.common.AgentEnv
 import com.tencent.devops.utils.common.AtomUtils.parseStringToList
 import com.tencent.devops.utils.common.AtomUtils.parseStringToSet
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -95,7 +96,7 @@ object CodeccSdkUtils {
     }
 
     private fun filterEmptyList(list: List<String>?): List<String> {
-        return list?.filter { !it.isBlank() } ?: listOf()
+        return list?.filter { !StringUtils.isBlank(it) } ?: listOf()
     }
 
     fun executeAsyncTask(codeccTaskId: Long, userId: String) {
@@ -133,7 +134,7 @@ object CodeccSdkUtils {
             taskId = params.codeCCTaskId,
             scanType = params.toolScanType?.toInt(),
             timeAnalysisConfig = null,
-            transferAuthorList = if (params.transferAuthorList.isNullOrBlank()) listOf() else JsonUtil.getObjectMapper().readValue(params.transferAuthorList!!),
+            transferAuthorList = if (params.transferAuthorList.isNullOrBlank()) listOf() else JsonUtil.fromJson(params.transferAuthorList!!),
             newDefectJudge = ScanConfiguration.NewDefectJudge(
                 fromDate = params.newDefectJudgeFromDate,
                 judgeBy = params.newDefectJudgeBy?.toInt()

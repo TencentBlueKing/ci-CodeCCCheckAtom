@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.api.BaseApi
-import com.tencent.bk.devops.plugin.utils.JsonUtil
-import com.tencent.bk.devops.plugin.utils.OkhttpUtils
+import com.tencent.bk.devops.atom.utils.http.OkHttpUtils
+import com.tencent.bk.devops.atom.utils.json.JsonUtil
 import com.tencent.devops.docker.ScanComposer
 import com.tencent.devops.docker.pojo.*
 import com.tencent.devops.docker.tools.FileUtil
@@ -72,7 +72,7 @@ object CodeccWeb : BaseApi() {
     }
 
     fun download(filePath: String, resultName: String, downloadType: String, landunParam: LandunParam): Boolean {
-        var size = 0L
+        var size: Long
         val headers = getHeader(landunParam)
         val downloadUrl = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("schedule_uri")}/api/build/fs/download/fileSize"
         val params = mapOf(
@@ -125,7 +125,7 @@ object CodeccWeb : BaseApi() {
                         .headers(Headers.of(headers))
                         .post(RequestBody.create(jsonMediaType, jacksonObjectMapper().writeValueAsString(param)))
                         .build()
-                    OkhttpUtils.doHttp(httpReq).use { resp ->
+                    OkHttpUtils.doHttpRaw(httpReq).use { resp ->
                         if (label == 0L) {
                             FileOutputStream(filePath).use { fos ->
                                 fos.write(resp.body()!!.bytes())
@@ -234,7 +234,7 @@ object CodeccWeb : BaseApi() {
         val headers = getHeader(landunParam)
         val buildId = landunParam.buildId
         val url = "${CodeccConfig.getServerHost()}${CodeccConfig.getConfig("report_uri")}/api/build/parse/reportStatus/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/$buildId"
-        val responseMap = JsonUtil.getObjectMapper().readValue<Map<String, Any>>(sendGetRequest(url, headers))
+        val responseMap = JsonUtil.fromJson(sendGetRequest(url, headers), object : TypeReference<Map<String, Any>>(){})
         if (responseMap["data"] == "PROCESSING") return false
         return true
     }
@@ -305,9 +305,9 @@ object CodeccWeb : BaseApi() {
                 .headers(Headers.of(headers))
                 .post(body)
                 .build()
-            OkhttpUtils.doHttp(request).use {
+            OkHttpUtils.doHttpRaw(request).use {
                 val responseData = it.body()!!.string()
-                val map = JsonUtil.to(responseData, object : TypeReference<Map<String, Any>>() {})
+                val map = JsonUtil.fromJson(responseData, object : TypeReference<Map<String, Any>>() {})
                 if (map["status"] != 0) {
                     throw CodeccDependentException("upload CodeCC file fail: $responseData")
                 }
@@ -331,9 +331,9 @@ object CodeccWeb : BaseApi() {
                 .build()
             LogUtils.printDebugLog("merge url: $mergeUrl")
             LogUtils.printDebugLog("merge json: $mergeJson")
-            OkhttpUtils.doHttpNoRetry(mergeRequest).use {
+            OkHttpUtils.doHttpRaw(mergeRequest, false).use {
                 val responseData = it.body()!!.string()
-                val map = JsonUtil.to(responseData, object : TypeReference<Map<String, Any>>() {})
+                val map = JsonUtil.fromJson(responseData, object : TypeReference<Map<String, Any>>() {})
                 if (map["status"] != 0) {
                     throw CodeccDependentException("do CodeCC file merge fail: $mergeParams, $responseData")
                 }
@@ -547,13 +547,13 @@ object CodeccWeb : BaseApi() {
                 .post(RequestBody.create(jsonMediaType, requestBody))
                 .build()
             if (shortHttp) {
-                OkhttpUtils.doShortHttp(httpReq).use { resp ->
+                OkHttpUtils.doHttpRaw(httpReq).use { resp ->
                     val responseStr = resp.body()!!.string()
                     LogUtils.printDebugLog("response body: $responseStr")
                     return responseStr
                 }
             } else {
-                OkhttpUtils.doHttp(httpReq).use { resp ->
+                OkHttpUtils.doHttpRaw(httpReq).use { resp ->
                     val responseStr = resp.body()!!.string()
                     LogUtils.printDebugLog("response body: $responseStr")
                     return responseStr
@@ -582,7 +582,7 @@ object CodeccWeb : BaseApi() {
                     .headers(Headers.of(headers))
                     .get()
                     .build()
-                OkhttpUtils.doShortHttp(httpReq).use { resp ->
+                OkHttpUtils.doHttpRaw(httpReq).use { resp ->
                     val responseStr = resp.body()!!.string()
                     LogUtils.printDebugLog("response body: $responseStr")
                     //非200状态位都重试
@@ -631,3 +631,4 @@ object CodeccWeb : BaseApi() {
         }
     }
 }
+

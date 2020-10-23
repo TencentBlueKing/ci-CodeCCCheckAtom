@@ -1,8 +1,8 @@
 package com.tencent.devops.api
 
 import com.tencent.bk.devops.atom.api.BaseApi
-import com.tencent.bk.devops.plugin.pojo.Result
-import com.tencent.bk.devops.plugin.utils.OkhttpUtils
+import com.tencent.bk.devops.atom.pojo.Result
+import com.tencent.bk.devops.atom.utils.http.OkHttpUtils
 import com.tencent.devops.pojo.OSType
 import com.tencent.devops.pojo.exception.CodeccDependentException
 import okhttp3.Protocol
@@ -26,7 +26,7 @@ class CodeccApi : BaseApi() {
         val path = "/ms/plugin/api/build/codecc/$tool?osType=${osType.name}&fileMd5=$fileMd5&is32Bit=$is32Bit"
         val request = buildGet(path)
 
-        val response = OkhttpUtils.doHttp(request)
+        val response = OkHttpUtils.doHttpRaw(request)
         val responseCode = response.code()
         if (responseCode == 304) {
             return Response.Builder().request(request)
@@ -43,7 +43,7 @@ class CodeccApi : BaseApi() {
     fun downloadToolScript(osType: OSType, fileMd5: String): Response {
         val path = "/ms/plugin/api/build/codecc/tools/script?osType=${osType.name}&fileMd5=$fileMd5"
         val request = buildGet(path)
-        val response = OkhttpUtils.doHttp(request)
+        val response = OkHttpUtils.doHttpRaw(request)
         if (response.code() == 304) {
             return Response.Builder().request(request)
                 .protocol(Protocol.HTTP_1_1)

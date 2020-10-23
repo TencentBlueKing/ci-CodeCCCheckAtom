@@ -3,7 +3,7 @@ package com.tencent.devops.docker
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.tencent.bk.devops.plugin.utils.JsonUtil
+import com.tencent.bk.devops.atom.utils.json.JsonUtil
 import com.tencent.devops.api.CodeccSdkApi
 import com.tencent.devops.common.factory.SubProcessorFactory
 import com.tencent.devops.docker.pojo.AnalyzeConfigInfo
@@ -20,10 +20,11 @@ import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.docker.utils.CodeccConfig
 import com.tencent.devops.docker.utils.CodeccWeb
 import com.tencent.devops.docker.utils.CommonUtils
+import com.tencent.devops.hash.core.HashGenerateProcess
 import com.tencent.devops.pojo.LinuxCodeccConstants
 import com.tencent.devops.utils.CodeccParamsHelper
 import com.tencent.devops.utils.script.ScriptUtils
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -81,7 +82,7 @@ class Scan(
             image.command = realCmdList
 //            DockerRun.runCmd(image, commandParam.streamCodePath)
             LogUtils.printDebugLog(image)
-            DockerRun.runImage(image, commandParam)
+            DockerRun.runImage(image, commandParam, toolName)
         }
 
         // diff 模式过滤掉非本次变更的文件内容
@@ -94,7 +95,9 @@ class Scan(
         // hashOutPut
         return if (File(outputFile).exists()) {
             LogUtils.printDebugLog("scan success, pp hash output file")
-            hashOutput()
+            if (toolName != "githubstatistic") {
+                newHashOutput()
+            }
             LogUtils.printDebugLog("pp hash output file success, update language")
             updateLanguage()
             LogUtils.printDebugLog("updateLanguage success, gather the defects")
@@ -124,6 +127,13 @@ class Scan(
         }
     }
 
+    @ExperimentalUnsignedTypes
+    private fun newHashOutput(){
+        val inputFile = getToolDataPath() + File.separator + "tool_scan_output.json"
+        val outputFile = getToolDataPath() + File.separator + "tool_scan_output_hash.json"
+        HashGenerateProcess.hashMethod(5, inputFile, outputFile)
+    }
+
     private fun diffToolScanOutput(commandParam: CommandParam, streamName: String, toolName: String) {
         val outputFile = File(ScanComposer.generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "tool_scan_output.json")
         val diffOutputFile = File(ScanComposer.generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "git_branch_diff_output.json")
@@ -131,14 +141,14 @@ class Scan(
 
         // 获取diff文件的map
         val diffFileMap = mutableMapOf<String /* file name */, MutableSet<Long> /* file line */>()
-        JsonUtil.getObjectMapper().readValue<Map<String, List<ScmDiffItem>>>(diffOutputFile.readText())["scm_increment"]?.forEach { scmDiffItem ->
+        JsonUtil.fromJson<Map<String, List<ScmDiffItem>>>(diffOutputFile.readText())["scm_increment"]?.forEach { scmDiffItem ->
             scmDiffItem.diffFileList.map { diffFile ->
                 val lineSet = diffFileMap[File(diffFile.filePath).canonicalPath] ?: mutableSetOf()
                 lineSet.addAll(diffFile.diffLineList)
                 diffFileMap[File(diffFile.filePath).canonicalPath] = lineSet
             }
         }
-        val outputFileList = JsonUtil.getObjectMapper().readValue<ToolOutputItem>(outputFile.readText()).defects
+        val outputFileList = JsonUtil.fromJson<ToolOutputItem>(outputFile.readText()).defects
 
         // 过滤没用的文件
         val filterOutputFileList = if (toolName.equals(ToolConstants.CCN, true)) {
@@ -163,9 +173,9 @@ class Scan(
         LogUtils.printDebugLog("generate no diff output file: ${noDiffOutputFile.canonicalPath}")
 
         // 重新填充defects字段
-        val newOutputFileMap = JsonUtil.getObjectMapper().readValue<Map<String, Any>>(outputFile.readText()).toMutableMap()
+        val newOutputFileMap = JsonUtil.fromJson<Map<String, Any>>(outputFile.readText()).toMutableMap()
         newOutputFileMap["defects"] = filterOutputFileList
-        outputFile.writeText(JsonUtil.getObjectMapper().writeValueAsString(newOutputFileMap))
+        outputFile.writeText(JsonUtil.toJson(newOutputFileMap))
     }
 
     private fun outputFormatUpdate(): String {
@@ -187,13 +197,13 @@ class Scan(
             val diffFileListMap = diffFileList.map { it.filePath to it }.toMap()
 
             if (outputFile.exists()) {
-                val outputData = JsonUtil.to(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
+                val outputData = JsonUtil.fromJson(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
                 val defects = outputData["defects"]
                 val filesMap = mutableMapOf<String, MutableList<DefectsEntity>>()
                 if (defects is List<*>) {
                     defects.forEach {
                         val defectStr = jacksonObjectMapper().writeValueAsString(it)
-                        val defect = JsonUtil.to(defectStr, object : TypeReference<DefectsEntity>() {})
+                        val defect = JsonUtil.fromJson(defectStr, object : TypeReference<DefectsEntity>() {})
                         val filePath = defect.filePath ?: (defect.file_path ?: (defect.filePathname ?: (defect.filename
                             ?: "")))
 
@@ -229,13 +239,13 @@ class Scan(
         try {
             val outputFile = File(getToolDataPath() + File.separator + "tool_scan_output.json")
             if (outputFile.exists()) {
-                val outputData = JsonUtil.to(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
+                val outputData = JsonUtil.fromJson(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
                 val defects = outputData["defects"]
                 val filesMap = mutableMapOf<String, MutableList<DefectsEntity>>()
                 if (defects is List<*>) {
                     defects.forEachIndexed { _, it ->
                         val defectStr = jacksonObjectMapper().writeValueAsString(it)
-                        val defect = JsonUtil.to(defectStr, object : TypeReference<DefectsEntity>() {})
+                        val defect = JsonUtil.fromJson(defectStr, object : TypeReference<DefectsEntity>() {})
                         val filePath = defect.filePath ?: (defect.file_path ?: (defect.filePathname ?: (defect.filename
                             ?: "")))
 
@@ -297,14 +307,14 @@ class Scan(
             val outputFile = File(getToolDataPath() + File.separator + "tool_scan_output.json")
             if (outputFile.exists()) {
                 LogUtils.printDebugLog("outputFile exist: $outputFile")
-                val outputData = JsonUtil.to(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
+                val outputData = JsonUtil.fromJson(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
                 val defects = outputData["defects"]
                 if (defects is List<*>) {
                     LogUtils.printDebugLog("defects is list, size: ${defects.size}")
                     val languageSet = mutableSetOf<String>()
                     defects.forEachIndexed { _, it ->
                         val defectStr = jacksonObjectMapper().writeValueAsString(it)
-                        val defect = JsonUtil.to(defectStr, object : TypeReference<DefectsEntity>() {})
+                        val defect = JsonUtil.fromJson(defectStr, object : TypeReference<DefectsEntity>() {})
                         if (defect.language != null) {
                             languageSet.add(defect.language)
                         }
@@ -334,7 +344,7 @@ class Scan(
         }
         image.command = realCmdList
 //        DockerRun.runCmd(image, commandParam.streamCodePath)
-        DockerRun.runImage(image, commandParam)
+        DockerRun.runImage(image, commandParam, toolName)
 
         if (File(outputFile).exists()) {
             LogUtils.printLog("copy outputFile to inputFile")
@@ -350,7 +360,7 @@ class Scan(
     }
 
     private fun traverseWhitePath(whitePath: String): MutableSet<String> {
-        var whitePathTemp = if (whitePath.endsWith("/.*")){
+        val whitePathTemp = if (whitePath.endsWith("/.*")){
             whitePath.dropLast(3)
         } else if (whitePath.endsWith("/")){
             whitePath.dropLast(1)
@@ -405,12 +415,12 @@ class Scan(
                             whitePathList.add(subPath.replace("//", "/"))
                         } else {
                             val subWhitePathList = traverseWhitePath(subPath)
-                            whitePathList?.let { list1 -> subWhitePathList?.let(list1::addAll) }
+                            whitePathList.let { list1 -> subWhitePathList.let(list1::addAll) }
                         }
                     }
                 } else {
                     val subWhitePathList = traverseWhitePath(whitePath)
-                    whitePathList?.let { list1 -> subWhitePathList?.let(list1::addAll) }
+                    whitePathList.let { list1 -> subWhitePathList.let(list1::addAll) }
                 }
             }
         }
@@ -465,9 +475,9 @@ class Scan(
         }
         if (analyzeConfigInfo.skipPaths != null) {
             val skipList = mutableSetOf<String>()
-            analyzeConfigInfo.skipPaths!!.split(";").toList().forEach { subskipPath ->
-                val subskipList = subskipPath!!.split(",").toList()
-                skipList?.let { list1 -> subskipList?.let(list1::addAll) }
+            analyzeConfigInfo.skipPaths.split(";").toList().forEach { subskipPath ->
+                val subskipList = subskipPath.split(",").toList()
+                skipList.let { list1 -> subskipList.let(list1::addAll) }
             }
             skipPathList.addAll(skipList.filter { it.replace("\\.", ".").replace("+", "\\+") != "" })
         }

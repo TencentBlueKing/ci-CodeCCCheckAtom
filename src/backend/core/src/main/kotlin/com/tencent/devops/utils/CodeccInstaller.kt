@@ -26,7 +26,7 @@
 
 package com.tencent.devops.utils
 
-import com.tencent.bk.devops.plugin.utils.OkhttpUtils
+import com.tencent.bk.devops.atom.utils.http.OkHttpUtils
 import com.tencent.devops.api.CodeccApi
 import com.tencent.devops.pojo.CodeccCheckAtomParamV3
 import com.tencent.devops.pojo.LinuxCodeccConstants
@@ -56,7 +56,7 @@ object CodeccInstaller {
         val md5File = File(toolFile.canonicalPath + ".md5")
         val md5 = if (md5File.exists()) md5File.readText() else ""
         val response = api.downloadTool("PYTHON3", CodeccEnvHelper.getOS(), md5, AgentEnv.is32BitSystem())
-        OkhttpUtils.downloadFile(response, toolFile)
+        OkHttpUtils.downloadFile(response, toolFile)
         if (response.code() != 304) {
             callback.run()
             // 写入md5

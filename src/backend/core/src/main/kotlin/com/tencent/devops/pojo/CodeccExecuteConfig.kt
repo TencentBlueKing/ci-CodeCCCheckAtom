@@ -28,7 +28,7 @@ package com.tencent.devops.pojo
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.tencent.bk.devops.atom.AtomContext
-import com.tencent.bk.devops.plugin.utils.JsonUtil
+import com.tencent.bk.devops.atom.utils.json.JsonUtil
 import com.tencent.devops.pojo.repo.RepositoryConfig
 
 /**
@@ -58,6 +58,6 @@ data class CodeccExecuteConfig(
     )
 
     override fun toString(): String {
-        return JsonUtil.getObjectMapper().writeValueAsString(this)
+        return JsonUtil.toJson(this)
     }
 }

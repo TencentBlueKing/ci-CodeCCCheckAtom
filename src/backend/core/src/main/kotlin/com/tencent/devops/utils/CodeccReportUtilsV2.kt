@@ -1,11 +1,13 @@
 package com.tencent.devops.utils
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.AtomContext
 import com.tencent.bk.devops.atom.pojo.ArtifactData
 import com.tencent.bk.devops.atom.pojo.DataField
 import com.tencent.bk.devops.atom.pojo.ReportData
-import com.tencent.bk.devops.plugin.utils.JsonUtil
+import com.tencent.bk.devops.atom.pojo.Result
+import com.tencent.bk.devops.atom.utils.json.JsonUtil
 import com.tencent.devops.api.CodeccReportApi
 import com.tencent.devops.api.CodeccSdkApi
 import com.tencent.devops.docker.pojo.ToolConstants
@@ -150,7 +152,7 @@ object CodeccReportUtilsV2 {
         indexHtmlBody.append("<div class=\"code-check-header-wrapper\">\n")
 
         val json = BufferedReader(ClassLoader.getSystemClassLoader().getResourceAsStream("codecc-options.json").reader()).readText()
-        val codeccOptionMap = JsonUtil.getObjectMapper().readValue<Map<String, Map<String, Any>>>(json)
+        val codeccOptionMap = JsonUtil.fromJson(json, object : TypeReference<Map<String, Map<String, Any>>>() {})
 
         reportData.toolSnapshotList.forEach {
             val toolNameEn = it["tool_name_en"] as String
@@ -274,7 +276,7 @@ object CodeccReportUtilsV2 {
 
     private fun getLintMap(toolName: String): Map<String, Any> {
         val lintJson = getLintJson()
-        val map = JsonUtil.getObjectMapper().readValue<MutableMap<String, Any>>(lintJson)
+        val map = JsonUtil.fromJson(lintJson, object : TypeReference<MutableMap<String, Any>>() {})
         map["title"] = toolName
         return map
     }
@@ -518,9 +520,9 @@ object CodeccReportUtilsV2 {
         return null
     }
 
-    private fun getReportDataMock(buildId: String): CodeccCallback? {
+    private fun getReportDataMock(buildId: String): CodeccCallback {
         val reportJson = BufferedReader(ClassLoader.getSystemClassLoader().getResourceAsStream("test-report.json").reader()).readText()
-        return JsonUtil.getObjectMapper().readValue(reportJson)
+        return JsonUtil.fromJson(reportJson)
     }
 
 }

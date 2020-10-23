@@ -10,6 +10,7 @@ import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.docker.utils.CodeccWeb
 import com.tencent.devops.docker.utils.CommonUtils
 import com.tencent.devops.utils.CodeccParamsHelper
+import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.net.URL
 
@@ -99,7 +100,7 @@ class ScmInfo(
     override fun generateInputFile(): String {
         val inputFile = ScanComposer.generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "scm_info_input.json"
         val dirPathList = mutableListOf<String>()
-        if (commandParam.repoRelPathMap.filterNot { it.key.isBlank() }.isNotEmpty()) {
+        if (commandParam.repoRelPathMap.filterNot { StringUtils.isBlank(it.key) }.isNotEmpty()) {
             dirPathList.addAll(commandParam.repoRelPathMap.map { CommonUtils.changePathToDocker(commandParam.landunParam.streamCodePath + File.separator + it.value) })
         } else {
             dirPathList.add(CommonUtils.changePathToDocker(commandParam.landunParam.streamCodePath))
