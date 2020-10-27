@@ -8,11 +8,11 @@ object AtomUtils {
 
     fun parseStringToList(str: String?): List<String> {
         if (str.isNullOrBlank()) return listOf()
-        return JsonUtil.fromJson(str)
+        return JsonUtil.fromJson(str, object : TypeReference<List<String>>(){})
     }
 
     fun parseStringToSet(str: String?, defaultSet: Set<String> = setOf()): Set<String> {
         if (str.isNullOrBlank()) return defaultSet
-        return JsonUtil.fromJson(str)
+        return JsonUtil.fromJson(str, object : TypeReference<Set<String>>(){})
     }
 }

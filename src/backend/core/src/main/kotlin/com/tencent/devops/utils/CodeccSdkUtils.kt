@@ -29,6 +29,7 @@ object CodeccSdkUtils {
 
     fun initCodecc(atomContext: AtomContext<CodeccCheckAtomParamV3>): CodeccExecuteConfig {
         val params = atomContext.param
+
         val codeccExecuteConfig = CodeccParamsHelper.getCodeccExecuteConfig(atomContext)
 
         if (AgentEnv.isThirdParty()) {

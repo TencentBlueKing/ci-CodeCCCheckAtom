@@ -303,7 +303,7 @@ object CodeccSdkApi : BaseApi() {
                 path = path,
                 method = "POST"
             )
-            JsonUtil.fromJson(responseContent)
+            JsonUtil.fromJson(responseContent, object : TypeReference<Result<Boolean>>(){})
         } else {
             println("do not add filter path")
             Result(true)
