@@ -311,7 +311,7 @@ public class DemoAtom implements TaskAtom<AtomParam> {
 
 ### Step 8. 插件打包
 [前端]
-1. 替换掉src/frontend/src/index.html的__CODECC_GATEWAY_HOST__ 、 __DEVOPS_GATEWAY_HOST__、  __CODECC_GATEWAY_PORT__占位符
+1. 替换掉src/frontend/src/index.html的__CODECC_GATEWAY_HOST__ 、 \_\_DEVOPS_GATEWAY_HOST__ 、 __CODECC_GATEWAY_PORT__占位符
 2. cd src/frontend
 3. npm install
 4. npm run public
