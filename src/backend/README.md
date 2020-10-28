@@ -309,3 +309,6 @@ public class DemoAtom implements TaskAtom<AtomParam> {
 1. 在 src/main/resources/ 下建立 /META-INF/services 目录， 新增一个以接口命名的文件 com.tencent.bk.devops.atom.spi.TaskAtom
 2. 文件里面的内容是定义的实现spi接口的插件任务类，如：com.tencent.bk.devops.atom.task.DemoAtom
 
+### Step 8. 插件打包
+1. cd src/backend
+2. gradle clean buildZip

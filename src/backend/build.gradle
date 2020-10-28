@@ -128,8 +128,8 @@ allprojects {
     }
 
     task buildZip(type: Zip, dependsOn: shadowJar) {
-        from "build/libs", "./task.json", "./quality.json"
-        into "${project.name}"
+        from "build/libs", "core/task.json", "core/quality.json", "../frontend/dist"
+        into "CodeccCheckAtom"
     }
 
     check.dependsOn ktlint
