@@ -5,7 +5,7 @@ import com.tencent.devops.docker.pojo.DefectsEntity
 import com.tencent.devops.docker.utils.CommonUtils
 
 object LogUtils {
-    private var isDebug = false
+    private var isDebug = true
 
     fun setDebug(debug: Boolean) {
         isDebug = debug

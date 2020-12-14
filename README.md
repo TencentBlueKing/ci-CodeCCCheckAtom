@@ -317,5 +317,6 @@ public class DemoAtom implements TaskAtom<AtomParam> {
 4. npm run public
 
 [后端]
-1. cd src/backend
+1. cd src/backend/core
 2. gradle clean buildZip
+3. 用src\backend\core\build\distributions\core.zip上传

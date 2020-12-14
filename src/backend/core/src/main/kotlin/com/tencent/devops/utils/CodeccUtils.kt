@@ -246,9 +246,8 @@ open class CodeccUtils {
 
         CodeccConfig.loadToolMeta(
             landunParam,
-            codeccExecuteConfig.atomContext.getSensitiveConfParam("CODECC_API_WEB_SERVER")
-                ?: "http://xx",
-            codeccExecuteConfig.atomContext.getSensitiveConfParam("IMAGE_REGISTRY_PWD_KEY") ?: "xxxxxx"
+            CodeccConfigUtils.getPropConfig("codeccHost")!!,
+            CodeccConfigUtils.getPropConfig("imageRegistryPwdKey")!!
         )
         val commandParam = CommandParam(
             landunParam = landunParam,
