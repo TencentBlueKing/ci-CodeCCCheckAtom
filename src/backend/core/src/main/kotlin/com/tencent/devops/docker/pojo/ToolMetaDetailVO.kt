@@ -15,6 +15,7 @@ class ToolMetaDetailVO : ToolMetaBaseVO() {
     var dockerTriggerShell: String? = null
     var dockerImageURL: String? = null
     var dockerImageVersion: String? = null
+    var dockerImageVersionType: String? = null
     var dockerImageAccount: String? = null
     var dockerImagePasswd: String? = null
     var debugPipelineId: String? = null

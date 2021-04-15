@@ -57,7 +57,7 @@ object CredentialUtils {
         }
 
         val credential = result.data!!
-        logger.info("Get the credential($credential)")
+        logger.info("Get the credential success")
         val list = ArrayList<String>()
 
         list.add(
@@ -94,7 +94,7 @@ object CredentialUtils {
                 )
             )
         }
-        logger.info("Get the credential($list)")
+        logger.info("Get the credential list success")
         return Pair(list, credential.credentialType)
     }
 

@@ -1,20 +1,19 @@
 package com.tencent.devops.docker.pojo
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.tencent.bk.devops.plugin.utils.JsonUtil
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class CommandParam(
     val landunParam: LandunParam,
-    val devCloudAppId: String,
-    val devCloudUrl: String,
-    val devCloudToken: String,
-    val scmType: String,
+    var scmType: String,
     val svnUser: String,
-    val svnPassword: String,
+    var svnPassword: String,
     val scmSshAccess: String?, // 空或者svn
-    val repoUrlMap: String,  // getRepoUrlMap(codeccExecuteConfig) like "{\"2NLb\":\"http://xxx/xxxx/xxxxxxx\"}"
+    var repoUrlMap: String,  // getRepoUrlMap(codeccExecuteConfig) like "{\"2NLb\":\"http://git.code.oa.com/johuang/bkciApp.git\"}"
     val repoRelPathMap: Map<String, String>, // getRepoScmRelPathMap(codeccExecuteConfig)
     val repoScmRelpathMap: String,          // no use
     val subCodePathList: List<String>,
@@ -41,7 +40,7 @@ data class CommandParam(
 
     val needPrintDefect: Boolean = false,
     val openScanPrj: Boolean? = false,
-    val extraPrams: Map<String, String>
+    var extraPrams: Map<String, String>
 ) {
     fun copy(): CommandParam {
         val json = jacksonObjectMapper().writeValueAsString(this)
@@ -49,7 +48,10 @@ data class CommandParam(
     }
 
     override fun toString(): String {
-        return "CommandParam(devCloudAppId='$devCloudAppId', devCloudUrl='$devCloudUrl', scmType='$scmType', svnUser='$svnUser', repoUrlMap='$repoUrlMap', repoRelPathMap=$repoRelPathMap, repoScmRelpathMap='$repoScmRelpathMap', subCodePathList=$subCodePathList, scanTools='$scanTools', dataRootPath='$dataRootPath', py27Path='$py27Path', py35Path='$py35Path', py27PyLintPath='$py27PyLintPath', py35PyLintPath='$py35PyLintPath', subPath='$subPath', goRoot='$goRoot', coverityResultPath='$coverityResultPath', projectBuildCommand='$projectBuildCommand', coverityHomeBin='$coverityHomeBin', projectBuildPath='$projectBuildPath', syncType=$syncType, klockWorkHomeBin='$klockWorkHomeBin', pinpointHomeBin='$pinpointHomeBin', codeqlHomeBin='$codeqlHomeBin', clangHomeBin='$clangHomeBin', spotBugsHomeBin='$spotBugsHomeBin', goPath='$goPath', needPrintDefect=$needPrintDefect)"
+        val copyItem = copy()
+        copyItem.extraPrams = mapOf()
+        copyItem.svnPassword = "***"
+        return JsonUtil.toJson(copyItem)
     }
 
     companion object {

@@ -46,17 +46,29 @@ class ScmBlame(
 
     override fun scmOpFail(inputFile: String) {
         LogUtils.printLog("scm blame failed, upload input file...")
-        CodeccWeb.upload(commandParam.landunParam, inputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_blame_input.json", "SCM_JSON")
+        CodeccWeb.upload(landunParam = commandParam.landunParam,
+            filePath = inputFile,
+            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_blame_input.json",
+            uploadType = "SCM_JSON",
+            toolName = toolName)
     }
 
     override fun uploadInputFile(inputFile: String) {
-        CodeccWeb.upload(commandParam.landunParam, inputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_blame_input.json", "SCM_JSON")
+        CodeccWeb.upload(landunParam = commandParam.landunParam,
+            filePath = inputFile,
+            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_blame_input.json",
+            uploadType = "SCM_JSON",
+            toolName = toolName)
     }
 
     override fun scmOpSuccess(outputFile: String) {
         appendOutputFile(outputFile)
         LogUtils.printLog("scm blame success, upload $outputFile")
-        CodeccWeb.upload(commandParam.landunParam, outputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_blame.json", "SCM_JSON")
+        CodeccWeb.upload(landunParam = commandParam.landunParam,
+            filePath = outputFile,
+            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_blame.json",
+            uploadType = "SCM_JSON",
+            toolName = toolName)
     }
 
     override fun generateInputFile(): String {

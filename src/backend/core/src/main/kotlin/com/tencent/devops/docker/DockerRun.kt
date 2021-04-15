@@ -1,24 +1,23 @@
 package com.tencent.devops.docker
 
-import com.tencent.bk.devops.atom.common.Status
-import com.tencent.bk.devops.plugin.executor.docker.DockerApi
-import com.tencent.bk.devops.plugin.pojo.docker.DockerRunLogRequest
-import com.tencent.bk.devops.plugin.pojo.docker.DockerRunLogResponse
-import com.tencent.bk.devops.plugin.pojo.docker.DockerRunRequest
-import com.tencent.bk.devops.plugin.pojo.docker.common.DockerStatus
+import com.tencent.bk.devops.plugin.docker.DockerApi
+import com.tencent.bk.devops.plugin.docker.PcgDevCloudExecutor
+import com.tencent.bk.devops.plugin.docker.pojo.DockerRunLogRequest
+import com.tencent.bk.devops.plugin.docker.pojo.DockerRunLogResponse
+import com.tencent.bk.devops.plugin.docker.pojo.DockerRunRequest
+import com.tencent.bk.devops.plugin.docker.pojo.common.DockerStatus
 import com.tencent.devops.docker.pojo.CommandParam
 import com.tencent.devops.docker.pojo.ImageParam
 import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.docker.utils.CodeccConfig
 import com.tencent.devops.pojo.exception.CodeccTaskExecException
-import org.apache.commons.lang3.StringUtils
 import java.io.File
 
 object DockerRun {
     val api = DockerApi()
 
     fun runImage(imageParam: ImageParam, commandParam: CommandParam, toolName: String) {
-        LogUtils.printDebugLog("execute image params: $imageParam")
+        LogUtils.printLog("execute image params: $imageParam")
 
         val param = DockerRunRequest(
             userId = commandParam.landunParam.userId,
@@ -28,11 +27,14 @@ object DockerRun {
             dockerLoginPassword = imageParam.registryPwd,
             workspace = File(commandParam.landunParam.streamCodePath),
             extraOptions = imageParam.env.plus(mapOf(
-                "devCloudAppId" to commandParam.devCloudAppId,
-                "devCloudUrl" to commandParam.devCloudUrl,
-                "devCloudToken" to commandParam.devCloudToken
-            ))
-
+                "devCloudAppId" to (commandParam.extraPrams["devCloudAppId"] ?: ""),
+                "devCloudUrl" to (commandParam.extraPrams["devCloudUrl"] ?: ""),
+                "devCloudToken" to (commandParam.extraPrams["devCloudToken"] ?: ""),
+                PcgDevCloudExecutor.PCG_TOKEN_SECRET_ID to (commandParam.extraPrams[PcgDevCloudExecutor.PCG_TOKEN_SECRET_ID] ?: ""),
+                PcgDevCloudExecutor.PCG_TOKEN_SECRET_KEY to (commandParam.extraPrams[PcgDevCloudExecutor.PCG_TOKEN_SECRET_KEY] ?: ""),
+                PcgDevCloudExecutor.PCG_REQUEST_HOST to (commandParam.extraPrams[PcgDevCloudExecutor.PCG_REQUEST_HOST] ?: "")
+            )),
+            ipEnabled = false
         )
         val dockerRunResponse = api.dockerRunCommand(
             projectId = commandParam.landunParam.devopsProjectId,
@@ -56,12 +58,12 @@ object DockerRun {
 
             var isBlank = false
             runLogResponse.log?.forEachIndexed { index, s ->
-                if (StringUtils.isBlank(s)) {
+                if (s.isBlank()) {
                     isBlank = true
                     LogUtils.printStr(".")
                 } else {
                     if (isBlank) {
-                        isBlank = false
+                        isBlank = false;
                         LogUtils.printLog("")
                     }
                     LogUtils.printLog("[docker]: $s")
@@ -99,7 +101,7 @@ object DockerRun {
         } catch (e: Exception) {
             LogUtils.printErrorLog("fail to get docker run log: ${commandParam.landunParam.buildId}, " +
                 "${commandParam.landunParam.devopsVmSeqId}, " +
-                extraOptions
+                extraOptions.filter { !it.key.contains("token", ignoreCase = true)  }
             )
             e.printStackTrace()
         }

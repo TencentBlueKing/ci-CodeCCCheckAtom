@@ -68,7 +68,6 @@
             return {
                 panels: [
                     { name: 'basic', label: '基础设置' },
-                    { name: 'report', label: '通知报告' },
                     { name: 'scan', label: '扫描配置' },
                     { name: 'shield', label: '路径屏蔽' }
                 ],

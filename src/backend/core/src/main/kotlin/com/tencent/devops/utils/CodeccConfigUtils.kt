@@ -1,7 +1,6 @@
 package com.tencent.devops.utils
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.tencent.bk.devops.atom.utils.json.JsonUtil
+import com.tencent.bk.devops.plugin.utils.JsonUtil
 import java.io.BufferedReader
 
 object CodeccConfigUtils {
@@ -11,8 +10,8 @@ object CodeccConfigUtils {
     @Synchronized
     fun getPropConfig(key: String): String? {
         if (configMap.isEmpty()) {
-            val json = BufferedReader(ClassLoader.getSystemClassLoader().getResourceAsStream("config.json")!!.reader()).readText()
-            configMap = JsonUtil.fromJson(json, object : TypeReference<Map<String, String>>(){})
+            val json = BufferedReader(ClassLoader.getSystemClassLoader().getResourceAsStream("config.json").reader()).readText()
+            configMap = JsonUtil.to(json)
         }
         return configMap[key]
     }

@@ -58,16 +58,28 @@ class ScmIncrement(
 
     override fun scmOpFail(inputFile: String) {
         LogUtils.printLog("scm increment failed, upload the input file...")
-        CodeccWeb.upload(commandParam.landunParam, inputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_increment_input.json", "SCM_JSON")
+        CodeccWeb.upload(landunParam = commandParam.landunParam,
+            filePath = inputFile,
+            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_increment_input.json",
+            uploadType = "SCM_JSON",
+            toolName = toolName)
     }
 
     override fun uploadInputFile(inputFile: String) {
-        CodeccWeb.upload(commandParam.landunParam, inputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_increment_input.json", "SCM_JSON")
+        CodeccWeb.upload(landunParam = commandParam.landunParam,
+            filePath = inputFile,
+            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_increment_input.json",
+            uploadType = "SCM_JSON",
+            toolName = toolName)
     }
 
     override fun scmOpSuccess(outputFile: String) {
         parseOutputFile(outputFile)
-        CodeccWeb.upload(commandParam.landunParam, outputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_increment_output.json", "SCM_JSON")
+        CodeccWeb.upload(landunParam = commandParam.landunParam,
+            filePath = outputFile,
+            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_increment_output.json",
+            uploadType = "SCM_JSON",
+            toolName = toolName)
         LogUtils.printLog("scm increment success.")
     }
 

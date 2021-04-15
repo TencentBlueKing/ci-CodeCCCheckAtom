@@ -40,7 +40,7 @@ object RepositoryUtils {
         try {
             logger.info("Start to get the repo($repositoryConfig)")
             val result = repoApi.get(repositoryConfig)
-            if (result.isNotOk || result.data == null) {
+            if (result.isNotOk() || result.data == null) {
                 throw CodeccUserConfigException("Fail to get the repo($repositoryConfig) because of ${result.message}")
             }
             logger.info("Get the repo(${result.data})")

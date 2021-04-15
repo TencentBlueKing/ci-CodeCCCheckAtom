@@ -1,17 +1,17 @@
 package com.tencent.devops.utils
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.AtomContext
 import com.tencent.bk.devops.atom.pojo.ArtifactData
 import com.tencent.bk.devops.atom.pojo.DataField
+import com.tencent.bk.devops.atom.pojo.MonitorData
 import com.tencent.bk.devops.atom.pojo.ReportData
-import com.tencent.bk.devops.atom.pojo.Result
-import com.tencent.bk.devops.atom.utils.json.JsonUtil
+import com.tencent.bk.devops.plugin.utils.JsonUtil
 import com.tencent.devops.api.CodeccReportApi
 import com.tencent.devops.api.CodeccSdkApi
 import com.tencent.devops.docker.pojo.ToolConstants
 import com.tencent.devops.pojo.CodeccCheckAtomParamV3
+import com.tencent.devops.pojo.exception.CodeccDependentException
 import com.tencent.devops.pojo.report.CodeccCallback
 import java.io.BufferedReader
 import java.io.File
@@ -27,11 +27,20 @@ object CodeccReportUtilsV2 {
 
     fun report(atomContext: AtomContext<CodeccCheckAtomParamV3>) {
         try {
+            if (atomContext.param.channelCode == "GONGFENGSCAN") {
+                println("GONGFENGSCAN do not get report...")
+                return
+            }
+
             val reportData = getReportData(atomContext.param.pipelineBuildId, atomContext.result.data) ?: return
             val indexHtml = doReport(atomContext.param, reportData)
             atomContext.result.data["codecc_report"] = ReportData.createLocalReport("CodeCC代码检查V3", tempDir.canonicalPath, indexHtml.name)
             // atomContext.result.data["codecc_resource"] = ArtifactData(setOf(chartOptionJs.canonicalPath, mainJs.canonicalPath, indexCss.canonicalPath))
         } catch (e: Exception) {
+            val codeccException = CodeccDependentException("获取报告数据失败")
+            atomContext.result.errorCode = codeccException.errorCode
+            atomContext.result.errorType = codeccException.errorType
+            atomContext.result.message = codeccException.errorMsg
             e.printStackTrace()
         }
     }
@@ -61,7 +70,7 @@ object CodeccReportUtilsV2 {
                 "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> \n" +
                 "        <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\"> \n" +
                 "        <meta charset=\"utf-8\"> \n" +
-                "        <link rel=\"stylesheet\" href=\"https://magicbox.bk.tencent.com/static_api/v3/components_vue/2.0/bk-magic-vue.min.css\"> \n" +
+                "        <link rel=\"stylesheet\" href=\"http://open.oa.com/static_api/v3/components_vue/2.0/bk-magic-vue.min.css\"> \n" +
                 "        <link rel=\"stylesheet\" href=\"./${indexCss.name}\"> \n" +
                 "        <title>CodeCC报告</title> \n" +
                 "    </head> \n" +
@@ -117,7 +126,7 @@ object CodeccReportUtilsV2 {
         param: CodeccCheckAtomParamV3,
         reportData: CodeccCallback
     ) : File {
-        reportData.toolSnapshotList = reportData.toolSnapshotList.filter { !it["tool_name_en"].toString().equals(ToolConstants.CLOC, true) }.toList()
+        reportData.toolSnapshotList = reportData.toolSnapshotList.filter { it["tool_name_en"].toString().toLowerCase() !in ToolConstants.CODE_TOOLS_ACOUNT }.toList()
         print("call back report list: ${reportData.toolSnapshotList}")
         val chartOptionJs = File(tempDir, "chart-option.js")
         val mainJs = File(tempDir, "main.js")
@@ -134,11 +143,12 @@ object CodeccReportUtilsV2 {
             "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
             "        <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\">\n" +
             "        <meta charset=\"utf-8\">\n" +
-            "        <link rel=\"stylesheet\" href=\"https://magicbox.bk.tencent.com/static_api/v3/components_vue/2.0/bk-magic-vue.min.css\">\n" +
+            "        <link rel=\"stylesheet\" href=\"http://open.oa.com/static_api/v3/components_vue/2.0/bk-magic-vue.min.css\">\n" +
             "        <link rel=\"stylesheet\" href=\"./${indexCss.name}\">\n" +
+            "        <link rel=\"stylesheet\" href=\"http://radosgw.open.oa.com/bkicon-default-9/bk-icon-yPxazx3oN/fonts/style.css\">\n"+
             "        <title>CodeCC报告</title>\n" +
             "        <script src=\"https://cdn.jsdelivr.net/npm/vue@2.6.10\"></script>\n" +
-            "        <script src=\"http://magicbox.bk.tencent.com/static_api/v3/components_vue/2.0/bk-magic-vue.min.js\"></script>\n" +
+            "        <script src=\"http://open.oa.com/static_api/v3/components_vue/2.0/bk-magic-vue.min.js\"></script>\n" +
             "        <script src=\"https://cdn.jsdelivr.net/npm/echarts@4.1.0/dist/echarts.js\"></script>\n" +
             "        <script src=\"https://cdn.jsdelivr.net/npm/vue-echarts@4.0.2\"></script>\n" +
             "    </head>\n" +
@@ -152,7 +162,7 @@ object CodeccReportUtilsV2 {
         indexHtmlBody.append("<div class=\"code-check-header-wrapper\">\n")
 
         val json = BufferedReader(ClassLoader.getSystemClassLoader().getResourceAsStream("codecc-options.json").reader()).readText()
-        val codeccOptionMap = JsonUtil.fromJson(json, object : TypeReference<Map<String, Map<String, Any>>>() {})
+        val codeccOptionMap = JsonUtil.getObjectMapper().readValue<Map<String, Map<String, Any>>>(json)
 
         reportData.toolSnapshotList.forEach {
             val toolNameEn = it["tool_name_en"] as String
@@ -186,7 +196,7 @@ object CodeccReportUtilsV2 {
                 "                                    <label>${firstLegend["key"]}</label>\n" +
                 "                                    <span class=\"legend-data\">${it[firstLegend["value"]]}</span>\n" +
                 "                                    <!-- 上升、下降icon -->\n" +
-                "                                    <i class=\"bk-icon $actionIcon f18\"></i>\n" +
+                "                                    <i class=\"bk-icon $actionIcon\"></i>\n" +
                 "                                </div>\n"
             indexHtmlBody.append(itemStr1)
 
@@ -198,7 +208,7 @@ object CodeccReportUtilsV2 {
                 "                                    <label>${secondLegend["key"]}</label>\n" +
                 "                                    <span class=\"legend-data\">${it[secondLegend["value"]]}</span>\n" +
                 "                                    <!-- 上升、下降icon -->\n" +
-                "                                    <i class=\"bk-icon $normalIcon f18\"></i>\n" +
+                "                                    <i class=\"bk-icon $normalIcon\"></i>\n" +
                 "                                </div>\n"
             indexHtmlBody.append(itemStr2)
 
@@ -276,7 +286,7 @@ object CodeccReportUtilsV2 {
 
     private fun getLintMap(toolName: String): Map<String, Any> {
         val lintJson = getLintJson()
-        val map = JsonUtil.fromJson(lintJson, object : TypeReference<MutableMap<String, Any>>() {})
+        val map = JsonUtil.getObjectMapper().readValue<MutableMap<String, Any>>(lintJson)
         map["title"] = toolName
         return map
     }
@@ -520,9 +530,9 @@ object CodeccReportUtilsV2 {
         return null
     }
 
-    private fun getReportDataMock(buildId: String): CodeccCallback {
+    private fun getReportDataMock(buildId: String): CodeccCallback? {
         val reportJson = BufferedReader(ClassLoader.getSystemClassLoader().getResourceAsStream("test-report.json").reader()).readText()
-        return JsonUtil.fromJson(reportJson)
+        return JsonUtil.getObjectMapper().readValue(reportJson)
     }
 
 }

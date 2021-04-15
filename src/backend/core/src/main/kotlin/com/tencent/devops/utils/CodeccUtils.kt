@@ -29,14 +29,23 @@ package com.tencent.devops.utils
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.AtomContext
 import com.tencent.bk.devops.atom.api.SdkEnv
-import com.tencent.bk.devops.atom.utils.json.JsonUtil
+import com.tencent.bk.devops.plugin.docker.PcgDevCloudExecutor
+import com.tencent.bk.devops.plugin.pojo.artifactory.ChannelCode
+import com.tencent.bk.devops.plugin.utils.JsonUtil
+import com.tencent.devops.api.CodeccSdkApi
 import com.tencent.devops.docker.Build
 import com.tencent.devops.docker.pojo.CommandParam
 import com.tencent.devops.docker.pojo.LandunParam
+import com.tencent.devops.docker.pojo.ToolConstants
 import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.docker.utils.CodeccConfig
-import com.tencent.devops.pojo.*
+import com.tencent.devops.pojo.CodeccCheckAtomParamV3
+import com.tencent.devops.pojo.CodeccExecuteConfig
+import com.tencent.devops.pojo.CoverityProjectType
+import com.tencent.devops.pojo.LinuxCodeccConstants
 import com.tencent.devops.pojo.LinuxCodeccConstants.Companion.SVN_PASSWORD
+import com.tencent.devops.pojo.OSType
+import com.tencent.devops.pojo.OpenScanConfigParam
 import com.tencent.devops.pojo.exception.CodeccUserConfigException
 import com.tencent.devops.utils.CodeccParamsHelper.addCommonParams
 import com.tencent.devops.utils.CodeccParamsHelper.getClangToolPath
@@ -80,8 +89,7 @@ open class CodeccUtils {
             throw CodeccUserConfigException("检查到当前是pcg公共资源，启动用户是${System.getProperty("user.name")}，请在编辑流水线页面选中机器的“使用root用户执行”选项")
         }
 
-        return if ("Teg" == System.getenv("DEVOPS_SLAVE_ENVIRONMENT")
-            || isThirdPartyNoDocker(codeccWorkspace)) {
+        return if (CodeccSdkUtils.runWithOldPython(codeccWorkspace)) {
             println("[初始化] Run CodeCC scan with python script...")
             doOldCodeccSingleCommand(codeccExecuteConfig, codeccWorkspace)
         } else {
@@ -90,24 +98,11 @@ open class CodeccUtils {
         }
     }
 
-    private fun isThirdPartyNoDocker(workspace: File): Boolean {
-        if (AgentEnv.isThirdParty()) {
-            return try {
-                ScriptUtils.execute("docker -v", workspace)
-                false
-            } catch (e: Exception) {
-                System.err.println("machine do not has docker, need to install docker manual!")
-                true
-            }
-        }
-        return false
-    }
-
     private fun initData(config: CodeccExecuteConfig, codeccWorkspace: File) {
 //        coverityStartFile = CodeccParamsHelper.getCovPyFile(config.scriptType, codeccWorkspace)
 //        toolsStartFile = CodeccParamsHelper.getToolPyFile(config.scriptType, codeccWorkspace)
-//        codeccStartFile = CodeccScriptUtils().downloadScriptFile(config, codeccWorkspace).canonicalPath
-//        println("CodeCC start file($codeccStartFile)")
+        codeccStartFile = CodeccScriptUtils().downloadScriptFile(config, codeccWorkspace).canonicalPath
+        println("CodeCC start file($codeccStartFile)")
     }
 
     open fun doPreCodeccSingleCommand(command: MutableList<String>, codeccExecuteConfig: CodeccExecuteConfig) {
@@ -200,7 +195,8 @@ open class CodeccUtils {
         map["IS_SPEC_CONFIG"] = "true"
         map["COVERITY_RESULT_PATH"] = codeccWorkspace.canonicalPath
 
-        val buildCmd = when (CodeccParamsHelper.getProjectType(JsonUtil.fromJson(param.languages ?: "[]"))) {
+        val buildCmd = when (CodeccParamsHelper.getProjectType(JsonUtil.getObjectMapper().readValue(param.languages
+            ?: "[]"))) {
             CoverityProjectType.UN_COMPILE -> {
                 "--no-command --fs-capture-search ."
             }
@@ -229,7 +225,7 @@ open class CodeccUtils {
         val agentSecretKey = SdkEnv.getSdkHeader()["X-DEVOPS-AGENT-SECRET-KEY"] ?: ""
 
         val landunParam = LandunParam(
-            userId = param.pipelineStartUserName,
+            userId = param.pipelineUpdateUserName,
             buildId = param.pipelineBuildId,
             devopsProjectId = param.projectName,
             devopsBuildType = AgentEnv.getBuildType(),
@@ -240,7 +236,9 @@ open class CodeccUtils {
             devopsVmSeqId = SdkEnv.getVmSeqId(),
             ldEnvType = CodeccParamsHelper.getEnvType(),
             streamCodePath = workspace.canonicalPath,
-            channelCode = codeccExecuteConfig.atomContext.param.channelCode
+            channelCode = codeccExecuteConfig.atomContext.param.channelCode,
+            toolNames = scanTools.joinToString(","),
+            toolImageTypes = ""
         )
 
 
@@ -249,11 +247,29 @@ open class CodeccUtils {
             CodeccConfigUtils.getPropConfig("codeccHost")!!,
             CodeccConfigUtils.getPropConfig("imageRegistryPwdKey")!!
         )
+
+        //设置coverity当前版本：
+        CodeccConfig.setConfig("COVERITY_NEW_VERSION", codeccExecuteConfig.atomContext.getSensitiveConfParam("COVERITY_VERSION") ?: "")
+
+        //灰度是否开启？
+        val is_coverity_gray = codeccExecuteConfig.atomContext.getSensitiveConfParam("COVERITY_IS_GRAY")
+        if (is_coverity_gray?.toBoolean() == true){
+            //设置coverity版本升级灰度
+            var grayTaskList = codeccExecuteConfig.atomContext.getSensitiveConfParam("COVERITY_GRAY_VERSION").split("#")?: emptyList()
+            grayTaskList.forEach { it
+                if (it.contains("=")) {
+                    var grayVersion = it.split("=").get(0)
+                    var taskList = it.split("=").get(1).split(";") ?: emptyList()
+                    if (taskList.contains(codeccExecuteConfig.atomContext.param.codeCCTaskId)) {
+                        println("this job in gray list, the coverity version is: " + grayVersion)
+                        CodeccConfig.setConfig("COVERITY_NEW_VERSION", grayVersion)
+                    }
+                }
+            }
+        }
+
         val commandParam = CommandParam(
             landunParam = landunParam,
-            devCloudAppId = codeccExecuteConfig.atomContext.getSensitiveConfParam("devCloudAppId") ?: "",
-            devCloudUrl = codeccExecuteConfig.atomContext.getSensitiveConfParam("devCloudUrl") ?: "",
-            devCloudToken = codeccExecuteConfig.atomContext.getSensitiveConfParam("devCloudToken") ?: "",
             scmType = CodeccRepoHelper.getScmType(codeccExecuteConfig.repos),
             svnUser = if (codeccExecuteConfig.repos.firstOrNull()?.svnUerPassPair != null) {
                 codeccExecuteConfig.repos.firstOrNull()?.svnUerPassPair!!.first
@@ -270,12 +286,16 @@ open class CodeccUtils {
             } else {
                 ""
             },
-            repoUrlMap = CodeccParamsHelper.getRepoUrlMap(codeccExecuteConfig),
+            repoUrlMap = if (CodeccParamsHelper.getRepoUrlMap(codeccExecuteConfig) == "{}") {
+                    ""
+                }else{
+                    CodeccParamsHelper.getRepoUrlMap(codeccExecuteConfig)
+                },
             repoRelPathMap = codeccExecuteConfig.repos.map {
                 it.repoHashId to it.relPath
             }.toMap(),
             repoScmRelpathMap = CodeccParamsHelper.getRepoScmRelPathMap(codeccExecuteConfig),
-            subCodePathList = AtomUtils.parseStringToList(param.path),
+            subCodePathList = AtomUtils.transferPathParam(param.path),
             scanTools = scanTools.joinToString(",").toLowerCase(),
             dataRootPath = codeccWorkspace.canonicalPath,
             py27Path = getPython2Path(constants),
@@ -294,7 +314,7 @@ open class CodeccUtils {
             goRoot = "/data/bkdevops/apps/codecc/go",
             coverityResultPath = codeccWorkspace.canonicalPath,
             projectBuildCommand = "--parallel-translate=$coreCount $buildCmd",
-            coverityHomeBin = CodeccConfig.getConfig("COVERITY_HOME_BIN") ?: "${getCovToolPath(constants)}/bin",
+            coverityHomeBin = "/data/bkdevops/apps/codecc/cov-analysis-linux64-"+CodeccConfig.getConfig("COVERITY_NEW_VERSION")+"/bin",
             projectBuildPath = workspace.canonicalPath,
             syncType = !(param.asynchronous ?: false),
             klockWorkHomeBin = CodeccConfig.getConfig("KLOCWORK_HOME_BIN") ?: getKlocToolPath(constants),
@@ -336,6 +356,14 @@ open class CodeccUtils {
             if (!param.hookMrTargetBranch.isNullOrBlank()) resultMap[CommandParam.extraHookMrTargetBranchKey] = param.hookMrTargetBranch!!
             resultMap["BK_CODECC_SCAN_MODE"] = atomContext.allParameters["BK_CODECC_SCAN_MODE"]?.toString() ?: ""
         }
+
+        resultMap["devCloudAppId"] = atomContext.getSensitiveConfParam("devCloudAppId") ?: ""
+        resultMap["devCloudUrl"] = atomContext.getSensitiveConfParam("devCloudUrl") ?: ""
+        resultMap["devCloudToken"] = atomContext.getSensitiveConfParam("devCloudToken") ?: ""
+        resultMap[PcgDevCloudExecutor.PCG_TOKEN_SECRET_ID] = atomContext.getSensitiveConfParam(PcgDevCloudExecutor.PCG_TOKEN_SECRET_ID) ?: ""
+        resultMap[PcgDevCloudExecutor.PCG_TOKEN_SECRET_KEY] = atomContext.getSensitiveConfParam(PcgDevCloudExecutor.PCG_TOKEN_SECRET_KEY) ?: ""
+        resultMap[PcgDevCloudExecutor.PCG_REQUEST_HOST] = atomContext.getSensitiveConfParam(PcgDevCloudExecutor.PCG_REQUEST_HOST) ?: ""
+
         return resultMap
     }
 
@@ -371,17 +399,43 @@ open class CodeccUtils {
         val script = param.script ?: ""
         val scriptFile = getScriptFile(codeccExecuteConfig, script, workspace)
 
-        val scanTools = if (codeccExecuteConfig.filterTools.isNotEmpty()) {
+        var scanTools = if (codeccExecuteConfig.filterTools.isNotEmpty()) {
             codeccExecuteConfig.filterTools
         } else {
             codeccExecuteConfig.tools
         }
+
+        scanTools = scanTools.filter { it.toLowerCase() !in ToolConstants.CODE_TOOLS_ACOUNT }
+        CodeccSdkApi.uploadActualExeTools(param, scanTools)
         if (scanTools.isEmpty()) return "scan tools is empty"
 
         // 添加公共参数
         addCommonParams(command, codeccExecuteConfig)
 
+        CodeccConfig.loadPropertiesForOld()
+
+        //设置coverity当前版本：
+        CodeccConfig.setConfig("COVERITY_NEW_VERSION", codeccExecuteConfig.atomContext.getSensitiveConfParam("COVERITY_VERSION"))
+
+        //灰度是否开启？
+        val is_coverity_gray = codeccExecuteConfig.atomContext.getSensitiveConfParam("COVERITY_IS_GRAY")
+        if (is_coverity_gray?.toBoolean()!!){
+            //设置coverity版本升级灰度
+            var grayTaskList = codeccExecuteConfig.atomContext.getSensitiveConfParam("COVERITY_GRAY_VERSION").split("#")?: emptyList()
+            grayTaskList.forEach { it
+                if (it.contains("=")) {
+                    var grayVersion = it.split("=").get(0)
+                    var taskList = it.split("=").get(1).split(";") ?: emptyList()
+                    if (taskList.contains(codeccExecuteConfig.atomContext.param.codeCCTaskId)) {
+                        println("this job in gray list, the coverity version is: " + grayVersion)
+                        CodeccConfig.setConfig("COVERITY_NEW_VERSION", grayVersion)
+                    }
+                }
+            }
+        }
+
         // 添加具体业务参数
+        command.add("-DCOVERITY_NEW_VERSION=${CodeccConfig.getConfig("COVERITY_NEW_VERSION")}")
         command.add("-DSCAN_TOOLS=${scanTools.joinToString(",").toLowerCase()}")
         command.add("-DOFFLINE=true")
         command.add("-DDATA_ROOT_PATH=${codeccWorkspace.canonicalPath}")
@@ -404,7 +458,8 @@ open class CodeccUtils {
         command.add("-DIS_SPEC_CONFIG=true")
         command.add("-DCOVERITY_RESULT_PATH=${codeccWorkspace.canonicalPath}")
 
-        val buildCmd = when (CodeccParamsHelper.getProjectType(JsonUtil.fromJson(param.languages ?: "[]"))) {
+        val buildCmd = when (CodeccParamsHelper.getProjectType(JsonUtil.getObjectMapper().readValue(param.languages
+            ?: "[]"))) {
             CoverityProjectType.UN_COMPILE -> {
                 "--no-command --fs-capture-search ."
             }

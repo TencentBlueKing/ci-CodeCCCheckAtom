@@ -2,10 +2,14 @@ package com.tencent.devops.v3
 
 import com.tencent.bk.devops.atom.AtomContext
 import com.tencent.bk.devops.atom.common.Status
+import com.tencent.bk.devops.atom.pojo.ArtifactData
+import com.tencent.bk.devops.atom.pojo.MonitorData
 import com.tencent.bk.devops.atom.pojo.StringData
 import com.tencent.bk.devops.atom.spi.AtomService
 import com.tencent.bk.devops.atom.spi.TaskAtom
-import com.tencent.devops.common.factory.SubProcessorFactory
+import com.tencent.devops.api.CodeccSdkApi
+import com.tencent.devops.docker.Build
+import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.pojo.CodeccCheckAtomParamV3
 import com.tencent.devops.pojo.OSType
 import com.tencent.devops.pojo.exception.CodeccException
@@ -21,13 +25,12 @@ import com.tencent.devops.utils.WindowsCodeccUtils
 class CodeccCheckAtom : TaskAtom<CodeccCheckAtomParamV3> {
 
     override fun execute(atomContext: AtomContext<CodeccCheckAtomParamV3>) {
-        val startTime = System.currentTimeMillis()
+        val monitorData = MonitorData()
+        monitorData.channel = atomContext.param.channelCode
+        monitorData.startTime = System.currentTimeMillis()
         try {
             if (atomContext.param.asyncTask == true) {
-                val asyncTaskId = atomContext.param.asyncTaskId
-                if (null == asyncTaskId) {
-                    throw CodeccUserConfigException("任务ID不能为空!")
-                }
+                val asyncTaskId = atomContext.param.asyncTaskId ?: throw CodeccUserConfigException("任务ID不能为空!")
                 println("执行异步CodeCC任务，任务ID：$asyncTaskId")
                 CodeccSdkUtils.executeAsyncTask(asyncTaskId, atomContext.param.pipelineStartUserName)
                 atomContext.param.codeCCTaskId = asyncTaskId.toString()
@@ -56,30 +59,45 @@ class CodeccCheckAtom : TaskAtom<CodeccCheckAtomParamV3> {
             atomContext.result.data["BK_CI_CODECC_TASK_ID"] = StringData(atomContext.param.codeCCTaskId)
             atomContext.result.data["BK_CI_CODECC_TASK_STATUS"] = StringData("true")
 
-            // 归档报告，工蜂扫描的获取不到报告
-            if (atomContext.param.channelCode != "GONGFENGSCAN") CodeccReportUtilsV2.report(atomContext)
-        } catch (e: CodeccException) {
-            atomContext.result.errorCode = e.errorCode
-            atomContext.result.message = e.message
+            // 归档报告
+            CodeccReportUtilsV2.report(atomContext)
+        }  catch (e: Throwable) {
+            val isCodeCCException = e is CodeccException
+            atomContext.result.errorCode = if (isCodeCCException) (e as CodeccException).errorCode else CodeccException.errorCode
+            atomContext.result.errorType = if (isCodeCCException) (e as CodeccException).errorType else CodeccException.errorType
+            atomContext.result.message = if (isCodeCCException) (e as CodeccException).errorMsg else CodeccException.errorMsg
             atomContext.result.status = Status.failure
-
-            val subReport = SubProcessorFactory().createSubReport(atomContext.param.openScanPrj)
-            subReport.doTaskFailReport(atomContext,startTime)
-
-            throw e
-        } catch (e: Exception) {
-            atomContext.result.errorCode = CodeccException.errorCode
-            atomContext.result.message = CodeccException.errorMsg
-            atomContext.result.status = Status.failure
-
-            val subReport = SubProcessorFactory().createSubReport(atomContext.param.openScanPrj)
-            subReport.doTaskFailReport(atomContext,startTime)
-
+            if (null != atomContext.param.openScanPrj && atomContext.param.openScanPrj!!) {
+                println("CodeCC执行失败，归档agent.log日志")
+                atomContext.result.data["codeccAgentLog"] = ArtifactData(setOf("/data/landun/logs/1/agent.log"))
+            }
             throw e
         } finally {
+            monitorData.endTime = System.currentTimeMillis()
+            monitorData.extData["BK_CI_CODEC_TOOL_RUN_RESULT"] = Build.toolRunResultMap
+            monitorData.extData["BK_CI_CODECC_TASK_BG_ID"] = Build.codeccTaskInfo?.bgId
+            monitorData.extData["BK_CI_CODECC_TASK_CENTER_ID"] = Build.codeccTaskInfo?.centerId
+            monitorData.extData["BK_CI_CODECC_TASK_DEPT_ID"] = Build.codeccTaskInfo?.deptId
+            monitorData.extData["BK_CI_DEVOPS_BUILD_NUM"] = atomContext.param.pipelineBuildNum.toString()
+            atomContext.result.monitorData = monitorData
+            if (atomContext.result.errorCode != null) {
+                LogUtils.printErrorLog("atomContext.result.errorCode: ${atomContext.result.errorCode}")
+                LogUtils.printErrorLog("atomContext.result.type: ${atomContext.result.errorType}")
+            }
+            LogUtils.printDebugLog("atomContext.result.message: ${atomContext.result.message}")
+            LogUtils.printDebugLog("atomContext.result.status: ${atomContext.result.status}")
             with(atomContext.param) {
                 println("CodeCC任务详情：<a href='${detailLink(projectName, codeCCTaskId)}' target='_blank'>查看详情</a>")
             }
+
+            //开源项目上报commitId
+            if (null != atomContext.param.openScanPrj && atomContext.param.openScanPrj!! && !Build.codeRepoRevision.isNullOrBlank()){
+                println("上报commitId至映射表")
+                CodeccSdkApi.updateCommitId(atomContext.param.pipelineBuildId, Build.codeRepoRevision!!)
+            }
+
+            //清理.temp目录
+            CodeccEnvHelper.deleteCodeccWorkspace()
         }
     }
 

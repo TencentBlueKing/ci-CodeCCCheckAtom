@@ -7,10 +7,11 @@ import com.fasterxml.jackson.annotation.JsonProperty
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DefectsEntity(
-    var checkerName: String? = null,
-    val description: String? = null,
-    val filePath: String? = null,
-    val line: String? = null,
+        var checkerName: String? = null,
+        val description: String? = null,
+        val filePath: String? = null,
+        val line: String? = null,
+        var severity: String? = null,
 
     val ccn: String? = null,
     @JsonProperty("condition_lines")

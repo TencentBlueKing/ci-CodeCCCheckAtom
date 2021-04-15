@@ -76,8 +76,13 @@ data class AnalyzeConfigInfo(
 
     val language: Long?,
 
+    val lastExecuteTime: Long?,
+
     /**
      * 工具的个性化参数，专门用来给查询规则列表使用的，不在对外接口暴露
      */
-    val paramJson: String?
+    val paramJson: String?,
+
+    //判断是否需要使用白名单
+    val onlyScanWhitePath: Boolean? = true
 )

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 data class OpenCheckerVO(
     var checkerName: String,
     val nativeChecker: Boolean,
+    var severity: Int? = 0,
     val checkerOptions: List<CheckerOptions>?
 )
 

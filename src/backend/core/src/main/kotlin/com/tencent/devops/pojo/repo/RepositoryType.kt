@@ -34,7 +34,7 @@ enum class RepositoryType {
     companion object {
         fun parseType(type: String?): RepositoryType {
             if (type.isNullOrBlank()) return ID
-            return valueOf(type)
+            return valueOf(type!!)
         }
     }
 }

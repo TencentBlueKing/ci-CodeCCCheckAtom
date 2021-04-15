@@ -2,6 +2,7 @@ package com.tencent.devops.docker.scm
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.tencent.devops.docker.Build
 import com.tencent.devops.docker.ScanComposer
 import com.tencent.devops.docker.pojo.CommandParam
 import com.tencent.devops.docker.scm.pojo.ScmInfoItem
@@ -10,7 +11,6 @@ import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.docker.utils.CodeccWeb
 import com.tencent.devops.docker.utils.CommonUtils
 import com.tencent.devops.utils.CodeccParamsHelper
-import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.net.URL
 
@@ -34,6 +34,11 @@ class ScmInfo(
             scmInfoItem.taskId = taskId.toString()
             scmInfoItem.buildId = commandParam.landunParam.buildId
 
+            //如果build中的版本字段为空，则赋值
+            if(Build.codeRepoRevision.isNullOrBlank() && !scmInfoItem.commitID.isNullOrBlank()){
+                println("need to set value to revision")
+                Build.codeRepoRevision = scmInfoItem.commitID
+            }
             scmInfoList.add(scmInfoItem)
         }
         val integrateOutPutFileText = jacksonObjectMapper().writeValueAsString(scmInfoList)
@@ -83,24 +88,36 @@ class ScmInfo(
 
     override fun scmOpFail(inputFile: String) {
         LogUtils.printLog("scm info failed, upload $inputFile")
-        CodeccWeb.upload(commandParam.landunParam, inputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_info_input.json", "SCM_JSON")
+        CodeccWeb.upload(landunParam = commandParam.landunParam,
+            filePath = inputFile,
+            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_info_input.json",
+            uploadType = "SCM_JSON",
+            toolName = toolName)
     }
 
     override fun uploadInputFile(inputFile: String) {
-        CodeccWeb.upload(commandParam.landunParam, inputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_info_input.json", "SCM_JSON")
+        CodeccWeb.upload(landunParam = commandParam.landunParam,
+            filePath = inputFile,
+            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_info_input.json",
+            uploadType = "SCM_JSON",
+            toolName = toolName)
     }
 
     override fun scmOpSuccess(outputFile: String) {
         appendOutputFile(outputFile)
         LogUtils.printLog("scm info success")
-        CodeccWeb.upload(commandParam.landunParam, outputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_info.json", "SCM_JSON")
+        CodeccWeb.upload(landunParam = commandParam.landunParam,
+            filePath = outputFile,
+            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_info.json",
+            uploadType = "SCM_JSON",
+            toolName = toolName)
         LogUtils.printLog("Upload scm info success")
     }
 
     override fun generateInputFile(): String {
         val inputFile = ScanComposer.generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "scm_info_input.json"
         val dirPathList = mutableListOf<String>()
-        if (commandParam.repoRelPathMap.filterNot { StringUtils.isBlank(it.key) }.isNotEmpty()) {
+        if (commandParam.repoRelPathMap.filterNot { it.key.isBlank() }.isNotEmpty()) {
             dirPathList.addAll(commandParam.repoRelPathMap.map { CommonUtils.changePathToDocker(commandParam.landunParam.streamCodePath + File.separator + it.value) })
         } else {
             dirPathList.add(CommonUtils.changePathToDocker(commandParam.landunParam.streamCodePath))

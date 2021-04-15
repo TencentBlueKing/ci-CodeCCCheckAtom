@@ -27,6 +27,7 @@
 package com.tencent.devops.utils.script
 
 import com.tencent.devops.pojo.exception.CodeccTaskExecException
+import com.tencent.devops.pojo.exception.CodeccUserConfigException
 import com.tencent.devops.pojo.script.BuildEnv
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -68,7 +69,9 @@ object ShellUtil {
         "    }\n"
     const val GATEWAY_FILE = "gatewayValueFile.ini"
 
-    private val specialKey = listOf(".", "-", "languageRuleSetMap", "script", "tools", "path", "BK_CI_SVN_REPO_HEAD_REVERSION_COMMENT", "DEVOPS_SVN_REPO_HEAD_REVERSION_COMMENT", "BK_CI_PIPELINE_MATERIAL_NEW_COMMIT_COMMENT")
+    private val specialKey = listOf(".", "-", "languageRuleSetMap", "script", "tools", "path",
+        "BK_CI_SVN_REPO_HEAD_REVERSION_COMMENT", "DEVOPS_SVN_REPO_HEAD_REVERSION_COMMENT",
+        "BK_CI_PIPELINE_MATERIAL_NEW_COMMIT_COMMENT", "_TOOL")
     private val specialValue = listOf("|", "&", "(", ")")
     private val specialCharToReplace = Regex("['\n]") // --bug=75509999 Agent环境变量中替换掉破坏性字符
     private const val WORKSPACE_ENV = "WORKSPACE"
@@ -91,7 +94,7 @@ object ShellUtil {
             )
         } catch (e: Throwable) {
             if (printErrorLog) logger.error("Fail to execute shell script: ${e.message}")
-            throw CodeccTaskExecException("Fail to execute shell script: ${e.message}")
+            throw CodeccUserConfigException("Fail to execute shell script: ${e.message}")
         }
     }
 

@@ -23,8 +23,7 @@ object CodeccConfig {
 
     fun loadToolMeta(landunParam: LandunParam, apiWebServer: String, aesKey: String) {
         loadProperties() // 先取配置文件，再用后台配置刷新，防止后台有问题导致不能跑
-        loadMsUriProperties() // 获取微服务根路径配置
-        
+
         LogUtils.printDebugLog("apiWebServer: $apiWebServer")
         propertiesInfo["CODECC_API_WEB_SERVER"] = apiWebServer
 
@@ -37,6 +36,11 @@ object CodeccConfig {
         toolMetas.filterNot { it.name.isNullOrBlank() }.forEach {
             resolveToolMeta(it, aesKey)
         }
+        var toolImageTypes = mutableSetOf<String>()
+        landunParam.toolNames?.split(",")?.forEach {
+            toolImageTypes.add(it.toUpperCase()+":"+propertiesInfo[it!!.toUpperCase()+"_IMAGE_VERSION_TYPE"])
+        }
+        landunParam.toolImageTypes = toolImageTypes.joinToString(",")
         propertiesInfo["LANDUN_CHANNEL_CODE"] = landunParam.channelCode ?: ""
     }
 
@@ -47,6 +51,11 @@ object CodeccConfig {
 
             val imagePathKey = "${toolMetaDetailVO.name!!.toUpperCase()}_IMAGE_PATH"
             val imagePathValue = toolMetaDetailVO.dockerImageURL ?: ""
+
+            val imageTagValue = toolMetaDetailVO.dockerImageVersion
+
+            val imageVersionTypeKey = "${toolMetaDetailVO.name!!.toUpperCase()}_IMAGE_VERSION_TYPE"
+            val imageVersionTypeValue = toolMetaDetailVO.dockerImageVersionType?: "P"
 
             val registryUserKey = "${toolMetaDetailVO.name!!.toUpperCase()}_REGISTRYUSER"
             val registryUserValue = toolMetaDetailVO.dockerImageAccount ?: ""
@@ -62,9 +71,14 @@ object CodeccConfig {
                 propertiesInfo[scanCommandKey] = scanCommandValue
             }
             if (imagePathValue.isNotBlank()) {
-                propertiesInfo[imagePathKey] = imagePathValue
+                if (imageTagValue.isNullOrBlank()) {
+                    propertiesInfo[imagePathKey] = imagePathValue
+                } else {
+                    propertiesInfo[imagePathKey] = "$imagePathValue:$imageTagValue"
+                }
             }
 
+            propertiesInfo[imageVersionTypeKey] = imageVersionTypeValue
             propertiesInfo[registryUserKey] = registryUserValue
             propertiesInfo[registryPwdKey] = registryPwdValue
 
@@ -86,8 +100,24 @@ object CodeccConfig {
                 propertiesInfo[toolNewVersionKey] = toolNewVersionValue
             }
         } catch (e: Throwable) {
+            e.printStackTrace()
             LogUtils.printErrorLog(e.message)
         }
+    }
+
+    fun loadPropertiesForOld(): Map<String, String> {
+        try {
+            val input = Thread.currentThread().contextClassLoader.getResourceAsStream("config.properties")
+            val p = Properties()
+            p.load(input)
+
+            for (name in p.stringPropertyNames()) {
+                propertiesInfo[name] = p.getProperty(name)
+            }
+        } catch (e: Exception) {
+            println("Load config exception: ${e.message}")
+        }
+        return propertiesInfo
     }
 
     private fun loadProperties(): Map<String, String> {
@@ -105,22 +135,11 @@ object CodeccConfig {
         return propertiesInfo
     }
 
-    private fun loadMsUriProperties(): Map<String, String> {
-        try {
-            val input = Thread.currentThread().contextClassLoader.getResourceAsStream("ms_uri.properties")
-            val p = Properties()
-            p.load(input)
-
-            for (name in p.stringPropertyNames()) {
-                propertiesInfo[name] = p.getProperty(name)
-            }
-        } catch (e: Exception) {
-            println("Load config exception: ${e.message}")
-        }
-        return propertiesInfo
-    }
-
     fun getConfig(key: String): String? = propertiesInfo[key]
+
+    fun setConfig(key: String, value: String){
+        propertiesInfo[key] = value
+    }
 
     fun getServerHost() = propertiesInfo["CODECC_API_WEB_SERVER"]
 
@@ -130,12 +149,19 @@ object CodeccConfig {
         val imageName = propertiesInfo["${toolNameUpperCase}_IMAGE_PATH"] ?: ""
         val registerUser = propertiesInfo["${toolNameUpperCase}_REGISTRYUSER"] ?: ""
         val registerPwd = propertiesInfo["${toolNameUpperCase}_REGISTRYPWD"] ?: ""
+        val imageVersionType = propertiesInfo["${toolNameUpperCase}_IMAGE_VERSION_TYPE"] ?: "P"
         val env = if (propertiesInfo["${toolNameUpperCase}_ENV"] != null && propertiesInfo["${toolNameUpperCase}_ENV"]!!.isNotBlank()) {
             jacksonObjectMapper().readValue<Map<String, String>>(propertiesInfo["${toolNameUpperCase}_ENV"]!!)
         } else {
             emptyMap()
         }
-
+        if (imageVersionType.equals("T")){
+            LogUtils.printLog("Running Test image version: " + imageName)
+        }else if (imageVersionType.equals("G")){
+            LogUtils.printLog("Running Gray image version: " + imageName)
+        }else{
+            LogUtils.printLog("Running Prod image version: " + imageName)
+        }
         return ImageParam(cmd, imageName, registerUser, registerPwd, env)
     }
 
@@ -171,7 +197,7 @@ object CodeccConfig {
                         runtimeVariables = emptyMap()
                     )
                     ScriptUtils.execute(
-                        script = "mount -t nfs -o nolock xxxxx.com:/data/codecc_software $softwareRootPath",
+                        script = "mount -t nfs -o nolock software.codecc.oa.com:/data/codecc_software $softwareRootPath",
                         dir = File("/root/"),
                         runtimeVariables = emptyMap()
                     )
@@ -182,7 +208,7 @@ object CodeccConfig {
                             #   check your env is :${commandParam.landunParam.ldEnvType} \
                             #   Please use root or admin account run blew step under your server! \
                             #   step-1: sudo mkdir -p $softwareRootPath \
-                            #   step-2: sudo mount -t nfs -o nolock software.codecc.com:/data/codecc_software $softwareRootPath \
+                            #   step-2: sudo mount -t nfs -o nolock software.codecc.oa.com:/data/codecc_software $softwareRootPath \
                             #                                                                                                      # \
                             ######################################################################################################## \
                             """
@@ -375,7 +401,7 @@ object CodeccConfig {
         val clangBinPath = "$softwareRootPath/clang"
         var spotBugsBinPath = "$softwareRootPath/spotbugs/bin"
         val pinpointBinPath = "$softwareRootPath/pinpoint"
-        val coverityBinPath = "$softwareRootPath/cov-analysis-linux/bin"
+        val coverityBinPath = "$softwareRootPath/cov-analysis-linux64-${getConfig("COVERITY_NEW_VERSION")}/bin"
         val klocworkBinPath = "$softwareRootPath/kw-analysis-linux/bin"
         if (File(codeQLBinPath).exists()) {
             println("third party env CODEQL_HOME_BIN: $codeQLBinPath")

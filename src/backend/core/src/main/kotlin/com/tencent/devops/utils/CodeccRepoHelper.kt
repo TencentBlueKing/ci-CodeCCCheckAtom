@@ -128,7 +128,7 @@ object CodeccRepoHelper {
                     getEndWithValue(variables, "bk_repo_name_$taskId")
                 }
                 CodeccExecuteConfig.RepoItem(
-                    repositoryConfig = buildConfig(value!!, RepositoryType.valueOf(repoConfigType)),
+                    repositoryConfig = buildConfig(value!!, RepositoryType.valueOf(repoConfigType!!)),
                     type = repoType,
                     relPath = localPath,
                     relativePath = relativePath
@@ -143,11 +143,11 @@ object CodeccRepoHelper {
                 val authType = when (repo) {
                     is CodeGitRepository -> {
                         val authType = repo.authType?.name?.toUpperCase()
-                        if (authType.isNullOrBlank()) "HTTP" else authType
+                        if (authType.isNullOrBlank()) "HTTP" else authType!!
                     }
                     is CodeSvnRepository -> {
                         val authType = repo.svnType?.toUpperCase()
-                        if (authType.isNullOrBlank()) "SSH" else authType
+                        if (authType.isNullOrBlank()) "SSH" else authType!!
                     }
                     is CodeGitlabRepository -> "HTTP"
                     is GithubRepository -> "HTTP"
@@ -232,7 +232,7 @@ object CodeccRepoHelper {
             if (!repositoryConfig.repositoryName.isNullOrBlank()) {
                 return RepositoryConfig(
                     repositoryHashId = repositoryConfig.repositoryHashId,
-                    repositoryName = EnvUtils.parseEnv(repositoryConfig.repositoryName, variables),
+                    repositoryName = EnvUtils.parseEnv(repositoryConfig.repositoryName!!, variables),
                     repositoryType = repositoryConfig.repositoryType
                 )
             }

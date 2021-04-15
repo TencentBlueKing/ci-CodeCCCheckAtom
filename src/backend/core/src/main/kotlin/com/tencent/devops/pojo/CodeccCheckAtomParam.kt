@@ -15,6 +15,7 @@ open class CodeccCheckAtomParam : AtomBaseParam() {
     open var codeCCTaskCnName: String? = null // 暂时没用
     open var codeCCTaskId: String? = null // 调用接口用到
 
+    open var checkerSetType: String? = "normal"
     open var languages: String? = null // [PYTHON,KOTLIN]
     open var asynchronous: Boolean? = true
     open var asyncTask: Boolean? = false

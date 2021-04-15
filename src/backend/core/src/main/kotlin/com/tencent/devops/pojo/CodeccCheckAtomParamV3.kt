@@ -15,6 +15,7 @@ class CodeccCheckAtomParamV3 : CodeccCheckAtomParam() {
     override var codeCCTaskCnName: String? = null // 暂时没用
     override var codeCCTaskId: String? = null // 调用接口用到
 
+    override var checkerSetType: String? = "normal"
     override var languages: String? = null // [PYTHON,KOTLIN]
     override var asynchronous: Boolean? = true
     override var asyncTask: Boolean? = false
@@ -52,14 +53,15 @@ class CodeccCheckAtomParamV3 : CodeccCheckAtomParam() {
     var transferAuthorList: String? = null
     var mrCommentEnable: Boolean? = null
 
+    //路径白名单
+    var pathList: List<String>? = null
     // 4.路径屏蔽tab
     var whileScanPaths: List<String>? = listOf() // 目前暂时不用
     var pathType: String? = "" // CUSTOM - 自定义 ； DEFAULT - 系统默认（目前之用CUSTOM）
     var customPath: String? = null // 黑名单，添加后的代码路径将不会产生告警
     var filterDir: List<String>? = listOf() // 暂时不用
     var filterFile: List<String>? = listOf() // 暂时不用
-
-
+    var scanTestSource: Boolean? = null // 是否扫描测试代码，true-扫描，false-不扫描，默认不扫描
 
     // 非页面参数
     // 如果指定_CODECC_FILTER_TOOLS，则只做_CODECC_FILTER_TOOLS的扫描

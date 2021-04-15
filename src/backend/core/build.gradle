@@ -6,7 +6,6 @@ buildscript {
     if (mavenRepoUrl == null) {
         mavenRepoUrl = MAVEN_REPO_URL
     }
-    println("build script mavenRepoUrl=" + mavenRepoUrl)
     repositories {
         mavenLocal()
         mavenCentral()
@@ -81,22 +80,14 @@ allprojects {
     apply plugin: "application"
 
     repositories {
-        def mavenRepoUrl = System.getProperty("mavenRepoUrl")
-        if (mavenRepoUrl == null) {
-            mavenRepoUrl = System.getenv("mavenRepoUrl")
-        }
-        if (mavenRepoUrl == null) {
-            mavenRepoUrl = MAVEN_REPO_URL
-        }
-        println("all project mavenRepoUrl=" + mavenRepoUrl)
         mavenLocal()
-        mavenCentral()
-        jcenter()
-        maven { url mavenRepoUrl }
+        maven { url "http://sz.artifactory.oa.com/artifactory/maven-local-snapshot" }
+        maven { url "http://mirrors.artifactory.oa.com/maven-local-snapshot" }
+        maven { url "http://mirrors.artifactory.oa.com/maven/" }
     }
 
     dependencies {
-        compile "com.tencent.devops.ci-plugins:java-plugin-sdk:1.0.4"
+        compile "com.tencent.bk.devops.atom:java-atom-sdk:1.1.10"
         compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
         compile "org.bouncycastle:bcprov-jdk16:$bouncyCastleVersion"
         compile "org.apache.commons:commons-exec:$commonExecVersion"

@@ -1,9 +1,9 @@
 package com.tencent.devops.utils
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.AtomContext
-import com.tencent.bk.devops.atom.utils.json.JsonUtil
+import com.tencent.bk.devops.plugin.pojo.artifactory.ChannelCode
+import com.tencent.bk.devops.plugin.utils.JsonUtil
 import com.tencent.devops.api.CodeccSdkApi
 import com.tencent.devops.docker.pojo.CodeYaml
 import com.tencent.devops.docker.tools.LogUtils
@@ -17,9 +17,10 @@ import com.tencent.devops.pojo.sdk.FilterPathInput
 import com.tencent.devops.pojo.sdk.NotifyCustom
 import com.tencent.devops.pojo.sdk.ScanConfiguration
 import com.tencent.devops.utils.common.AgentEnv
+import com.tencent.devops.utils.common.AtomUtils
 import com.tencent.devops.utils.common.AtomUtils.parseStringToList
 import com.tencent.devops.utils.common.AtomUtils.parseStringToSet
-import org.apache.commons.lang3.StringUtils
+import com.tencent.devops.utils.script.ScriptUtils
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -29,16 +30,17 @@ object CodeccSdkUtils {
 
     fun initCodecc(atomContext: AtomContext<CodeccCheckAtomParamV3>): CodeccExecuteConfig {
         val params = atomContext.param
-
+        params.asynchronous = false
         val codeccExecuteConfig = CodeccParamsHelper.getCodeccExecuteConfig(atomContext)
 
-        if (AgentEnv.isThirdParty()) {
+        val codeccWorkspace = CodeccEnvHelper.getCodeccWorkspace(codeccExecuteConfig.atomContext.param)
+        if (runWithOldPython(codeccWorkspace)) {
             logger.info("特别说明：")
             logger.info("当前使用第三方构建机，建议安装Docker！")
             if (CodeccEnvHelper.getOS() == OSType.LINUX) {
                 logger.info("当前使用第三方Linux构建机未安装Docker，且非root账号启动agent, 请使用root帐号登录构建机运行以下命令：")
                 logger.info("mkdir -p /data/codecc_software")
-                logger.info("mount -t nfs -o xxx.xxxxx.com:/data/codecc_software /data/codecc_software")
+                logger.info("mount -t nfs -o software.codecc.oa.com:/data/codecc_software /data/codecc_software")
             }
         }
 
@@ -49,14 +51,28 @@ object CodeccSdkUtils {
             LogUtils.printDebugLog("project is in debug list, set log to debug.")
         }
 
+        // 安装规则集
+        if (params.channelCode != "GONGFENGSCAN") {
+            CodeccSdkApi.installCheckerSet(
+                    userId = params.pipelineStartUserName,
+                    projectId = params.projectName,
+                    taskId = "",
+                    checkerSetList = CodeccSdkApi.getRuleSetV3(params).map { it.checkerSetId })
+        }
+
         if (params.channelCode != "CODECC" && params.channelCode != "CODECC_EE") {
             CodeccSdkApi.createTask(params, params.openScanPrj)
             CodeccSdkApi.updateScanConfiguration(getScanConfig(params), params.pipelineStartUserName)
-            if (params.channelCode != "GONGFENGSCAN") {
+            if (params.projectName == "CUSTOMPROJ_PCG_RD" || params.channelCode != "GONGFENGSCAN") {
+                logger.info("white path is: ${params.path}")
                 CodeccSdkApi.deleteFilter(params)
                 CodeccSdkApi.addFilterPath(params)
+                val result = CodeccSdkApi.addPath(params)
+                logger.info("add path res: $result")
             }
-            CodeccSdkApi.report(getNotifyCustom(params))
+            if (params.channelCode != "GONGFENGSCAN") {
+                CodeccSdkApi.report(getNotifyCustom(params))
+            }
         }
 
         // init id, name, tool
@@ -68,25 +84,26 @@ object CodeccSdkUtils {
         }
 
         // deal with code yml filter
-        val codeYmlFilterPathVO = getCodeYmlVo(codeccExecuteConfig.repos, params.bkWorkspace) ?: return codeccExecuteConfig
+        val codeYmlFilterPathVO = getCodeYmlVo(codeccExecuteConfig.repos, params.scanTestSource, params.bkWorkspace) ?: return codeccExecuteConfig
         CodeccSdkApi.addCodeYmlFilterPath(params, codeYmlFilterPathVO)
 
         return codeccExecuteConfig
     }
 
-    private fun getCodeYmlVo(repos: List<CodeccExecuteConfig.RepoItem>, bkWorkspace: String): CodeYmlFilterPathVO? {
-        val codeYmlFilterPathVO = CodeYmlFilterPathVO()
+    private fun getCodeYmlVo(repos: List<CodeccExecuteConfig.RepoItem>, scanTestSource: Boolean?, bkWorkspace: String): CodeYmlFilterPathVO? {
+        val codeYmlFilterPathVO = CodeYmlFilterPathVO(scanTestSource ?: false)
         try {
             repos.forEach { repo ->
                 val parent = File(bkWorkspace, repo.relPath)
                 val codeYml = File(parent, ".code.yml")
                 if (codeYml.exists()) {
                     logger.info(".code.yml exist in path: ${codeYml.canonicalPath}")
-                    logger.info(codeYml.readText())
+                    LogUtils.printDebugLog(codeYml.readText())
                     val codeYmlItem = YAMLParse.parseDto(codeYml.canonicalPath, CodeYaml::class)
-                    codeYmlFilterPathVO.autoGenFilterPath.addAll(filterEmptyList(codeYmlItem.source?.auto_generate_source?.filepath_regex))
-                    codeYmlFilterPathVO.testSourceFilterPath.addAll(filterEmptyList(codeYmlItem.source?.test_source?.filepath_regex))
-                    codeYmlFilterPathVO.thirdPartyFilterPath.addAll(filterEmptyList(codeYmlItem.source?.third_party_source?.filepath_regex))
+                    codeYmlFilterPathVO.autoGenFilterPath.addAll(filterEmptyList(codeYmlItem.source?.auto_generate_source?.filepath_regex, parent.canonicalPath))
+                    codeYmlFilterPathVO.testSourceFilterPath.addAll(filterEmptyList(codeYmlItem.source?.test_source?.filepath_regex, parent.canonicalPath))
+                    codeYmlFilterPathVO.thirdPartyFilterPath.addAll(filterEmptyList(codeYmlItem.source?.third_party_source?.filepath_regex, parent.canonicalPath))
+                    LogUtils.printDebugLog("code yml parse: $codeYmlFilterPathVO")
                 }
             }
         } catch (e: Exception) {
@@ -96,8 +113,36 @@ object CodeccSdkUtils {
         return codeYmlFilterPathVO
     }
 
-    private fun filterEmptyList(list: List<String>?): List<String> {
-        return list?.filter { !StringUtils.isBlank(it) } ?: listOf()
+    private fun filterEmptyList(list: List<String>?, scanPath: String): List<String> {
+        /*
+        * 兼容以下两种过滤方式：
+        * 'src/test/.*'
+        * '/src/test/.*'
+        * 以上两种过滤路径，会从项目根路径开始进行匹配。
+        */
+        val skipPathForProjectRoot = mutableSetOf<String>()
+        val refisrt = Regex("^[a-zA-Z]|[0-9]")
+        if (list != null) {
+            list.forEach { subSkipPath ->
+                var skipPath = subSkipPath
+                val firstLetter = subSkipPath?.firstOrNull()
+                if (refisrt.matches(firstLetter.toString())){
+                    //匹配到第一种情况
+                    skipPath = scanPath + "/" + subSkipPath
+                }else if (subSkipPath?.startsWith("/")){
+                    //匹配到第二种情况
+                    skipPath = scanPath.toString() + subSkipPath
+                }
+                if (Regex(skipPath).matches(scanPath+"/"))  return@forEach
+                if (skipPath.contains("+") && ! skipPath.contains("\\+")){
+                    skipPathForProjectRoot.add(skipPath.replace("+", "\\+"))
+                }else{
+                    skipPathForProjectRoot.add(skipPath)
+                }
+            }
+        }
+
+        return skipPathForProjectRoot?.filter { !it.isBlank() } ?: listOf()
     }
 
     fun executeAsyncTask(codeccTaskId: Long, userId: String) {
@@ -112,9 +157,9 @@ object CodeccSdkUtils {
         else params.reportTime!!.split(":")
         return NotifyCustom(
             taskId = params.codeCCTaskId,
-            rtxReceiverType = params.rtxReceiverType,
+            rtxReceiverType = params.rtxReceiverType ?: "0",
             rtxReceiverList = parseStringToSet(params.rtxReceiverList),
-            emailReceiverType = params.emailReceiverType,
+            emailReceiverType = params.emailReceiverType ?: "0",
             emailReceiverList = parseStringToSet(params.emailReceiverList),
             emailCCReceiverList = parseStringToSet(params.emailCCReceiverList),
             reportStatus = params.reportStatus?.toInt(),
@@ -135,7 +180,7 @@ object CodeccSdkUtils {
             taskId = params.codeCCTaskId,
             scanType = params.toolScanType?.toInt(),
             timeAnalysisConfig = null,
-            transferAuthorList = if (params.transferAuthorList.isNullOrBlank()) listOf() else JsonUtil.fromJson(params.transferAuthorList!!),
+            transferAuthorList = if (params.transferAuthorList.isNullOrBlank()) listOf() else JsonUtil.getObjectMapper().readValue(params.transferAuthorList!!),
             newDefectJudge = ScanConfiguration.NewDefectJudge(
                 fromDate = params.newDefectJudgeFromDate,
                 judgeBy = params.newDefectJudgeBy?.toInt()
@@ -143,4 +188,24 @@ object CodeccSdkUtils {
             mrCommentEnable = params.mrCommentEnable
         )
     }
+
+    fun runWithOldPython(codeccWorkspace: File): Boolean {
+        return "Teg" == System.getenv("DEVOPS_SLAVE_ENVIRONMENT")
+            || isThirdPartyNoDocker(codeccWorkspace)
+    }
+
+
+    private fun isThirdPartyNoDocker(workspace: File): Boolean {
+        if (AgentEnv.isThirdParty()) {
+            return try {
+                ScriptUtils.execute("docker -v", workspace)
+                false
+            } catch (e: Exception) {
+                System.err.println("machine do not has docker, need to install docker manual!")
+                true
+            }
+        }
+        return false
+    }
+
 }

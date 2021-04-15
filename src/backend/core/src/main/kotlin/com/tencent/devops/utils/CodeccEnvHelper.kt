@@ -30,7 +30,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.tencent.bk.devops.atom.AtomContext
 import com.tencent.bk.devops.atom.pojo.StringData
 import com.tencent.bk.devops.atom.utils.http.SdkUtils
-import com.tencent.bk.devops.atom.utils.json.JsonUtil
+import com.tencent.bk.devops.plugin.utils.JsonUtil
 import com.tencent.devops.api.CodeccApi
 import com.tencent.devops.pojo.BuildScriptType
 import com.tencent.devops.pojo.CodeccCheckAtomParam
@@ -110,7 +110,7 @@ object CodeccEnvHelper {
     }
 
     fun getVariable(): Map<String, String> {
-        val map = JsonUtil.fromJson(File(SdkUtils.getInputFile()).readText(), object : TypeReference<Map<String, Any>>() {})
+        val map = JsonUtil.to(File(SdkUtils.getInputFile()).readText(), object : TypeReference<Map<String, Any>>() {})
         return map.map { it.key to it.value.toString() }.toMap()
     }
 
@@ -147,5 +147,12 @@ object CodeccEnvHelper {
         }
 
         return codeccWorkspace!!
+    }
+
+    fun deleteCodeccWorkspace() {
+        println("delete the workspace path parent: ${codeccWorkspace}")
+        if (codeccWorkspace != null){
+            codeccWorkspace!!.deleteOnExit()
+        }
     }
 }

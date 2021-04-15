@@ -30,6 +30,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.AtomContext
 import com.tencent.bk.devops.atom.api.SdkEnv
+import com.tencent.bk.devops.plugin.common.OS
 import com.tencent.devops.docker.pojo.LandunParam
 import com.tencent.devops.docker.utils.CodeccWeb
 import com.tencent.devops.pojo.BuildType
@@ -81,7 +82,7 @@ object CodeccParamsHelper {
 //        list.add("-DREPO_SCM_RELPATH_MAP='${getRepoScmRelPathMap(codeccExecuteConfig)}'")
         map["REPO_SCM_RELPATH_MAP"] = getRepoScmRelPathMap(codeccExecuteConfig)
 //        list.add("-DSUB_CODE_PATH_LIST=${parseStringToList(param.path).joinToString(",")}")
-        map["SUB_CODE_PATH_LIST"] = AtomUtils.parseStringToList(param.path).joinToString(",")
+        map["SUB_CODE_PATH_LIST"] = AtomUtils.transferPathParam(param.path).joinToString(",")
 //        list.add("-DLD_ENV_TYPE=${getEnvType()}")
         map["LD_ENV_TYPE"] = getEnvType()
 
@@ -103,7 +104,7 @@ object CodeccParamsHelper {
             map["DEVOPS_AGENT_ID"] = agentId
             map["DEVOPS_AGENT_SECRET_KEY"] = agentSecretKey
             map["DEVOPS_AGENT_VM_SID"] = ""
-        } else if (AgentEnv.getBuildType() == "MACOS") {
+        } else if (AgentEnv.getBuildType() == OS.MACOS.name) {
             println("检测到这是Macos 公共构建机")
             map["DEVOPS_PROJECT_ID"] = param.projectName
             map["DEVOPS_BUILD_TYPE"] = BuildType.MACOS.name
@@ -383,9 +384,9 @@ object CodeccParamsHelper {
             scriptType = CodeccEnvHelper.getScriptType(),
             repos = repos,
             atomContext = atomContext,
-            tools = listOf(),
+            tools = AtomUtils.transferPathParam(atomContext.param.tools),
             variable = variable,
-            filterTools = AtomUtils.parseStringToList(atomContext.param.filterTools)
+            filterTools = AtomUtils.transferPathParam(atomContext.param.filterTools)
         )
         println("[初始化] buildVariables coverityConfig: $coverityConfig")
         return coverityConfig

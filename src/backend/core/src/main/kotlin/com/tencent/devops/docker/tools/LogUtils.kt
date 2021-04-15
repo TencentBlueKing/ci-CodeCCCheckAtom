@@ -3,9 +3,13 @@ package com.tencent.devops.docker.tools
 import com.tencent.devops.docker.LocalParam
 import com.tencent.devops.docker.pojo.DefectsEntity
 import com.tencent.devops.docker.utils.CommonUtils
+import org.slf4j.LoggerFactory
 
 object LogUtils {
+
     private var isDebug = true
+
+    private val logger = LoggerFactory.getLogger(LogUtils::class.java)
 
     fun setDebug(debug: Boolean) {
         isDebug = debug
@@ -15,44 +19,32 @@ object LogUtils {
         return isDebug
     }
 
-    fun printDefect(defect: DefectsEntity) {
+    // 下面日志格式不能改到
+    fun printDefect(defect: DefectsEntity, toolName: String) {
         when {
             defect.ccn != null -> {
-                println(CommonUtils.changePathToWindows(defect.filePath ?: "") + ":" + defect.startLine
+                logger.infoInTag(CommonUtils.changePathToWindows(defect.filePath ?: "") + ":" + defect.startLine
                     + " ccn:" + defect.ccn
                     + " function_name:" + defect.functionName
-                    + " function_lines:" + defect.functionLines + " ")
+                    + " function_lines:" + defect.functionLines + " ", toolName)
             }
             defect.dupRate != null -> {
-                println(CommonUtils.changePathToWindows(defect.file_path ?: "") + " dup_rate:" + defect.dupRate
-                    + " dup_lines:" + defect.dupLines)
+                logger.infoInTag(CommonUtils.changePathToWindows(defect.file_path ?: "") + " dup_rate:" + defect.dupRate
+                    + " dup_lines:" + defect.dupLines, toolName)
             }
             else -> {
-                println(CommonUtils.changePathToWindows(defect.filePath ?: "") + ":" + (defect.line
-                    ?: "") + " " + (defect.checkerName ?: "") + " " + (defect.description ?: ""))
+                logger.infoInTag((defect.severity ?: "")+ " ["+(toolName ?: "")+"] "+ CommonUtils.changePathToWindows(defect.filePath ?: "") + ":" + (defect.line
+                    ?: "") + " " + (defect.checkerName ?: "") + " " + (defect.description ?: ""), toolName)
             }
         }
     }
 
     fun printLog(msg: Any?) {
-        val toolName = LocalParam.toolName.get()
-        if (!toolName.isNullOrBlank()) {
-            print("[$toolName] ")
-        }
-        println(msg)
+        logger.infoInTag("[${getToolName()}]" + msg?.toString(), getToolName())
     }
 
     fun printErrorLog(msg: Any?) {
-        val toolName = LocalParam.toolName.get()
-        if (!toolName.isNullOrBlank()) {
-            System.err.print("[$toolName] ")
-        }
-        System.err.println(msg)
-    }
-
-
-    fun printReturn() {
-        println("")
+        logger.errorInTag("[${getToolName()}]" + msg?.toString(), getToolName())
     }
 
     fun printStr(msg: Any?) {
@@ -61,11 +53,17 @@ object LogUtils {
 
     fun printDebugLog(msg: Any?) {
         if (this.isDebug) {
-            val toolName = LocalParam.toolName.get()
-            if (!toolName.isNullOrBlank()) {
-                print("[$toolName] ")
-            }
-            println(msg)
+            logger.infoInTag(msg?.toString(), getToolName())
         }
+    }
+
+    fun finishLogTag(toolName: String) {
+        logger.finishTag("$toolName scan finish", toolName)
+    }
+
+    private fun getToolName(): String {
+        var toolName = LocalParam.toolName.get()
+        if (toolName.isNullOrBlank()) toolName = "common"
+        return toolName
     }
 }

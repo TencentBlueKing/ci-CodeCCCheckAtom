@@ -10,6 +10,7 @@ data class ScmInfoItem(
     val fileUpdateAuthor: String?,
     val fileUpdateTime: String?,
     val revision: String?,
+    val commitID: String?,
     val scmType: String?,
     val url: String,
     val rootUrl: String?,

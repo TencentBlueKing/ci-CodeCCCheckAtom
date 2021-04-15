@@ -3,8 +3,7 @@ package com.tencent.devops.docker
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.tencent.bk.devops.atom.utils.json.JsonUtil
-import com.tencent.devops.common.factory.SubProcessorFactory
+import com.tencent.bk.devops.plugin.utils.JsonUtil
 import com.tencent.devops.docker.pojo.AnalyzeConfigInfo
 import com.tencent.devops.docker.pojo.CommandParam
 import com.tencent.devops.docker.pojo.DefectsEntity
@@ -15,6 +14,7 @@ import com.tencent.devops.docker.scm.ScmDiff
 import com.tencent.devops.docker.scm.ScmIncrement
 import com.tencent.devops.docker.scm.ScmInfo
 import com.tencent.devops.docker.scm.pojo.ScmDiffItem
+import com.tencent.devops.docker.tools.FileUtil
 import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.docker.utils.CodeccConfig
 import com.tencent.devops.docker.utils.CodeccWeb
@@ -25,7 +25,6 @@ import com.tencent.devops.pojo.exception.CodeccTaskExecException
 import com.tencent.devops.utils.CompressUtils
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
-import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.lang.reflect.Field
 import java.text.SimpleDateFormat
@@ -39,29 +38,29 @@ object ScanComposer {
         val startTime = Date()
         val ft = SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
         LogUtils.printLog("start scan time: " + ft.format(startTime))
-
         // 获取本次扫描版本信息
-        LogUtils.printDebugLog("start scm info...")
-        if (!ScmInfo(commandParam, toolName, streamName, 0).scmOperate()) {
-//            uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
-            throw CodeccRepoServiceException("scm info failed.")
-        }
-        LogUtils.printDebugLog("start scm success")
-
-        //区分coverity和klocwork工具逻辑，创建实例
-        val subScanComposerByCovKloc=SubProcessorFactory().createSubScanComposerByCovKloc(toolName)
-        val subScanComposerByCov = SubProcessorFactory().createSubScanComposerByCov(toolName)
+//        LogUtils.printDebugLog("start scm info...")
+//        if (!ScmInfo(commandParam, toolName, streamName, 0).scmOperate()) {
+////            uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
+//            throw CodeccRepoServiceException("scm info failed.")
+//        }
+//        LogUtils.printDebugLog("start scm success")
 
         // get CodeCC API data
         LogUtils.printDebugLog("Get properties info from server...")
         val analyzeConfigInfo = CodeccWeb.getConfigDataByCodecc(streamName, toolName, commandParam)
         LogUtils.printDebugLog("Get properties info from server success")
-        if (StringUtils.isBlank(commandParam.repoUrlMap)) {
+        if (commandParam.repoUrlMap.isBlank()) {
             LogUtils.printDebugLog("No scm change scan type to full scan")
             analyzeConfigInfo.scanType = ScanType.FULL
+            CodeccWeb.changScanType(commandParam.landunParam, analyzeConfigInfo.taskId, streamName, toolName)
         }
         if (analyzeConfigInfo.scanType == ScanType.FAST_INCREMENTAL){
-            subScanComposerByCovKloc.getStatus(commandParam, analyzeConfigInfo, toolName)
+            if (ToolConstants.COVERITY == toolName || ToolConstants.KLOCWORK == toolName) {
+                getStatusFromCodecc(commandParam, analyzeConfigInfo, toolName, 5)
+            }else{
+                getStatusFromCodecc(commandParam, analyzeConfigInfo, toolName, 4)
+            }
             LogUtils.printLog(" scan finished: ${ft.format(startTime)} to ${ft.format(Date())}")
             return
         }
@@ -80,9 +79,19 @@ object ScanComposer {
 
         // 排队开始
         CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 1, 3)
+        if (ToolConstants.COVERITY != toolName && ToolConstants.KLOCWORK != toolName) { // 非coverity才有下面这些内容
+            // 排队结束
+            CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 1, 1)
 
-        // 非coverity才有下面这些内容,上报日志
-        subScanComposerByCovKloc.uploadTaskLog(analyzeConfigInfo,streamName,toolName,commandParam)
+            // 下载开始
+            CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 2, 3)
+
+            // 下载结束
+            CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 2, 1)
+
+            // 扫描开始
+            CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 3, 3)
+        }
 
         // 判断扫描类型
         val incrementFiles = mutableListOf<String>()
@@ -94,22 +103,25 @@ object ScanComposer {
                 uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
 //                CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 3, 2)
                 LogUtils.printDebugLog("scm increment failed")
-                throw CodeccRepoServiceException("scm increment failed.")
+                throw CodeccRepoServiceException(errorMsg = "scm increment failed.", toolName = toolName)
             }
-            //下载Cov工具结果
-            subScanComposerByCov.downloadCovResultPro(commandParam, streamName, toolName)
+            if (toolName == ToolConstants.COVERITY) {
+                downloadCovResult(commandParam, streamName, toolName)
+            }
         } else if (analyzeConfigInfo.scanType == ScanType.DIFF) {
-            //下载Cov工具结果
-            subScanComposerByCov.downloadCovResultPro(commandParam, streamName, toolName)
-
+//            if (toolName == ToolConstants.COVERITY) {
+//                downloadCovResult(commandParam, streamName, toolName)
+//            }
             if (toolName == ToolConstants.COVERITY || toolName == ToolConstants.KLOCWORK || toolName == ToolConstants.PINPOINT || toolName == ToolConstants.DUPC) {
                 LogUtils.printDebugLog("scan type is diff is not support in tool $toolName")
+                analyzeConfigInfo.scanType = ScanType.FULL
+                CodeccWeb.changScanType(commandParam.landunParam, analyzeConfigInfo.taskId, streamName, toolName)
             } else {
                 LogUtils.printDebugLog("scan type is diff...")
                 if (!ScmDiff(commandParam, toolName, streamName, analyzeConfigInfo.taskId, incrementFiles, deleteFiles, diffFileList).scmOperate()) {
                     uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
 //                    CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 3, 2)
-                    throw CodeccRepoServiceException("scm diff failed.")
+                    throw CodeccRepoServiceException(errorMsg = "scm diff failed.", toolName = toolName)
                 }
             }
         }
@@ -117,14 +129,20 @@ object ScanComposer {
         // 工具扫描
         LogUtils.printDebugLog("tool scan start...")
         if (!Scan(commandParam, toolName, streamName, analyzeConfigInfo, incrementFiles, diffFileList).scan()) {
-            uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
-            if (toolName == ToolConstants.COVERITY && (commandParam.openScanPrj == true || commandParam.repoUrlMap.contains("bkdevops-plugins"))){
+//            if (toolName == ToolConstants.COVERITY && (commandParam.openScanPrj == true || commandParam.repoUrlMap.contains("bkdevops-plugins") ||  ! checkIncludeCompileLanuage(analyzeConfigInfo.language))){
+            if (toolName == ToolConstants.COVERITY){
                 val cov_empty_file = File( generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "cov_empty.txt")
                 if (cov_empty_file.exists()){
+                    println("Ignore coverity ERROR: Coverity can not capture any file!")
+                    // 构建结束
+                    CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 1, 1)
+                    CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 5, 3)
+                    CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 5, 1)
                     return
                 }
             }
-            throw CodeccTaskExecException("tool scan failed.")
+            uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
+            throw CodeccTaskExecException(errorMsg = "tool scan failed.", toolName = toolName)
         }
         LogUtils.printDebugLog("tool scan finish")
 
@@ -159,19 +177,62 @@ object ScanComposer {
                 uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
 //                CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 3, 2)
                 LogUtils.printDebugLog("scm blame failed")
-                throw CodeccRepoServiceException("scm blame failed.")
+                throw CodeccRepoServiceException(errorMsg = "scm blame failed.", toolName = toolName)
             }
             LogUtils.printDebugLog("ScmBlame success")
+        }else{
+            // scmBlame()
+            commandParam.scmType = "git"
+            commandParam.repoUrlMap = "{}"
+            LogUtils.printDebugLog("ScmBlame...")
+            if (!ScmBlame(commandParam, toolName, streamName, analyzeConfigInfo.taskId).scmOperate()) {
+                uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
+                LogUtils.printDebugLog("scm blame failed")
+                throw CodeccRepoServiceException(errorMsg = "scm blame failed.", toolName = toolName)
+            }
+            LogUtils.printDebugLog("ScmBlame success")
+            commandParam.scmType = ""
+            commandParam.repoUrlMap = ""
         }
 
         // 打印告警
-        if (commandParam.needPrintDefect) {
+        if (commandParam.needPrintDefect && toolName !in ToolConstants.CODE_TOOLS_ACOUNT) {
             LogUtils.printDebugLog("print defects begin")
-            printDefects(commandParam, streamName, toolName)
+            printDefects(commandParam, streamName, toolName, analyzeConfigInfo)
             LogUtils.printDebugLog("print defects end")
         }
 
-        subScanComposerByCovKloc.lastUploadTaskLog(analyzeConfigInfo, streamName, toolName, commandParam)
+        if (ToolConstants.COVERITY == toolName || ToolConstants.KLOCWORK == toolName) {
+            LogUtils.printDebugLog("enter coverity branch")
+            val zipResultFileName = commandParam.dataRootPath + File.separator + streamName + "_${toolName.toUpperCase()}_result.zip"
+            val zipResultFile = File(zipResultFileName)
+            if (zipResultFile.exists()) {
+                val toolPrefix = when (toolName) {
+                    ToolConstants.COVERITY -> "cov"
+                    ToolConstants.KLOCWORK -> "kw"
+                    else -> ""
+                }
+
+                CodeccWeb.upload(
+                    landunParam = commandParam.landunParam,
+                    filePath = zipResultFileName,
+                    resultName = streamName + "_${toolPrefix}_result.zip",
+                    uploadType = "SUCCESS_RESULT",
+                    toolName = toolName)
+                CodeccWeb.codeccStreamPush(commandParam.landunParam, streamName, toolName, commandParam.openScanPrj)
+            }
+            // 构建结束
+            CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 1, 1)
+            // 排队开始
+            CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 2, 3)
+        } else {
+            CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 3, 1)
+        }
+        if (ToolConstants.COVERITY == toolName || ToolConstants.KLOCWORK == toolName) {
+            getStatusFromCodecc(commandParam, analyzeConfigInfo, toolName, 5)
+        } else {
+            getStatusFromCodecc(commandParam, analyzeConfigInfo, toolName, 4)
+        }
 
         // 删除临时文件 null 说明是生产环境
         if (!LogUtils.getDebug()) {
@@ -196,15 +257,29 @@ object ScanComposer {
         }
     }
 
+    private fun downloadCovResult(commandParam: CommandParam, streamName: String, toolName: String) {
+        val dataToolPath = generateToolDataPath(commandParam.dataRootPath, streamName, toolName)
+        val filePath = commandParam.dataRootPath + File.separator + streamName + "_COVERITY_download_result.zip"
+        CodeccWeb.download(filePath, "${streamName}_cov_result.zip", "LAST_RESULT", commandParam.landunParam)
+        if (File(filePath).exists()) {
+            LogUtils.printLog("unzip $filePath to folder: $dataToolPath ...")
+            try {
+                FileUtil.unzipFile(filePath, dataToolPath)
+            } catch (e: Throwable) {
+                LogUtils.printDebugLog("unzip $filePath failed. e: ${e.message}")
+            }
+            File(filePath).delete()
+        }
+    }
 
-    fun getStatusFromCodecc(commandParam: CommandParam, analyzeConfigInfo: AnalyzeConfigInfo, toolName: String, currentStep: Int) {
+    private fun getStatusFromCodecc(commandParam: CommandParam, analyzeConfigInfo: AnalyzeConfigInfo, toolName: String, currentStep: Int) {
         var syncNum = 1
         LogUtils.printStr("analyzing...")
         var countFailed = 0
         while (true) {
             if (countFailed > 5) {
                 LogUtils.printLog("Fail: 重试失败超过5次，异常退出！")
-                throw CodeccDependentException("Fail: 重试失败超过5次，异常退出！")
+                throw CodeccDependentException("Fail: 重试失败超过5次，异常退出！", toolName = toolName)
             }
             if (commandParam.openScanPrj == true) {
                 Thread.sleep(30000)
@@ -214,22 +289,22 @@ object ScanComposer {
 
             try {
                 val data = CodeccWeb.codeccGetData(commandParam.landunParam, analyzeConfigInfo.taskId, toolName)
-                    ?: throw CodeccDependentException("codeccGetData failed.")
+                    ?: throw CodeccDependentException("codeccGetData failed.", toolName = toolName)
                 if (data.flag == 2 || data.flag == 4) {
-                    LogUtils.printLog(data)
-                    throw CodeccDependentException("Fail: 任务被中断或发生异常！")
+                    val errorMsg = data.stepArray?.lastOrNull()?.msg ?: "任务被中断或发生异常!"
+                    throw CodeccDependentException("Fail: $errorMsg \n$data", toolName = toolName)
                 } else if (data.currStep == currentStep && data.flag == 1) {
-                    LogUtils.printReturn()
+                    LogUtils.printLog("")
                     LogUtils.printLog("finished!\n")
                     break
                 }
                 if (syncNum % 60 == 0) {
-                    LogUtils.printReturn()
+                    LogUtils.printLog("")
                 }
                 LogUtils.printStr(".")
                 syncNum += 1
             } catch (e: Throwable) {
-                LogUtils.printDebugLog("codeccGetData exception: ${e.message}")
+                LogUtils.printErrorLog("codeccGetData exception: ${e.message}")
                 countFailed++
             }
         }
@@ -284,22 +359,41 @@ object ScanComposer {
     private fun printDefects(
         commandParam: CommandParam,
         streamName: String,
-        toolName: String
+        toolName: String,
+        analyzeConfigInfo: AnalyzeConfigInfo
     ) {
         try {
             val outputFile = File(generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "tool_scan_output.json")
+            val severitMap = mapOf(1 to "[Error]", 2 to "[Warning]", 3 to "[Info]")
             if (outputFile.exists()) {
-                val outputData = JsonUtil.fromJson(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
+                val checkerMap = mutableMapOf<String, String?>()
+                if (analyzeConfigInfo.openCheckers != null){
+                    val openCheckers = analyzeConfigInfo.openCheckers
+                    openCheckers.forEach {
+                        if(it.severity != 0){
+                            checkerMap[it.checkerName] = severitMap.get(it.severity)
+                        }
+                    }
+                }
+                val outPutJson = if (toolName == ToolConstants.GITHUBSTATISTIC) {
+                    "{defects:${outputFile.readText()}}"
+                } else {
+                    outputFile.readText()
+                }
+                val outputData = JsonUtil.to(outPutJson, object : TypeReference<Map<String, Any>>() {})
                 val defects = outputData["defects"]
                 if (defects is List<*>) {
                     defects.forEachIndexed { index, it ->
-                        if (index > 1000) {
-                            LogUtils.printLog("缺陷数量超过1000条，将省略打印....")
+                        if (index > 10000) {
+                            LogUtils.printLog("缺陷数量超过10000条，将省略打印....")
                             return
                         }
                         val defectStr = jacksonObjectMapper().writeValueAsString(it)
-                        val defect = JsonUtil.fromJson(defectStr, object : TypeReference<DefectsEntity>() {})
-                        LogUtils.printDefect(defect)
+                        val defect = JsonUtil.to(defectStr, object : TypeReference<DefectsEntity>() {})
+                        if(checkerMap.containsKey(defect.checkerName)){
+                            defect.severity = checkerMap[defect.checkerName]
+                        }
+                        LogUtils.printDefect(defect, toolName)
                     }
                 }
             } else {
@@ -321,7 +415,7 @@ object ScanComposer {
             if (outputFile.exists()) {
                 val bakFile = File(generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "tool_scan_output_bak.json")
                 outputFile.copyTo(bakFile, true)
-                val outputData = JsonUtil.fromJson(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
+                val outputData = JsonUtil.to(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
                 val defects = outputData["defects"]
                 val fileData = mutableMapOf<String, Any>()
                 if (defects != null) {
@@ -359,6 +453,9 @@ object ScanComposer {
     }
 
     private fun getScanFileList(codeccWorkspace: String, streamName: String, toolName: String): List<String> {
+        if (toolName == ToolConstants.GITHUBSTATISTIC) {
+            return mutableListOf<String>()
+        }
         val toolDataPath = generateToolDataPath(codeccWorkspace, streamName, toolName)
         val toolScanInput = toolDataPath + File.separator + "tool_scan_output.json"
         return CodeccConfig.fileListFromDefects(toolScanInput)
@@ -390,7 +487,11 @@ object ScanComposer {
 
         if (File(outputFile).exists()) {
             LogUtils.printDebugLog("append md5 success upload outputFile...")
-            CodeccWeb.upload(commandParam.landunParam, outputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_md5.json", "SCM_JSON")
+            CodeccWeb.upload(landunParam = commandParam.landunParam,
+                filePath = outputFile,
+                resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_md5.json",
+                uploadType = "SCM_JSON",
+                toolName = toolName)
         }
     }
 
@@ -406,7 +507,7 @@ object ScanComposer {
             }
             val md5Info = mutableMapOf<String, String>()
             md5Info["filePath"] = filePahth
-            if (commandParam.repoRelPathMap.filterNot { StringUtils.isBlank(it.key) }.isNotEmpty()) {
+            if (commandParam.repoRelPathMap.filterNot { it.key.isBlank() }.isNotEmpty()) {
                 commandParam.repoRelPathMap.forEach { repoRelPath ->
                     val codePath = CommonUtils.changePathToDocker(File(commandParam.landunParam.streamCodePath, repoRelPath.value).canonicalPath)
                     val re = Regex(codePath)
@@ -433,7 +534,11 @@ object ScanComposer {
 
         if (File(outputFile).exists()) {
             LogUtils.printDebugLog("append md5 success upload outputFile...")
-            CodeccWeb.upload(commandParam.landunParam, outputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_md5.json", "SCM_JSON")
+            CodeccWeb.upload(landunParam = commandParam.landunParam,
+                filePath = outputFile,
+                resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_md5.json",
+                uploadType = "SCM_JSON",
+                toolName = toolName)
         }
     }
 
@@ -509,7 +614,7 @@ object ScanComposer {
         taskId: Long,
         deleteFileList: List<String>
     ): MutableMap<String, Any?>? {
-        val scmInfoFile = generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "scm_info_output.json"
+        val scmInfoFile = commandParam.dataRootPath+ File.separator + "scm_info_output.json"
         if (!File(scmInfoFile).exists()) {
             return null
         }
@@ -528,5 +633,33 @@ object ScanComposer {
         LogUtils.printLog("triggerToolNames is ${params["triggerToolNames"]}")
 
         return params
+    }
+
+    private  fun checkIncludeCompileLanuage(inputLanguage: Long?): Boolean{
+        //C#
+        if ((inputLanguage!! and 1L) > 0) {
+            return true
+        }
+        //C++
+        if ((inputLanguage!! and 2L) > 0) {
+            return true
+        }
+        //JAVA
+        if ((inputLanguage!! and 4L) > 0) {
+            return true
+        }
+        //OC
+        if ((inputLanguage!! and 16L) > 0) {
+            return true
+        }
+        //GOLANG
+        if ((inputLanguage!! and 512L) > 0) {
+            return true
+        }
+        //KOTLIN
+        if ((inputLanguage!! and 4096L) > 0) {
+            return true
+        }
+        return false
     }
 }

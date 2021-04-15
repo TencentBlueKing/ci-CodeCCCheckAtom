@@ -14,6 +14,7 @@ object YAMLParse {
         mapper.registerModule(KotlinModule())
         mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
         mapper.configure(JsonParser.Feature.ALLOW_MISSING_VALUES, true)
+        mapper.configure(JsonParser.Feature.IGNORE_UNDEFINED, true)
         mapper
     }
 

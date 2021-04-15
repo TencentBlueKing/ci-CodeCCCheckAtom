@@ -28,7 +28,7 @@ package com.tencent.devops.pojo
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.tencent.bk.devops.atom.AtomContext
-import com.tencent.bk.devops.atom.utils.json.JsonUtil
+import com.tencent.bk.devops.plugin.utils.JsonUtil
 import com.tencent.devops.pojo.repo.RepositoryConfig
 
 /**
@@ -40,7 +40,7 @@ data class CodeccExecuteConfig(
     @JsonIgnore
     val atomContext: AtomContext<out CodeccCheckAtomParamV3>,
     var tools: List<String>,
-    val filterTools: List<String>,
+    var filterTools: List<String>,
     @JsonIgnore
     val variable: Map<String, String>,
     val timeOut: Long = 4 * 3600 // 4小时
@@ -58,6 +58,6 @@ data class CodeccExecuteConfig(
     )
 
     override fun toString(): String {
-        return JsonUtil.toJson(this)
+        return JsonUtil.getObjectMapper().writeValueAsString(this)
     }
 }

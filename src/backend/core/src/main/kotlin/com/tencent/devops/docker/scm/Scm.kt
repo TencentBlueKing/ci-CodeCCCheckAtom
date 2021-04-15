@@ -4,11 +4,8 @@ import com.tencent.devops.docker.DockerRun
 import com.tencent.devops.docker.pojo.CommandParam
 import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.docker.utils.CodeccConfig
-import com.tencent.devops.docker.utils.CodeccWeb
 import com.tencent.devops.docker.utils.CommonUtils
 import com.tencent.devops.pojo.exception.CodeccTaskExecException
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
-import org.apache.commons.lang3.StringUtils
 import java.io.File
 
 abstract class Scm(
@@ -19,7 +16,7 @@ abstract class Scm(
 ) {
 
     fun scmOperate(): Boolean {
-        if (StringUtils.isBlank(commandParam.repoUrlMap)) {
+        if (commandParam.repoUrlMap.isBlank()) {
             LogUtils.printLog("no scm element, return")
             return true
         }
@@ -41,7 +38,7 @@ abstract class Scm(
         } catch (e: Throwable) {
             LogUtils.printLog("Scm operate exception, message: ${e.message}")
             scmOpFail(inputFile)
-            throw CodeccTaskExecException(e.message ?: "")
+            throw CodeccTaskExecException(errorMsg = e.message ?: "", toolName = toolName)
         }
 
         // 生成output

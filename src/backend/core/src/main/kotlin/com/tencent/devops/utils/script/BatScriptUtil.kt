@@ -1,6 +1,7 @@
 package com.tencent.devops.utils.script
 
 import com.tencent.devops.pojo.exception.CodeccTaskExecException
+import com.tencent.devops.pojo.exception.CodeccUserConfigException
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.charset.Charset
@@ -20,7 +21,9 @@ object BatScriptUtil {
     private const val GATEWAY_FILE = "gatewayValueFile.ini"
     private const val WORKSPACE_ENV = "WORKSPACE"
 
-    private val specialVariableKey = setOf("languageRuleSetMap", "script", "tools", "path", "BK_CI_SVN_REPO_HEAD_REVERSION_COMMENT", "DEVOPS_SVN_REPO_HEAD_REVERSION_COMMENT", "BK_CI_PIPELINE_MATERIAL_NEW_COMMIT_COMMENT")
+    private val specialVariableKey = setOf("languageRuleSetMap", "script", "tools", "path",
+        "BK_CI_SVN_REPO_HEAD_REVERSION_COMMENT", "DEVOPS_SVN_REPO_HEAD_REVERSION_COMMENT",
+        "BK_CI_PIPELINE_MATERIAL_NEW_COMMIT_COMMENT", "_TOOL")
 
     private val logger = LoggerFactory.getLogger(BatScriptUtil::class.java)
 
@@ -33,16 +36,18 @@ object BatScriptUtil {
     ): String {
         val file = getCommandFile(script, dir, runtimeVariables)
         try {
-            return CommandLineUtils.execute(
+            val result = CommandLineUtils.execute(
                 command = "cmd.exe /C \"${file.canonicalPath}\"",
                 workspace = dir,
                 print2Logger = true,
                 prefix = prefix,
                 printException = printErrorLog
             )
+            file.deleteOnExit()
+            return result
         } catch (e: Throwable) {
             if (printErrorLog) logger.error("Fail to execute bat script: ${e.message}")
-            throw CodeccTaskExecException("Fail to execute bat script: ${e.message}")
+            throw CodeccUserConfigException("Fail to execute bat script: ${e.message}")
         }
     }
 
@@ -58,7 +63,6 @@ object BatScriptUtil {
             File(tmpDir).mkdirs()
             File.createTempFile("paas_build_script_", ".bat", File(tmpDir))
         }
-        file.deleteOnExit()
 
         val command = StringBuilder()
 
@@ -68,20 +72,20 @@ object BatScriptUtil {
             .append("set DEVOPS_BUILD_SCRIPT_FILE=${file.absolutePath}\r\n")
             .append("\r\n")
 
-        runtimeVariables.forEach OUTER@{ (name, value) ->
-            specialVariableKey.forEach {key ->
-                if (name.contains(key)) return@OUTER
-            }
-
-            // 特殊保留字符转义
-            val clean = value.replace("\"", "\\\"")
-                .replace("&", "^&")
-                .replace("<", "^<")
-                .replace(">", "^>")
-                .replace("|", "^|")
-            command.append("set $name=\"$clean\"\r\n") // 双引号防止变量值有空格而意外截断定义
-            command.append("set $name=%$name:~1,-1%\r\n") // 去除双引号，防止被程序读到有双引号的变量值
-        }
+//        runtimeVariables.forEach OUTER@{ (name, value) ->
+//            specialVariableKey.forEach {key ->
+//                if (name.contains(key)) return@OUTER
+//            }
+//
+//            // 特殊保留字符转义
+//            val clean = value.replace("\"", "\\\"")
+//                .replace("&", "^&")
+//                .replace("<", "^<")
+//                .replace(">", "^>")
+//                .replace("|", "^|")
+//            command.append("set $name=\"$clean\"\r\n") // 双引号防止变量值有空格而意外截断定义
+//            command.append("set $name=%$name:~1,-1%\r\n") // 去除双引号，防止被程序读到有双引号的变量值
+//        }
 
         command.append(script.replace("\n", "\r\n"))
             .append("\r\n")

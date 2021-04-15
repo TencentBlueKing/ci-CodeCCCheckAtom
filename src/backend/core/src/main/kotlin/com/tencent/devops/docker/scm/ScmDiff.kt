@@ -45,22 +45,35 @@ class ScmDiff(
         if (commandParam.scmType == "git" || commandParam.scmType == "github") {
             cmdList.add("python3 /usr/codecc/scm_tools/src/git_branch_diff.py --input=$inputFile --output=$outputFile")
         } else {
-            throw CodeccUserConfigException("only git or github is support in diff mode, current is ${commandParam.scmType}")
+            throw CodeccUserConfigException(errorMsg = "only git or github is support in diff mode, current is ${commandParam.scmType}", toolName = toolName)
         }
         return cmdList
     }
 
     override fun scmOpFail(inputFile: String) {
         LogUtils.printLog("scm increment failed, upload the input file...")
-        CodeccWeb.upload(commandParam.landunParam, inputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_$inputFileName", "SCM_JSON")
+        CodeccWeb.upload(landunParam = commandParam.landunParam,
+            filePath = inputFile,
+            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_$inputFileName",
+            uploadType = "SCM_JSON",
+            toolName = toolName)
     }
 
     override fun uploadInputFile(inputFile: String) {
-        CodeccWeb.upload(commandParam.landunParam, inputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_$inputFileName", "SCM_JSON")
+        CodeccWeb.upload(landunParam = commandParam.landunParam,
+            filePath = inputFile,
+            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_$inputFileName",
+            uploadType = "SCM_JSON",
+            toolName = toolName)
     }
 
     override fun scmOpSuccess(outputFile: String) {
         parseOutputFile(outputFile)
+        CodeccWeb.upload(landunParam = commandParam.landunParam,
+                filePath = outputFile,
+                resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_git_branch_diff_output.json",
+                uploadType = "SCM_JSON",
+                toolName = toolName)
         LogUtils.printLog("scm increment success.")
     }
 
@@ -81,7 +94,7 @@ class ScmDiff(
                 return inputFile
             }
         }
-        throw CodeccUserConfigException("GIT事件触发的代码库，跟本地拉取的代码库不一致")
+        throw CodeccUserConfigException(errorMsg = "GIT事件触发的代码库，跟本地拉取的代码库不一致", toolName = toolName)
     }
 
     override fun generateOutputFile() = ScanComposer.generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + outputFileName

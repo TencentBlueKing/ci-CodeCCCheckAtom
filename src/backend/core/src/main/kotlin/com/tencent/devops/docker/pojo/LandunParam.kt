@@ -3,6 +3,7 @@ package com.tencent.devops.docker.pojo
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.tencent.bk.devops.plugin.pojo.artifactory.ChannelCode
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class LandunParam(
@@ -20,7 +21,10 @@ data class LandunParam(
     val ldEnvType: String, // getEnvType()
     val streamCodePath: String,
 
-    val channelCode: String?
+        val channelCode: String?,
+
+        val toolNames: String?,
+        var toolImageTypes: String?
 ) {
     fun copy(): LandunParam {
         val json = jacksonObjectMapper().writeValueAsString(this)
@@ -28,6 +32,6 @@ data class LandunParam(
     }
 
     override fun toString(): String {
-        return "LandunParam(userId='$userId', buildId='$buildId', devopsProjectId='$devopsProjectId', devopsBuildType='$devopsBuildType', devopsAgentId='$devopsAgentId', devopsAgentSecretKey='$devopsAgentSecretKey', devopsAgentVmSid='$devopsAgentVmSid', devopsPipelineId='$devopsPipelineId', devopsVmSeqId='$devopsVmSeqId', ldEnvType='$ldEnvType', streamCodePath='$streamCodePath')"
+        return "LandunParam(userId='$userId', buildId='$buildId', devopsProjectId='$devopsProjectId', devopsBuildType='$devopsBuildType', devopsAgentId='$devopsAgentId', devopsAgentSecretKey='$devopsAgentSecretKey', devopsAgentVmSid='$devopsAgentVmSid', devopsPipelineId='$devopsPipelineId', devopsVmSeqId='$devopsVmSeqId', ldEnvType='$ldEnvType', streamCodePath='$streamCodePath', toolNames='$toolNames', toolImageTypes='$toolImageTypes')"
     }
 }

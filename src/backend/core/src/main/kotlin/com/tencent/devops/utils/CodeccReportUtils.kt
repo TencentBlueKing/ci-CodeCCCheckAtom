@@ -1,10 +1,10 @@
 package com.tencent.devops.utils
 
-import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.AtomContext
 import com.tencent.bk.devops.atom.pojo.ArtifactData
 import com.tencent.bk.devops.atom.pojo.ReportData
-import com.tencent.bk.devops.atom.utils.json.JsonUtil
+import com.tencent.bk.devops.plugin.utils.JsonUtil
 import com.tencent.devops.api.CodeccReportApi
 import com.tencent.devops.pojo.CodeccCheckAtomParamV3
 import com.tencent.devops.pojo.report.CodeccCallback
@@ -49,11 +49,11 @@ object CodeccReportUtils {
             "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
             "        <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\">\n" +
             "        <meta charset=\"utf-8\">\n" +
-            "        <link rel=\"stylesheet\" href=\"https://magicbox.bk.tencent.com/static_api/v3/components_vue/2.0/bk-magic-vue.min.css\">\n" +
+            "        <link rel=\"stylesheet\" href=\"http://open.oa.com/static_api/v3/components_vue/2.0/bk-magic-vue.min.css\">\n" +
             "        <link rel=\"stylesheet\" href=\"./${indexCss.name}\">\n" +
             "        <title>CodeCC报告</title>\n" +
             "        <script src=\"https://cdn.jsdelivr.net/npm/vue@2.6.10\"></script>\n" +
-            "        <script src=\"http://magicbox.bk.tencent.com/static_api/v3/components_vue/2.0/bk-magic-vue.min.js\"></script>\n" +
+            "        <script src=\"http://open.oa.com/static_api/v3/components_vue/2.0/bk-magic-vue.min.js\"></script>\n" +
             "        <script src=\"https://cdn.jsdelivr.net/npm/echarts@4.1.0/dist/echarts.js\"></script>\n" +
             "        <script src=\"https://cdn.jsdelivr.net/npm/vue-echarts@4.0.2\"></script>\n" +
             "    </head>\n" +
@@ -66,7 +66,7 @@ object CodeccReportUtils {
         indexHtmlBody.append("<div class=\"code-check-header-wrapper\">\n")
 
         val json = BufferedReader(ClassLoader.getSystemClassLoader().getResourceAsStream("codecc-options.json").reader()).readText()
-        val codeccOptionMap = JsonUtil.fromJson(json, object : TypeReference<Map<String, Map<String, Any>>>(){})
+        val codeccOptionMap = JsonUtil.getObjectMapper().readValue<Map<String, Map<String, Any>>>(json)
         reportData.toolSnapshotList.forEach {
             val toolNameEn = it["tool_name_en"] as String
             val codeccOptions = codeccOptionMap[toolNameEn] ?: mapOf()

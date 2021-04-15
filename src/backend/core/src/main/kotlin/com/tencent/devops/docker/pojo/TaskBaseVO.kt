@@ -23,4 +23,7 @@ open class TaskBaseVO : CommonVO() {
     open val gongfengFlag: Boolean? = false
     open val gongfengProjectId: Long? = 0
     open val gongfengCommitId: String? = null
+    val bgId: Int? = null
+    val centerId: Int? = null
+    val deptId: Int? = null
 }
