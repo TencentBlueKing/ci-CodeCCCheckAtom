@@ -49,7 +49,6 @@
     import { atomMixin }from 'bkci-atom-components'
     import { getQueryParams } from '@/utils/util'
     import Basic from '@/components/Basic'
-    import Report from '@/components/Report'
     import Scan from '@/components/Scan'
     import Shield from '@/components/Shield'
     import Async from '@/components/Async'
@@ -59,7 +58,6 @@
         mixins: [atomMixin],
         components: {
             Basic,
-            Report,
             Scan,
             Shield,
             Async

@@ -252,20 +252,6 @@
                     const preValue = this.atomValue.languageRuleSetMap || {}
                     this.atomValue.languageRuleSetMap = Object.assign({}, preValue, { [name]: value })
                     this.handleTools()
-                } else if (name === 'tools') {
-                    //  如果是取消勾选了某些语言，需要把botRemaindTools和reportTools里面的此项工具也取消勾选
-                    if (this.atomValue.botRemaindTools && this.atomValue.botRemaindTools.length ) {
-                        const botToolsDiff = this.atomValue.botRemaindTools.filter(tool => !value.includes(tool))
-                        botToolsDiff.forEach( (item) => { 
-                            this.atomValue.botRemaindTools.splice(this.atomValue.botRemaindTools.findIndex(tool => tool === item), 1)
-                        })
-                    }
-                    if (this.atomValue.reportTools && this.atomValue.reportTools.length) {
-                        const reportToolsDiff = this.atomValue.reportTools.filter(tool => !value.includes(tool))
-                        reportToolsDiff.forEach( (item) => { 
-                            this.atomValue.reportTools.splice(this.atomValue.reportTools.findIndex(tool => tool === item), 1)
-                        })
-                    } 
                 }
             },
             // 根据当前的工具判断需要展示该group, 如果是script，还要判断当前语言是否是编译型语言
