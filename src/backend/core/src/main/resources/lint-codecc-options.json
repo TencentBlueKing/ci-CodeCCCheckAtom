@@ -1,0 +1,72 @@
+{
+  "title": "title",
+  "normalLegend": [
+    {
+      "key": "告警数",
+      "value": "newfile_total_defect_count"
+    },
+    {
+      "key": "文件数",
+      "value": "newfile_total_count"
+    }
+  ],
+  "normalKey": "文件数",
+  "normalVal": "newfile_total_count",
+  "normalChange": "newfile_changed_count",
+  "activeKey": "告警数",
+  "activeVal": "newfile_total_defect_count",
+  "activeChange": "newfile_changed_defect_count",
+  "mainKey": "告警总数",
+  "mainVal": "newfile_total_defect_count",
+  "hasChange": true,
+  "changeNormalVal": "newfile_changed_count",
+  "changeActiveVal": "newfile_changed_defect_count",
+  "charts": [
+    {
+      "type": "Bar",
+      "title": "待修复告警级别",
+      "opts": [
+        {
+          "key": "total_new_serious",
+          "text": "严重",
+          "color": "#3c96ff"
+        },
+        {
+          "key": "total_new_normal",
+          "text": "一般",
+          "color": "#7fcaff"
+        },
+        {
+          "key": "total_new_prompt",
+          "text": "提示",
+          "color": "#a1eaee"
+        }
+      ],
+      "enable": true
+    },
+    {
+      "type": "Bar",
+      "title": "待修复告警作者",
+      "xkey": "name",
+      "ykey": "prompt_count",
+      "opts": [
+        {
+          "key": "serious_count",
+          "text": "严重",
+          "color": "#3c96ff"
+        },
+        {
+          "key": "normal_count",
+          "text": "一般",
+          "color": "#7fcaff"
+        },
+        {
+          "key": "prompt_count",
+          "text": "提示",
+          "color": "#a1eaee"
+        }
+      ],
+      "enable": true
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+{
+    "input": {
+        "languages": {
+            "rule": {},
+            "type": "atom-checkbox-list",
+            "required": true,
+            "label": "工程语言",
+            "list": [],
+            "default": [],
+            "desc": "不同代码语言，可选择相匹配的工具",
+            "tabName": "basic"
+        },
+        "tools": {
+            "rule": {},
+            "required": true,
+            "hidden": true,
+            "type": "atom-checkbox-list",
+            "label": "代码检查工具",
+            "list": [],
+            "default": [],
+            "tabName": "basic"
+        },
+        "asyncTask": {
+            "rule": {},
+            "type": "enum-input",
+            "label": "执行方式",
+            "list": [
+                {
+                    "value": false,
+                    "label": "同步"
+                },
+                {
+                    "value": true,
+                    "label": "异步"
+                }
+            ],
+            "default": false,
+            "desc": "",
+            "tabName": "main",
+            "inline": true
+        },
+        "asyncTaskId": {
+            "rule": {
+                "asyncTaskRequired": true
+            },
+            "type": "task-select",
+            "label": "任务",
+            "required": true,
+            "tabName": "async",
+            "inline": true,
+            "list": {},
+            "default": "",
+            "rely": {},
+            "desc": "可选择CodeCC服务中自建任务，也可以直接输入任务ID。ID可从CodeCC链接中获取到，例如/codecc/myproj/task/25324/中的数字。支持流水线变量。"
+        },
+        "goPath": {
+            "rule": {},
+            "type": "vuex-input",
+            "label": "GOPATH",
+            "default": "",
+            "required": false,
+            "desc": "可帮助工具查找依赖库代码路径，更好地扫描告警",
+            "placeholder": "${WORKSPACE}下相对路径,多路径请用英文逗号分割,支持使用流水线变量",
+            "tabName": "basic",
+            "inline": true,
+            "rely": {
+                "operation": "AND",
+                "expression": [
+                    {
+                        "key": "tools",
+                        "value": "GOML"
+                    }
+                ]
+            }
+        },
+        "pyVersion": {
+            "rule": {},
+            "type": "enum-input",
+            "label": "Python版本",
+            "required": true,
+            "list": [
+                {
+                    "label": "Python2",
+                    "value": "py2"
+                },
+                {
+                    "label": "Python3",
+                    "value": "py3"
+                }
+            ],
+            "default": "py3",
+            "tabName": "basic",
+            "inline": true,
+            "rely": {
+                "operation": "AND",
+                "expression": [
+                    {
+                        "key": "tools",
+                        "value": "PYLINT"
+                    }
+                ]
+            }
+        },
+        "scriptType": {
+            "rule": {},
+            "type": "enum-input",
+            "label": "脚本类型",
+            "required": true,
+            "hidden": false,
+            "list": [
+                {
+                    "id": "sh",
+                    "value": "SHELL",
+                    "label": "Shell"
+                }
+            ],
+            "default": "SHELL",
+            "tabName": "basic",
+            "lang": "sh",
+            "inline": true
+        },
+        "script": {
+            "rule": {
+                "scriptRequired": true
+            },
+            "label": "脚本内容",
+            "hidden": false,
+            "default": "# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.sh\n# 确保build.sh能够编译代码\n# cd path/to/build.sh\n# sh build.sh",
+            "required": true,
+            "type": "atom-ace-editor",
+            "desc": "相应工具将使用该脚本编译代码，以便追踪编译过程，发现代码缺陷",
+            "tabName": "basic"
+        },
+        "languageRuleSetMap": {
+            "hidden": true,
+            "default": {}
+        },
+        "C_CPP_RULE": {
+            "rule": {
+                "ruleSetRequired": true
+            },
+            "type": "rule-set-select",
+            "label": "C/C++",
+            "required": true,
+            "tabName": "basic",
+            "inline": true,
+            "list": {},
+            "default": [],
+            "rely": {
+                "operation": "AND",
+                "expression": [
+                    {
+                        "key": "languages",
+                        "value": "C_CPP"
+                    }
+                ]
+            }
+        },
+        "toolScanType": {
+            "rule": {},
+            "type": "radio-group",
+            "label": "扫描方式",
+            "required": true,
+            "list": [
+                {
+                    "label": "增量扫描（推荐）",
+                    "value": "1"
+                },
+                {
+                    "label": "MR/PR扫描",
+                    "value": "2"
+                },
+                {
+                    "label": "全量扫描",
+                    "value": "0"
+                }
+            ],
+            "default": "1",
+            "desc": "增量扫描：扫描本次构建与上次构建的差异代码。首次为全量扫描。\nMR/PR扫描：扫描MR/PR的源分支与目标分支的差异代码。源分支代码需拉取到工作空间。\n全量扫描：扫描全部代码。Klocwork、Pinpoint、Gometalinter、重复率仅支持该扫描方式。"
+        },
+        "mrCommentEnable": {
+            "label": "",
+            "default": true,
+            "type": "atom-checkbox",
+            "text": "将扫描出的问题同步到工蜂代码查看页面"
+        },
+        "newDefectJudgeFromDate": {
+            "default": "",
+            "label": "新告警判定",
+            "desc": "所选日期之后产生的告警为新告警"
+        },
+        "transferAuthorList": {
+            "default": [],
+            "type": "author-transfer",
+            "label": "处理人转换",
+            "desc": "各工具原处理人的告警都将自动转给新处理人"
+        },
+        "path": {
+            "default": [],
+            "type": "item-edit"
+        },
+        "customPath": {
+            "default": [],
+            "type": "item-edit"
+        },
+        "openScanPrj": {
+            "label": "",
+            "default": false,
+            "placeholder": "",
+            "type": "atom-checkbox",
+            "text": "是否是开源扫描项目",
+            "desc": "选中则走开源扫描流程",
+            "required": false,
+            "disabled": false,
+            "hidden": true
+        }
+    },
+    "output": {
+        "BK_CI_CODECC_TASK_ID": {
+            "type": "string",
+            "description": "CodeCC的任务id"
+        },
+        "BK_CI_CODECC_TASK_STATUS": {
+            "type": "string",
+            "description": "CodeCC任务是否运行成功，成功则未true，不然取不到"
+        }
+    }
+}

@@ -1,0 +1,54 @@
+name: build
+on:
+  push:
+    branches: 
+      - master
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+
+env:
+  FILENAME: CodeCCCheckAtom
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    - uses: actions/checkout@v2
+    - name: setup npm
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: npm install package
+      run: |
+        cd src/frontend
+        pwd
+        ls -l
+        npm install
+        npm run public
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Cache Gradle
+      uses: actions/cache@v1
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+    - name: Gradle Build
+      uses: eskatos/gradle-command-action@v1
+      with:
+        build-root-directory: src/backend/core
+        gradle-version: 4.8.1
+        arguments: clean buildZip -DmavenCredUserName=${{ secrets.NAME }} -DmavenCredPassword=${{ secrets.GITHUB_TOKEN }} -DmavenRepoUrl=http://maven.aliyun.com/nexus/content/groups/public/
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: core.zip
+        # A file, directory or wildcard pattern that describes what to upload
+        path: src/backend/core/build/distributions/core.zip
