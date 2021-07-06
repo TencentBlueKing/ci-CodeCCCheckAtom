@@ -1,18 +1,18 @@
 {
-  "atomCode": "CodeccCheckAtom",
+  "atomCode": "CodeCCCheckAtom",
   "execution": {
-    "packagePath": "CodeccCheckAtom.jar",
+    "packagePath": "CodeCCCheckAtom.jar",
     "language": "java",
     "minimumVersion": "1.8",
-    "demands": [],
-    "target": "java -jar CodeccCheckAtom.jar"
+    "deFmands": [],
+    "target": "$bk_java_path -Dfile.encoding=utf8 -jar CodeCCCheckAtom.jar"
   },
   "input": {
     "languages": {
       "rule": {},
       "type": "atom-checkbox-list",
       "required": true,
-      "label": "工程语言",
+      "label": "",
       "list": [],
       "default": [],
       "desc": "不同代码语言，可选择相匹配的工具",
@@ -25,15 +25,18 @@
       "list": [
         {
           "value": "normal",
-          "label": "自主配置"
+          "label": "自主配置",
+          "disabled": false
         },
         {
           "value": "openScan",
-          "label": "按开源治理要求"
+          "label": "按开源治理要求",
+          "disabled": false
         },
         {
           "value": "epcScan",
-          "label": "按PCG EPC要求"
+          "label": "按PCG EPC要求",
+          "disabled": false
         }
       ],
       "default": "normal",
@@ -90,7 +93,7 @@
       "label": "GOPATH",
       "default": "",
       "required": false,
-      "desc": "可帮助工具查找依赖库代码路径，更好地扫描告警",
+      "desc": "可帮助工具查找依赖库代码路径，更好地扫描问题",
       "placeholder": "${WORKSPACE}下相对路径,多路径请用英文逗号分割,支持使用流水线变量",
       "tabName": "basic",
       "inline": true,
@@ -240,7 +243,7 @@
     },
     "botWebhookUrl": {
       "label": "Webhook地址",
-      "placeholder": "代码检查完成后推送Coverity、Klocwork遗留告警数至群中",
+      "placeholder": "代码检查完成后推送Coverity、Klocwork遗留问题数至群中",
       "type": "vuex-input",
       "default": "",
       "inline": true
@@ -251,7 +254,7 @@
     "botRemindRange": {
       "type": "enum-input",
       "default": "2",
-      "label": "告警",
+      "label": "问题",
       "list": [
         {
           "value": "2",
@@ -271,15 +274,15 @@
       "options": [
         {
           "id": "7",
-          "name": "总告警数"
+          "name": "总问题数"
         },
         {
           "id": "3",
-          "name": "严重 + 一般告警数"
+          "name": "严重 + 一般问题数"
         },
         {
           "id": "1",
-          "name": "严重告警数"
+          "name": "严重问题数"
         }
       ],
       "innerTab": true,
@@ -419,14 +422,14 @@
     },
     "newDefectJudgeFromDate": {
       "default": "",
-      "label": "新告警判定",
-      "desc": "所选日期之后产生的告警为新告警"
+      "label": "新问题判定",
+      "desc": "所选日期之后产生的问题为新问题"
     },
     "transferAuthorList": {
       "default": [],
       "type": "author-transfer",
       "label": "处理人转换",
-      "desc": "各工具原处理人的告警都将自动转给新处理人"
+      "desc": "各工具原处理人的问题都将自动转给新处理人"
     },
     "path": {
       "default": [],
@@ -441,17 +444,6 @@
       "type": "atom-checkbox",
       "disabled": false,
       "text": "对test_source项依然进行代码规范检查"
-    },
-    "openScanPrj": {
-      "label": "",
-      "default": false,
-      "placeholder": "",
-      "type": "atom-checkbox",
-      "text": "是否是开源扫描项目",
-      "desc": "选中则走开源扫描流程",
-      "required": false,
-      "disabled": false,
-      "hidden": true
     }
   },
   "output": {

@@ -107,7 +107,7 @@ allprojects {
         // baseName为插件默认打包名+".jar"，bkdevops-plugin.jar
         // 如果修改，则要一同修改插件task.json中的target启动命令
         // 为了省事，建议不用修改
-        baseName = "CodeccCheckAtom"
+        baseName = "CodeCCCheckAtom"
         classifier = null
         zip64 true
     }
@@ -119,7 +119,7 @@ allprojects {
 
     task buildZip(type: Zip, dependsOn: [shadowJar, copyFrontend]) {
         from "build/libs", "task.json", "quality.json", "../../frontend/target"
-        into "CodeccCheckAtom"
+        into "CodeCCCheckAtom"
     }
 
     check.dependsOn ktlint

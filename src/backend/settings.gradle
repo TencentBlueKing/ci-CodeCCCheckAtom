@@ -1,4 +1,4 @@
-rootProject.name = 'CodeccCheckAtom'
+rootProject.name = 'CodeCCCheckAtom'
 
 include ":core"
 
