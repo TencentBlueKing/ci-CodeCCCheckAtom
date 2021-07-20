@@ -53,6 +53,7 @@ object CodeccEnvHelper {
         // 第三方构建机
         if (AgentEnv.isThirdParty()) {
             println("[初始化] 检测到这是第三方构建机")
+            throw RuntimeException("目前CodeCC代码检查还不支持第三方构建机")
         }
     }
 
