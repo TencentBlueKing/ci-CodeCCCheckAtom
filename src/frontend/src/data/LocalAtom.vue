@@ -36,6 +36,10 @@
                 currentUserInfo: {}
             }
         },
+        beforeCreate () {
+            window.CODECC_SITE_URL = 'http://codecc.ce42.bktencent.com'
+            window.DEVOPS_SITE_URL = 'http://devops.ce42.bktencent.com'
+        },
         computed: {
             taskJson () {
                 return initTaskJson

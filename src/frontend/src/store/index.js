@@ -4,8 +4,6 @@ import request from '../utils/request'
 
 Vue.use(Vuex)
 
-const AJAX_URL_PREFIX = `${CODECC_SITE_URL}/ms`
-
 const store = new Vuex.Store({
     state: {
         projectId: '',
@@ -44,7 +42,7 @@ const store = new Vuex.Store({
     actions: {
         getToolMeta ({ commit, state }) {
             const params = { metadataType: 'LANG;TOOL_TYPE;TOOL_PATTERN;PARAM_TYPE' }
-            return request.get(`${AJAX_URL_PREFIX}/task/api/user/metadatas`, { params }).then(res => {
+            return request.get(`${window.CODECC_SITE_URL}/ms/task/api/user/metadatas`, { params }).then(res => {
                 const toolMeta = res.data || {}
                 commit('updateToolMeta', toolMeta)
                 return toolMeta
@@ -54,7 +52,7 @@ const store = new Vuex.Store({
         },
         getToolList ({ commit, state }) {
             const params = { isDetail: false }
-            return request.get(`${AJAX_URL_PREFIX}/ms/task/api/user/toolList`, { params }).then(res => {
+            return request.get(`${window.CODECC_SITE_URL}/ms/task/api/user/toolList`, { params }).then(res => {
                 const toolList = res.data || {}
                 commit('updateToolList', toolList)
                 return toolList
@@ -63,7 +61,7 @@ const store = new Vuex.Store({
             })
         },
         count ({ commit }, params) {
-            return request.post(`${AJAX_URL_PREFIX}/defect/api/user/checkerSet/count`, params).then(res => {
+            return request.post(`${window.CODECC_SITE_URL}/ms/defect/api/user/checkerSet/count`, params).then(res => {
                 const checkerSetLanguage = res.data || []
                 commit('updateCheckerSetLanguage', checkerSetLanguage)
                 return checkerSetLanguage
@@ -72,7 +70,7 @@ const store = new Vuex.Store({
             })
         },
         params ({ commit }) {
-            return request.get(`${AJAX_URL_PREFIX}/defect/api/user/checkerSet/params`).then(res => {
+            return request.get(`${window.CODECC_SITE_URL}/ms/defect/api/user/checkerSet/params`).then(res => {
                 const categoryList = res.data.catatories || []
                 const codeLangs = res.data.codeLangs || []
                 commit('updateCategoryList', categoryList)
@@ -83,14 +81,14 @@ const store = new Vuex.Store({
             })
         },
         listPageable ({ commit }, params) {
-            return request.post(`${AJAX_URL_PREFIX}/defect/api/user/checkerSet/listPageable`, params).then(res => {
+            return request.post(`${window.CODECC_SITE_URL}/ms/defect/api/user/checkerSet/listPageable`, params).then(res => {
                 return res.data || {}
             }).catch(e => {
                 console.error(e)
             })
         },
         otherList ({ commit }, params) {
-            return request.post(`${AJAX_URL_PREFIX}/defect/api/user/checkerSet/otherList`, params).then(res => {
+            return request.post(`${window.CODECC_SITE_URL}/ms/defect/api/user/checkerSet/otherList`, params).then(res => {
                 return res.data || {}
             }).catch(e => {
                 console.error(e)
@@ -99,14 +97,14 @@ const store = new Vuex.Store({
         install ({ commit }, params) {
             const checkerSetId = params.checkerSetId
             delete params.checkerSetId
-            return request.post(`${AJAX_URL_PREFIX}/defect/api/user/checkerSet/${checkerSetId}/relationships`, params).then(res => {
+            return request.post(`${window.CODECC_SITE_URL}/ms/defect/api/user/checkerSet/${checkerSetId}/relationships`, params).then(res => {
                 return res || {}
             }).catch(e => {
                 console.error(e)
             })
         },
         taskList ({ commit }, params) {
-            return request.post(`${AJAX_URL_PREFIX}/task/api/user/task/taskSortType/CREATE_DATE`, params).then(res => {
+            return request.post(`${window.CODECC_SITE_URL}/ms/task/api/user/task/taskSortType/CREATE_DATE`, params).then(res => {
                 return res.data || {}
             }).catch(e => {
                 console.error(e)
