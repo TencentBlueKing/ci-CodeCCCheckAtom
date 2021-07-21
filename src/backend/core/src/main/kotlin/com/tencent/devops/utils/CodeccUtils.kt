@@ -322,7 +322,7 @@ open class CodeccUtils {
             pinpointHomeBin = CodeccConfig.getConfig("PINPOINT_HOME_BIN") ?: "/data/bkdevops/apps/codecc/pinpoint",
             codeqlHomeBin = CodeccConfig.getConfig("CODEQL_HOME_BIN") ?: "/data/bkdevops/apps/codecc/codeql",
             clangHomeBin = CodeccConfig.getConfig("CLANG_HOME_BIN") ?: getClangToolPath(constants),
-            spotBugsHomeBin = CodeccConfig.getConfig("SPOTBUGS_HOME_BIN") ?: "/data/bkdevops/apps/codecc/spotbugs/bin",
+            spotBugsHomeBin = workspace.canonicalPath + "/.temp/codecc_scan/codecc_agent/bin/spotbugs/tool/spotbugs-4.0.6/bin",
             goPath = if (!param.goPath.isNullOrBlank()) {
                 param.goPath!!
             } else {
