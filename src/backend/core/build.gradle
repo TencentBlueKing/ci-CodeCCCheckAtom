@@ -110,6 +110,7 @@ allprojects {
         baseName = "CodeCCCheckAtom"
         classifier = null
         zip64 true
+        archiveName = "CodeCCCheckAtom"
     }
 
     task copyFrontend(type:Copy) {
@@ -120,6 +121,17 @@ allprojects {
     task buildZip(type: Zip, dependsOn: [shadowJar, copyFrontend]) {
         from "build/libs", "task.json", "quality.json", "../../frontend/target"
         into "CodeCCCheckAtom"
+//        rename ('core/build/distributions/core.zip','core/build/distributions/CodeCCCheckAtom.zip')
+    }
+
+    task buildAndCopyZip(type: Copy, dependsOn: [buildZip]) {
+        from "build/distributions"
+        into "build/distributions"
+        rename { String fileName ->
+            // a simple way is to remove the "-$version" from the jar filename
+            // but you can customize the filename replacement rule as you wish.
+            fileName = "CodeCCCheckAtom.zip"
+        }
     }
 
     check.dependsOn ktlint
