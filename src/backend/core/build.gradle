@@ -110,7 +110,6 @@ allprojects {
         baseName = "CodeCCCheckAtom"
         classifier = null
         zip64 true
-        archiveName = "CodeCCCheckAtom"
     }
 
     task copyFrontend(type:Copy) {
@@ -121,7 +120,6 @@ allprojects {
     task buildZip(type: Zip, dependsOn: [shadowJar, copyFrontend]) {
         from "build/libs", "task.json", "quality.json", "../../frontend/target"
         into "CodeCCCheckAtom"
-//        rename ('core/build/distributions/core.zip','core/build/distributions/CodeCCCheckAtom.zip')
     }
 
     task buildAndCopyZip(type: Copy, dependsOn: [buildZip]) {
