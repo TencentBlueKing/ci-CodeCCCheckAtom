@@ -1,11 +1,8 @@
 name: release
 on:
   push:
-    branches: 
-      - master
-    paths-ignore:
-      - 'README.md'
-      - '.gitignore'
+    tags:
+      - 'v*'
 
 env:
   FILENAME: CodeCCCheckAtom
@@ -53,21 +50,21 @@ jobs:
         # A file, directory or wildcard pattern that describes what to upload
         path: src/backend/core/build/distributions/CodeCCCheckAtom.zip
     - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: true
-          prerelease: true
-          - name: Upload Release Asset
-            uses: actions/upload-release-asset@v1
-            env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            with:
-              upload_url: ${{ steps.create_release.outputs.upload_url }}
-              asset_path: src/backend/core/build/distributions/CodeCCCheckAtom.zip
-              asset_name: CodeCCCheckAtom.zip
-              asset_content_type: application/zip
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        draft: true
+        prerelease: true
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: src/backend/core/build/distributions/CodeCCCheckAtom.zip
+        asset_name: CodeCCCheckAtom.zip
+        asset_content_type: application/zip
