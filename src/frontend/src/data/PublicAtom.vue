@@ -69,8 +69,8 @@
                     this.containerInfo = e.data.containerInfo
                     this.atomDisabled = e.data.atomDisabled
                     this.currentUserInfo = e.data.currentUserInfo
-                    window.CODECC_SITE_URL = e.data.envConf.BK_CODECC_FRONTEND_PUBLIC_URL
-                    window.DEVOPS_SITE_URL = e.data.envConf.BK_CI_FRONTEND_PUBLIC_URL
+                    window.CODECC_SITE_URL = e.data.envConf.BK_CODECC_PUBLIC_URL
+                    window.DEVOPS_SITE_URL = e.data.envConf.BK_CI_PUBLIC_URL
                     this.hasInitData = true
                 }
             })
