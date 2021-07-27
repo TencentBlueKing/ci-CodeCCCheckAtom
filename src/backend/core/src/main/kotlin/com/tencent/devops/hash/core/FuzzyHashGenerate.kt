@@ -21,7 +21,6 @@ object FuzzyHashGenerate {
     fun fuzzyHashGenerate(inputStr: String): String? {
         //1. 初始化上下文对象
         val fuzzyContext = FuzzyState(
-                totalSize = 0,
                 fixedSize = 0,
                 reduceBorder = MIN_BLOCKSIZE.toLong() * SPAMSUM_LENGTH,
                 bhStart = 0,
@@ -48,17 +47,10 @@ object FuzzyHashGenerate {
         if (!fuzzySetTotalInputLength(fuzzyContext, inputStr)) {
             return null
         }
-        //3.逐个传入字符串中的字符，进行滚动哈希，并计算强哈希,在此之前需要设置totalSize
-        val ssdeepMaxLength = SSDEEP_TOTAL_SIZE_MAX.toLong()
-        if (inputStr.length > ssdeepMaxLength) {
-            fuzzyContext.totalSize = ssdeepMaxLength - 1
-        } else {
-            fuzzyContext.totalSize += inputStr.length
-        }
         inputStr.forEach {
             fuzzyEngineStep(fuzzyContext, it)
         }
-        return fuzzyDigest(fuzzyContext, 0)
+        return fuzzyDigest(fuzzyContext)
     }
 
     private fun blockSizeShift(index: Int): ULong {
@@ -134,6 +126,7 @@ object FuzzyHashGenerate {
         h = h shr fuzzyContext.bhStart
         var i = fuzzyContext.bhStart
 
+        //达到分片条件
         run trigger@{
             do {
                 with(fuzzyContext) {
@@ -201,7 +194,7 @@ object FuzzyHashGenerate {
         if (fuzzyContext.bhEnd - fuzzyContext.bhStart < 2) {
             return
         }
-        if (fuzzyContext.reduceBorder >= if ((fuzzyContext.flags and FUZZY_STATE_SIZE_FIXED) != 0) fuzzyContext.fixedSize else fuzzyContext.totalSize) {
+        if (fuzzyContext.reduceBorder >= fuzzyContext.fixedSize) {
             return
         }
         if (null != fuzzyContext.bh[fuzzyContext.bhStart + 1] && fuzzyContext.bh[fuzzyContext.bhStart + 1]!!.dIndex < SPAMSUM_LENGTH / 2) {
@@ -215,31 +208,27 @@ object FuzzyHashGenerate {
     /**
      * 根据哈希的计算值，拼装完整的计算结果
      */
-    private fun fuzzyDigest(fuzzyContext: FuzzyState, flags: Int): String? {
+    private fun fuzzyDigest(fuzzyContext: FuzzyState): String? {
         var bi = fuzzyContext.bhStart
         val h = RollHashUtil.rollSum(fuzzyContext.rollState)
         var result: String
 
         if(fuzzyContext.bhStart > fuzzyContext.bhEnd){
+            println("start point is larger than end")
             return null
         }
-        if (!(bi == 0 || blockSizeShift(bi).toLong() / 2 * SPAMSUM_LENGTH < fuzzyContext.totalSize)) {
+        if (!(bi == 0 || blockSizeShift(bi).toLong() / 2 * SPAMSUM_LENGTH < fuzzyContext.fixedSize)) {
             println("length with blocksize shift $bi is to large")
             return null
         }
 
-        if (fuzzyContext.totalSize.toULong() > SSDEEP_TOTAL_SIZE_MAX) {
-            return null
-        }
-
-        if ((fuzzyContext.flags and FUZZY_STATE_SIZE_FIXED > 0) &&
-                fuzzyContext.fixedSize != fuzzyContext.totalSize
-        ) {
+        if (fuzzyContext.fixedSize.toULong() > SSDEEP_TOTAL_SIZE_MAX) {
+            println("fixed size is larger then limit")
             return null
         }
 
         //估算blocksize确定值
-        while (blockSizeShift(bi).toLong() * SPAMSUM_LENGTH < fuzzyContext.totalSize) {
+        while (blockSizeShift(bi).toLong() * SPAMSUM_LENGTH < fuzzyContext.fixedSize) {
             bi++
         }
         if (bi >= fuzzyContext.bhEnd) {
@@ -251,6 +240,7 @@ object FuzzyHashGenerate {
             bi--
         }
         if (bi > 0 && (null == fuzzyContext.bh[bi] || fuzzyContext.bh[bi]!!.dIndex < SPAMSUM_LENGTH / 2)) {
+            println("block size length is smaller than spamsum length")
             return null
         }
 
@@ -262,6 +252,7 @@ object FuzzyHashGenerate {
         result =
                 "${blockSizeShift(bi)}:${String(fuzzyContext.bh[bi]!!.digest).filter {it != Char.MIN_VALUE}}"
         if (result.length > FUZZY_MAX_RESULT - 1) {
+            println("result length is smaller than fuzzy max result")
             return null
         }
 
@@ -269,18 +260,18 @@ object FuzzyHashGenerate {
         if (bi < fuzzyContext.bhEnd - 1) {
             ++bi
             if (null == fuzzyContext.bh[bi]) {
+                println("fuzzy context is null")
                 return null
             }
             var secondHash = String(fuzzyContext.bh[bi]!!.digest).filter { it != Char.MIN_VALUE }
-            if ((flags and FUZZY_FLAG_NOTRUNC) == 0 &&
-                    secondHash.length > SPAMSUM_LENGTH / 2
+            if (secondHash.length > SPAMSUM_LENGTH / 2 - 1
             ) {
                 secondHash = secondHash.substring(0, SPAMSUM_LENGTH / 2 - 1)
             }
             fuzzyContext.bh[bi]!!.digest[fuzzyContext.bh[bi]!!.dIndex] = if (h != 0u) {
-                b64[if ((flags and FUZZY_FLAG_NOTRUNC) != 0) fuzzyContext.bh[bi]!!.h else fuzzyContext.bh[bi]!!.halfh]
+                b64[fuzzyContext.bh[bi]!!.halfh]
             } else {
-                if ((flags and FUZZY_FLAG_NOTRUNC) != 0) fuzzyContext.bh[bi]!!.digest[fuzzyContext.bh[bi]!!.dIndex] else fuzzyContext.bh[bi]!!.halfDigest
+                fuzzyContext.bh[bi]!!.halfDigest
             }
             if (fuzzyContext.bh[bi]!!.digest[fuzzyContext.bh[bi]!!.dIndex] != Char.MIN_VALUE
             ) {
@@ -289,18 +280,22 @@ object FuzzyHashGenerate {
             result = "$result:$secondHash"
         } else if (h != 0u) {
             if (bi != 0 && bi != NUM_BLOCKHASHES - 1) {
+                println("block index is not equal to number blockhashes")
                 return null
             }
-            if (bi == 0) {
-                result = if (null != fuzzyContext.bh[bi]) {
+            result = if(bi == 0) {
+                if(null != fuzzyContext.bh[bi]) {
                     "$result:${b64[fuzzyContext.bh[bi]!!.h]}"
                 } else {
-                    "$result:${b64[fuzzyContext.lasth]}"
+                    result
                 }
+            } else {
+                "$result:${b64[fuzzyContext.lasth]}"
             }
         }
-        result = result.plus(Char.MIN_VALUE)
+//        result = result.plus(0.toChar())
         if (result.length > FUZZY_MAX_RESULT) {
+            println("result length is larger than fuzzy max result")
             return null
         }
         return result

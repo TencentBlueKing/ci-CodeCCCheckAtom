@@ -3,7 +3,6 @@ package com.tencent.devops.hash.pojo
 import com.tencent.devops.hash.constant.NUM_BLOCKHASHES
 
 data class FuzzyState(
-        var totalSize : Long,
         var fixedSize : Long,
         var reduceBorder : Long,
         var bhStart : Int,
@@ -21,7 +20,6 @@ data class FuzzyState(
 
         other as FuzzyState
 
-        if (totalSize != other.totalSize) return false
         if (fixedSize != other.fixedSize) return false
         if (reduceBorder != other.reduceBorder) return false
         if (bhStart != other.bhStart) return false
@@ -36,10 +34,8 @@ data class FuzzyState(
         return true
     }
 
-    @ExperimentalUnsignedTypes
     override fun hashCode(): Int {
-        var result = totalSize.hashCode()
-        result = 31 * result + fixedSize.hashCode()
+        var result = fixedSize.hashCode()
         result = 31 * result + reduceBorder.hashCode()
         result = 31 * result + bhStart
         result = 31 * result + bhEnd
@@ -51,4 +47,5 @@ data class FuzzyState(
         result = 31 * result + lasth
         return result
     }
+
 }

@@ -100,7 +100,7 @@ class Scan(
 //                    toolName = toolName)
             LogUtils.printLog("scan success, pp hash output file")
             if (toolName != "githubstatistic"  && toolName !in ToolConstants.CODE_TOOLS_ACOUNT) {
-                newHashOutput()
+                newHashOutput(toolName)
 //                CodeccWeb.upload(landunParam = commandParam.landunParam,
 //                        filePath = outputFile,
 //                        resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_tool_scan_output_hash.json",
@@ -374,10 +374,14 @@ class Scan(
     }
 
     @ExperimentalUnsignedTypes
-    private fun newHashOutput(){
+    private fun newHashOutput(toolName: String){
         val inputFile = getToolDataPath() + File.separator + "tool_scan_output.json"
         val outputFile = getToolDataPath() + File.separator + "tool_scan_output_hash.json"
-        HashGenerateProcess.hashMethod(5, inputFile, outputFile)
+        if (toolName == ToolConstants.CCN) {
+            HashGenerateProcess.hashCCNMethod(inputFile, outputFile)
+        } else if(toolName !in ToolConstants.NOLINT_TOOLS) {
+            HashGenerateProcess.hashMethod(5, inputFile, outputFile)
+        }
     }
 
     private fun hashOutput() {

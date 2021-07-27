@@ -25,7 +25,6 @@ data class RollState @ExperimentalUnsignedTypes constructor(
         return true
     }
 
-    @ExperimentalUnsignedTypes
     override fun hashCode(): Int {
         var result = window.contentHashCode()
         result = 31 * result + h1.hashCode()
