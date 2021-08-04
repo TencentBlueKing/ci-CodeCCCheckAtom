@@ -37,8 +37,8 @@
             }
         },
         beforeCreate () {
-            window.CODECC_SITE_URL = 'http://codecc.ce42.bktencent.com'
-            window.DEVOPS_SITE_URL = 'http://devops.ce42.bktencent.com'
+            window.CODECC_SITE_URL = 'BK_CODECC_PUBLIC_URL'
+            window.DEVOPS_SITE_URL = 'BK_CI_PUBLIC_URL'
         },
         computed: {
             taskJson () {
