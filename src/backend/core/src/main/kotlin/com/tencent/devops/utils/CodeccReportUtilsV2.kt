@@ -262,7 +262,7 @@ object CodeccReportUtilsV2 {
                 }
 
                 indexHtmlBody.append("</div>\n")
-                if (toolTypeNameMap[toolNameEn]?.pattern == "LINT") indexHtmlBody.append("<p class=\"lint-tool-tips\">注：以上为起始时间后产生的新告警，鼓励该工具新告警清零。</p>\n")
+//                if (toolTypeNameMap[toolNameEn]?.pattern == "LINT") indexHtmlBody.append("<p class=\"lint-tool-tips\">注：以上为起始时间后产生的新告警，鼓励该工具新告警清零。</p>\n")
                 indexHtmlBody.append("</section>\n")
             }
         }
