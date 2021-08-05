@@ -31,11 +31,6 @@
             </component>
         </form-field>
 
-        <form-field key="newDefectJudgeFromDate" class="head-level" :desc="atomModel.newDefectJudgeFromDate.desc" :required="atomModel.newDefectJudgeFromDate.required" :label="atomModel.newDefectJudgeFromDate.label" :is-error="errors.has('newDefectJudgeFromDate')" :error-msg="errors.first('newDefectJudgeFromDate')">
-            <bk-date-picker class="mr15" name="newDefectJudgeFromDate" :value="atomValue.newDefectJudgeFromDate" placeholder="选择日期" @change="handleSelectDate"></bk-date-picker>
-            <span style="color: #666;font-size: 12px;">之后产生的告警为新告警</span>
-        </form-field>
-
         <form-field key="transferAuthorList" class="head-level" :desc="atomModel.transferAuthorList.desc" :required="atomModel.transferAuthorList.required" :label="atomModel.transferAuthorList.label" :is-error="errors.has('transferAuthorList')" :error-msg="errors.first('transferAuthorList')">
             <component 
                 :is="atomModel.transferAuthorList.type" 
