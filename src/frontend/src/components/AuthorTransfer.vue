@@ -14,15 +14,14 @@
                             :value="param.sourceAuthor" />
                     </form-field>
                     <form-field :is-error="errors.has(`param-${index}.targetAuthor`)" :error-msg="errors.first(`param-${index}.targetAuthor`)">
-                        <bk-member-selector 
+                        <vuex-input
                             :data-vv-scope="`param-${index}`"
-                            name="targetAuthor"
-                            placeholder="目标处理人" 
-                            :disabled="disabled" 
+                            :disabled="disabled"
+                            :handle-change="(name, value) => handleParamChange(name, value, index)"
                             v-validate.initial="`required`"
-                            :value="param.targetAuthor.split(',')" 
-                            @change="(value) => handleParamChange('targetAuthor', value.join(','), index)"
-                        />
+                            name="targetAuthor"
+                            placeholder="目标处理人"
+                            :value="param.targetAuthor" />
                     </form-field>
                     <i @click.stop.prevent="editParam(index, false)" class="bk-icon icon-minus hover-click" v-if="!disabled" />
                 </li>
