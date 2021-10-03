@@ -329,10 +329,6 @@ object CodeccParamsHelper {
         }
     }
 
-    fun getClangToolPath(constants: LinuxCodeccConstants): String {
-        return constants.CLANG_PATH.canonicalPath
-    }
-
     fun getPyLint2Path(constants: LinuxCodeccConstants): String {
         return if (CodeccEnvHelper.getOS() != OSType.WINDOWS) {
             constants.PYLINT2_PATH

@@ -188,6 +188,26 @@ object CodeccConfig {
     fun checkThirdEnv(commandParam: CommandParam, toolName: String) {
     }
 
+    @Synchronized
+    fun downloadToolZip(commandParam: CommandParam, toolName: String) {
+        val softwareRootPath = "/data/codecc_software"
+        var toolSourceName = ""
+        var toolBinaryName = ""
+        var suffix = ""
+        if ((toolName in ToolConstants.COMPILE_TOOLS) && !checkPythonAll(softwareRootPath)) {
+            throw CodeccUserConfigException("Codecc need install python3")
+        }
+        if (ToolConstants.CLANG == toolName) {
+            toolSourceName = "clang_scan.zip"
+            toolBinaryName = "clang-${getConfig("CLANG_NEW_VERSION")}"
+            suffix = "tar.xz"
+            commandParam.clangHomeBin = CodeccWeb.downloadCompileTool(toolName, toolSourceName, toolBinaryName, suffix)
+        }else if(ToolConstants.CLANGWARNING == toolName) {
+            toolSourceName = "clangwarning_scan.zip"
+            CodeccWeb.downloadCompileTool(toolName, toolSourceName, toolBinaryName, suffix)
+        }
+    }
+
     private fun checkPython(home: String): Boolean {
         val cmd = "python3 --version"
         val output = try {
