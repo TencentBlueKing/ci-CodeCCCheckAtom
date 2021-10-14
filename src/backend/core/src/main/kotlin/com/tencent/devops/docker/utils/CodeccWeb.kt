@@ -83,7 +83,7 @@ object CodeccWeb : BaseApi() {
         var conn: HttpURLConnection?
         var inputStream: InputStream?
         var rootPath = "/data/codecc_software"
-        var url = "https://github.com/TencentBlueKing/codeccScan/raw/master/${toolName}_scan/$toolSourceZip"
+        var url = "https://hub.fastgit.org/TencentBlueKing/codeccScan/raw/master/${toolName}_scan/$toolSourceZip"
         val toolHome = "$rootPath/${toolName}_scan"
         if (File(toolHome).exists() && File(toolHome).list()?.isNotEmpty() == true) {
             if (File("$toolHome/$toolBinaryName").exists()) {
@@ -118,6 +118,7 @@ object CodeccWeb : BaseApi() {
             bis.close()
             conn.disconnect()
 
+            LogUtils.printLog("start to unzip tool and tool source zip")
             FileUtil.unzipFile(toolFullPath, toolHome)
             if (toolBinaryName != ""){
                 if ("tar.gz" == suffix) {
@@ -132,6 +133,7 @@ object CodeccWeb : BaseApi() {
             e.printStackTrace()
             throw CodeccDependentException("get the download file $toolName failed! please check it!: ${e.message}")
         }
+        LogUtils.printLog("download tool zip done.")
         return if (File("$toolHome/$toolBinaryName").exists()) {
             return "$toolHome/$toolBinaryName"
         } else {

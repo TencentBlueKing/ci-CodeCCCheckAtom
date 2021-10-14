@@ -131,7 +131,7 @@ object Build {
 //            runCompileTools = false //just for test
             if (runCompileTools) {
                 // 编译型工具，串行
-                CodeccWeb.downloadAnyUnzip(commandParam)
+                //CodeccWeb.downloadAnyUnzip(commandParam)
                 executor.execute {
                     var curTool = ""
                     try {

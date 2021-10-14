@@ -13,6 +13,7 @@ import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.pojo.OSType
 import com.tencent.devops.pojo.exception.CodeccUserConfigException
 import com.tencent.devops.utils.CodeccEnvHelper
+import com.tencent.devops.utils.script.CommandLineUtils
 import com.tencent.devops.utils.script.ScriptUtils
 import java.io.File
 import java.util.*
@@ -191,6 +192,9 @@ object CodeccConfig {
     @Synchronized
     fun downloadToolZip(commandParam: CommandParam, toolName: String) {
         val softwareRootPath = "/data/codecc_software"
+        if (!File(softwareRootPath).exists()) {
+            File(softwareRootPath).mkdirs()
+        }
         var toolSourceName = ""
         var toolBinaryName = ""
         var suffix = ""
@@ -201,7 +205,10 @@ object CodeccConfig {
             toolSourceName = "clang_scan.zip"
             toolBinaryName = "clang-${getConfig("CLANG_NEW_VERSION")}"
             suffix = "tar.xz"
+            val clangVersion = toolBinaryName.replace(Regex("\\.\\d*"), "")
             commandParam.clangHomeBin = CodeccWeb.downloadCompileTool(toolName, toolSourceName, toolBinaryName, suffix)
+            CommandLineUtils.execute("chmod -R 755 ${commandParam.clangHomeBin}", File("."), true)
+            ScriptUtils.execute("ln -s -f $clangVersion clang;ln -s -f clang clang++", File("$softwareRootPath/clang_scan/$toolBinaryName/bin"))
         }else if(ToolConstants.CLANGWARNING == toolName) {
             toolSourceName = "clangwarning_scan.zip"
             CodeccWeb.downloadCompileTool(toolName, toolSourceName, toolBinaryName, suffix)
