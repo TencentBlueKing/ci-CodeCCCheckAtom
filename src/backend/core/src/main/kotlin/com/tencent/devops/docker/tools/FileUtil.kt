@@ -30,6 +30,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
+import org.apache.commons.compress.compressors.xz.XZCompressorInputStream
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
@@ -172,6 +173,27 @@ object FileUtil {
     fun unzipTgzFile(tgzFile: String, destDir: String = "./") {
         val blockSize = 4096
         val inputStream = TarArchiveInputStream(GzipCompressorInputStream(File(tgzFile).inputStream()), blockSize)
+        while (true) {
+            val entry = inputStream.nextTarEntry ?: break
+            if (entry.isDirectory) { // 是目录
+                val dir = File(destDir, entry.name)
+                if (!dir.exists()) dir.mkdirs()
+            } else { // 是文件
+                File(destDir, entry.name).outputStream().use { outputStream ->
+                    while (true) {
+                        val buf = ByteArray(4096)
+                        val len = inputStream.read(buf)
+                        if (len == -1) break
+                        outputStream.write(buf, 0, len)
+                    }
+                }
+            }
+        }
+    }
+
+    fun unzipTxzFile(txzFile: String, destDir: String = "./") {
+        val blockSize = 4096
+        val inputStream = TarArchiveInputStream(XZCompressorInputStream(File(txzFile).inputStream()), blockSize)
         while (true) {
             val entry = inputStream.nextTarEntry ?: break
             if (entry.isDirectory) { // 是目录

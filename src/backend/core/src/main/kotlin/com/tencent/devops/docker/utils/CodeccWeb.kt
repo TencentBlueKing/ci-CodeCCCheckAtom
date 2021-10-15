@@ -6,7 +6,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.api.BaseApi
 import com.tencent.bk.devops.plugin.utils.JsonUtil
 import com.tencent.bk.devops.plugin.utils.OkhttpUtils
-import com.tencent.devops.docker.ScanComposer
 import com.tencent.devops.docker.pojo.*
 import com.tencent.devops.docker.tools.FileUtil
 import com.tencent.devops.docker.tools.LogUtils
@@ -25,7 +24,12 @@ import org.apache.commons.codec.digest.DigestUtils
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.BufferedOutputStream
+import java.io.BufferedInputStream
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 
 object CodeccWeb : BaseApi() {
 
@@ -72,6 +76,69 @@ object CodeccWeb : BaseApi() {
 
         LogUtils.printDebugLog("binFolder is $binFolder")
         return binFolder
+    }
+
+    fun downloadCompileTool(toolName: String, toolSourceZip: String, toolBinaryName: String, suffix: String) : String{
+        var fileOut: FileOutputStream?
+        var conn: HttpURLConnection?
+        var inputStream: InputStream?
+        var rootPath = "/data/codecc_software"
+        var url = "https://hub.fastgit.org/TencentBlueKing/codeccScan/raw/master/${toolName}_scan/$toolSourceZip"
+        val toolHome = "$rootPath/${toolName}_scan"
+        if (File(toolHome).exists() && File(toolHome).list()?.isNotEmpty() == true) {
+            if (File("$toolHome/$toolBinaryName").exists()) {
+                return "$toolHome/$toolBinaryName"
+            }
+        }
+        if (!File(rootPath).exists()) {
+            File(rootPath).mkdirs()
+        }
+        try {
+            LogUtils.printLog("start to download tool zip")
+            val httpUrl = URL(url)
+            conn = httpUrl.openConnection() as HttpURLConnection
+            conn.setRequestMethod("GET")
+            conn.setDoInput(true)
+            conn.setDoOutput(true)
+            conn.setUseCaches(false)
+            conn.connect()
+            inputStream = conn.getInputStream()
+            val bis = BufferedInputStream(inputStream)
+            val toolFullPath = rootPath + File.separator + toolSourceZip
+            fileOut = FileOutputStream(toolFullPath)
+            val bos = BufferedOutputStream(fileOut)
+            val buf = ByteArray(4096)
+            var length = bis.read(buf)
+            //保存文件
+            while (length != -1) {
+                bos.write(buf, 0, length)
+                length = bis.read(buf)
+            }
+            bos.close()
+            bis.close()
+            conn.disconnect()
+
+            LogUtils.printLog("start to unzip tool and tool source zip")
+            FileUtil.unzipFile(toolFullPath, toolHome)
+            if (toolBinaryName != ""){
+                if ("tar.gz" == suffix) {
+                    FileUtil.unzipTgzFile("$toolHome/$toolBinaryName.$suffix", toolHome)
+                } else if ("zip" == suffix) {
+                    FileUtil.unzipFile("$toolHome/$toolBinaryName.$suffix", toolHome)
+                } else if ("tar.xz" == suffix) {
+                    FileUtil.unzipTxzFile("$toolHome/$toolBinaryName.$suffix", toolHome)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw CodeccDependentException("get the download file $toolName failed! please check it!: ${e.message}")
+        }
+        LogUtils.printLog("download tool zip done.")
+        return if (File("$toolHome/$toolBinaryName").exists()) {
+            return "$toolHome/$toolBinaryName"
+        } else {
+            return "$toolHome"
+        }
     }
 
     fun download(filePath: String, resultName: String, downloadType: String, landunParam: LandunParam): Boolean {

@@ -76,6 +76,7 @@ object ScanComposer {
         }
         // check third env
         CodeccConfig.checkThirdEnv(commandParam, toolName)
+        CodeccConfig.downloadToolZip(commandParam, toolName)
 
         // 排队开始
         CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 1, 3)

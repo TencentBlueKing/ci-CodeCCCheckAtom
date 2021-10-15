@@ -83,7 +83,7 @@
                     {
                         id: 'script',
                         label: '编译脚本',
-                        rely: ['COVERITY', 'KLOCWORK', 'PINPOINT', 'CODEQL', 'CLANG', 'SPOTBUGS'],
+                        rely: ['COVERITY', 'KLOCWORK', 'PINPOINT', 'CODEQL', 'CLANG', 'CLANGWARNING', 'SPOTBUGS'],
                         item: ['scriptType', 'script']
                     }
                 ],

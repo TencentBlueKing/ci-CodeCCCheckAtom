@@ -49,7 +49,6 @@ import com.tencent.devops.pojo.codeccHost
 import com.tencent.devops.pojo.exception.CodeccUserConfigException
 import com.tencent.devops.pojo.imageRegistryPwdKey
 import com.tencent.devops.utils.CodeccParamsHelper.addCommonParams
-import com.tencent.devops.utils.CodeccParamsHelper.getClangToolPath
 import com.tencent.devops.utils.CodeccParamsHelper.getCovToolPath
 import com.tencent.devops.utils.CodeccParamsHelper.getGoMetaLinterPath
 import com.tencent.devops.utils.CodeccParamsHelper.getGoRootPath
@@ -216,9 +215,6 @@ open class CodeccUtils {
         if (!AgentEnv.isThirdParty() && scanTools.contains("KLOCWORK")) {
             map["KLOCWORK_HOME_BIN"] = getKlocToolPath(constants)
         }
-        if (!AgentEnv.isThirdParty() && scanTools.contains("CLANG")) {
-            map["CLANG_HOME_BIN"] = getClangToolPath(constants)
-        }
         if (!param.goPath.isNullOrBlank()) {
             map["GO_PATH"] = param.goPath!!
         }
@@ -321,7 +317,7 @@ open class CodeccUtils {
             klockWorkHomeBin = CodeccConfig.getConfig("KLOCWORK_HOME_BIN") ?: getKlocToolPath(constants),
             pinpointHomeBin = CodeccConfig.getConfig("PINPOINT_HOME_BIN") ?: "/data/bkdevops/apps/codecc/pinpoint",
             codeqlHomeBin = CodeccConfig.getConfig("CODEQL_HOME_BIN") ?: "/data/bkdevops/apps/codecc/codeql",
-            clangHomeBin = CodeccConfig.getConfig("CLANG_HOME_BIN") ?: getClangToolPath(constants),
+            clangHomeBin = CodeccConfig.getConfig("CLANG_HOME_BIN") ?: "/data/codecc_software/clang_scan/clang-11.0/bin",
             spotBugsHomeBin = workspace.canonicalPath + "/.temp/codecc_scan/codecc_agent/bin/spotbugs/tool/spotbugs-4.0.6/bin",
             goPath = if (!param.goPath.isNullOrBlank()) {
                 param.goPath!!
@@ -476,9 +472,6 @@ open class CodeccUtils {
         command.add("-DSYNC_TYPE=${param.asynchronous == false}")
         if (!AgentEnv.isThirdParty() && scanTools.contains("KLOCWORK")) command.add(
             "-DKLOCWORK_HOME_BIN=${getKlocToolPath(constants)}"
-        )
-        if (!AgentEnv.isThirdParty() && scanTools.contains("CLANG")) command.add(
-            "-DCLANG_HOME_BIN=${getClangToolPath(constants)}"
         )
         if (!param.goPath.isNullOrBlank()) command.add("-DGO_PATH=${param.goPath}")
         command.add("-DCODECC_API_WEB_SERVER=" + codeccExecuteConfig.atomContext.getSensitiveConfParam("CODECC_API_WEB_SERVER").removePrefix("http://").removeSuffix(":80"))

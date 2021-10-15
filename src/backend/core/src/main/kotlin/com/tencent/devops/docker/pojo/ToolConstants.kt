@@ -11,10 +11,11 @@ object ToolConstants {
     const val CLOC = "cloc"
     const val SCC = "scc"
     const val CLANG = "clang"
+    const val CLANGWARNING = "clangwarning"
     const val SPOTBUGS = "spotbugs"
     const val GITHUBSTATISTIC = "githubstatistic"
     const val RIPS = "rips"
-    val COMPILE_TOOLS = listOf(COVERITY, KLOCWORK, PINPOINT,CODEQL, CLANG, SPOTBUGS)
+    val COMPILE_TOOLS = listOf(COVERITY, KLOCWORK, PINPOINT,CODEQL, CLANG, CLANGWARNING, SPOTBUGS)
     val NOLINT_TOOLS = listOf(DUPC, CCN, TSCCN, CLOC, SCC, COVERITY, KLOCWORK, PINPOINT, GITHUBSTATISTIC)
     val CODE_TOOLS_ACOUNT = listOf(CLOC, SCC)
 }

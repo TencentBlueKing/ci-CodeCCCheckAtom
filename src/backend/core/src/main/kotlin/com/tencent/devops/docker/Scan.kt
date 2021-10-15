@@ -50,8 +50,7 @@ class Scan(
         LogUtils.printLog("toolName: $toolName")
         LogUtils.printLog("compile_tools: ${ToolConstants.COMPILE_TOOLS}")
         if (toolName in ToolConstants.COMPILE_TOOLS) {
-            val toolFolder = commandParam.projectBuildPath + File.separator + ".temp" + File.separator + "codecc_scan" +
-                File.separator + "codecc_agent" + File.separator + "bin" + File.separator + toolName
+            val toolFolder = "/data/codecc_software/${toolName}_scan"
             val command = CodeccConfig.getConfig("${toolName.toUpperCase()}_SCAN_COMMAND")!!
                 .replace("##", " ")
                 .replace("{input.json}", inputFile)

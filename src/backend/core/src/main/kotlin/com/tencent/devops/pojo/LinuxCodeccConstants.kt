@@ -83,7 +83,6 @@ class LinuxCodeccConstants(bkWorkspace: String) {
     } else {
         File(THIRD_CODECC_FOLDER, "gometalinter_linux.zip")
     }
-    val THIRD_CLANG_FILE = File(THIRD_CODECC_FOLDER, "clang-8.0.zip")
 
     val COVRITY_HOME = if (AgentEnv.isThirdParty()) {
         THIRD_COVERITY_FILE.canonicalPath.removeSuffix(".tar.gz")
@@ -95,12 +94,6 @@ class LinuxCodeccConstants(bkWorkspace: String) {
         File(THIRD_CODECC_FOLDER, THIRD_KLOCWORK_FILE.name)
     } else {
         File("/data/bkdevops/apps/codecc/kw-analysis/bin")
-    }
-
-    val CLANG_PATH = if (AgentEnv.isThirdParty()) {
-        File(THIRD_CODECC_FOLDER, THIRD_CLANG_FILE.name)
-    } else {
-        File("/data/bkdevops/apps/codecc/clang-8.0/bin")
     }
 
     val PYTHON2_PATH = if (AgentEnv.isThirdParty()) {
