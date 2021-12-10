@@ -513,7 +513,7 @@ class Scan(
 
         LogUtils.printDebugLog("set input data sub code path list param: ${commandParam.subCodePathList}")
         commandParam.subCodePathList.forEach { whitePath ->
-            if (whitePath.isNotBlank()) {
+            if (StringUtils.isBlank(whitePath)) {
                 return@forEach
             }
             if (File(whitePath).exists()) {
