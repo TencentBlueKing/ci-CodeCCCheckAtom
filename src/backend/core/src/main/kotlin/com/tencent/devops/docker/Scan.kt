@@ -20,6 +20,7 @@ import com.tencent.devops.pojo.scan.LARGE_REPORT_TAIL_HTML
 import com.tencent.devops.pojo.scan.ScanRepo
 import com.tencent.devops.utils.CodeccParamsHelper
 import com.tencent.devops.utils.script.ScriptUtils
+import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
