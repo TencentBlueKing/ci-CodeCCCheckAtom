@@ -33,7 +33,10 @@ object DockerRun {
                 PcgDevCloudExecutor.PCG_TOKEN_SECRET_ID to (commandParam.extraPrams[PcgDevCloudExecutor.PCG_TOKEN_SECRET_ID] ?: ""),
                 PcgDevCloudExecutor.PCG_TOKEN_SECRET_KEY to (commandParam.extraPrams[PcgDevCloudExecutor.PCG_TOKEN_SECRET_KEY] ?: ""),
                 PcgDevCloudExecutor.PCG_REQUEST_HOST to (commandParam.extraPrams[PcgDevCloudExecutor.PCG_REQUEST_HOST] ?: "")
-            ))
+            )),
+            // 不指定CPU
+            cpu = null,
+            memory = null
         )
         val dockerRunResponse = api.dockerRunCommand(
             projectId = commandParam.landunParam.devopsProjectId,
