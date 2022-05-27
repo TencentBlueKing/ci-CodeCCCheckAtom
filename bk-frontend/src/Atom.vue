@@ -70,9 +70,7 @@
                     { name: 'shield', label: '路径屏蔽' }
                 ],
                 active: 'basic',
-                tabRedTips: {
-                    'scan': !window.localStorage.getItem('mr-20200702')
-                }
+                tabRedTips: {}
             }
         },
         computed: {
