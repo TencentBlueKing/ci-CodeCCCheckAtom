@@ -166,7 +166,7 @@ object DockerRun {
             jobIp = jobStatusResp?.pod_result!![0].ip ?: ""
             val jobStatus = jobStatusResp.status
             if (KubernetesPodStatus.failed != jobStatus &&
-                KubernetesPodStatus.successed != jobStatus &&
+                "succeeded" != jobStatus &&
                 KubernetesPodStatus.running != jobStatus
             ) {
                 return DockerRunLogResponse(
@@ -211,7 +211,7 @@ object DockerRun {
         }
         LogUtils.printLog("[kubernetes]:getLog|finalStatus|resp|$finalStatus")
 
-        if (finalStatus?.status in listOf(KubernetesPodStatus.failed, KubernetesPodStatus.successed)) {
+        if (finalStatus?.status in listOf(KubernetesPodStatus.failed, "succeeded")) {
             Thread.sleep(6000)
             val finalLogs = api.getLog(jobName, startTimeStamp + 6000)
             if (finalStatus?.status == KubernetesPodStatus.failed) {
