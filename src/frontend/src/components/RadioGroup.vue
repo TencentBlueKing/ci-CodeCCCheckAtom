@@ -2,7 +2,6 @@
     <bk-radio-group @change="handleSelect" :value="value" :name="name">
         <bk-radio v-for="item in list" :key="item.id" class="bkdevops-radio" :value="item.value" :disabled="disabled || item.disabled">
             {{ item.label }}
-            <i v-if="handleRedPoint(item.value)" class="red-point"></i>
         </bk-radio>
     </bk-radio-group>
 </template>
@@ -46,9 +45,6 @@
                     value = false
                 }
                 this.handleChange(this.name, value)
-            },
-            handleRedPoint (value) {
-                return value === '2' && !window.localStorage.getItem('mr-20200702')
             }
         }
     }
