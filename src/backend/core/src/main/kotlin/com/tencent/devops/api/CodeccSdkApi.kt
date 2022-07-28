@@ -96,6 +96,7 @@ object CodeccSdkApi : BaseApi() {
                 "projectId" to projectName,
                 "projectName" to projectNameCn,
                 "pipelineId" to pipelineId,
+                "multiPipelineMark" to if(multiPipelineMark.isNullOrBlank()) null else multiPipelineMark,
                 "pipelineName" to pipelineName,
                 "scanType" to (scanType ?: (if (openScanProj == true) "0" else "1")),
                 "compilePlat" to getPlatForm(),
@@ -103,7 +104,7 @@ object CodeccSdkApi : BaseApi() {
                 "devopsTools" to "",
                 "devopsToolParams" to devopsToolParams,
                 "checkerSetList" to getRuleSetV3(param),
-                "nameCn" to pipelineName,
+                "nameCn" to if(multiPipelineMark.isNullOrBlank()) pipelineName else "$pipelineName($multiPipelineMark)",
                 "atomCode" to "CodeccCheckAtomDebug",
                 "projectBuildCommand" to script,
                 "projectBuildType" to if (getOS() == OSType.WINDOWS) "BAT" else "SHELL",
@@ -277,10 +278,13 @@ object CodeccSdkApi : BaseApi() {
         taskExecution(objectMapper.writeValueAsString(body), "$deletePath/$taskId", headers, "DELETE")
     }
 
-    fun getTaskByPipelineId(pipelineId: String, userId: String): PipelineTaskVO {
+    fun getTaskByPipelineId(pipelineId: String, multiPipelineMark: String?, userId: String): PipelineTaskVO {
         println("get the codecc task if exist: $pipelineId, $userId")
         val header = mutableMapOf(CONTENT_TYPE to CONTENT_TYPE_JSON)
-        val path = getTaskPath.replace("{pipelineId}", pipelineId).replace("{userId}", userId)
+        val path = if (multiPipelineMark.isNullOrBlank())
+            getTaskPath.replace("{pipelineId}", pipelineId).replace("{userId}", userId)
+        else
+            getTaskPath.replace("{pipelineId}", pipelineId).replace("{userId}", userId).plus("&multiPipelineMark=$multiPipelineMark")
         val result = taskExecution("", path, header, "GET")
         println("Get the codecc task($result)")
         return JsonUtil.to(result, object : TypeReference<Result<PipelineTaskVO>>() {}).data!!

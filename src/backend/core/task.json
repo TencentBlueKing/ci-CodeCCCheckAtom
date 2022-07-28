@@ -164,6 +164,16 @@
         ]
       }
     },
+    "multiPipelineMark": {
+      "rule": {},
+      "label": "附加标识",
+      "placeholder": "默认可不填。仅支持数字、字母和下划线。",
+      "type": "vuex-input",
+      "default": "",
+      "tabName": "basic",
+      "desc": "若流水线有多个代码分析插件可用此字段区分。",
+      "inline": true
+    },
     "toolScanType": {
       "rule": {},
       "type": "radio-group",
