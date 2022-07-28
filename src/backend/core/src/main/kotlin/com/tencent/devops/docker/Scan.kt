@@ -20,6 +20,7 @@ import com.tencent.devops.pojo.scan.LARGE_REPORT_TAIL_HTML
 import com.tencent.devops.pojo.scan.ScanRepo
 import com.tencent.devops.utils.CodeccParamsHelper
 import com.tencent.devops.utils.script.ScriptUtils
+import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -513,7 +514,7 @@ class Scan(
 
         LogUtils.printDebugLog("set input data sub code path list param: ${commandParam.subCodePathList}")
         commandParam.subCodePathList.forEach { whitePath ->
-            if (whitePath.isNotBlank()) {
+            if (StringUtils.isBlank(whitePath)) {
                 return@forEach
             }
             if (File(whitePath).exists()) {
