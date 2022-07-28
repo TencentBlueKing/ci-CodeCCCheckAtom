@@ -96,13 +96,16 @@ class ScmBlame(
             var status = true
             ccacheMd5List.forEach { ccacheMd5 ->
                 if (currentMd5["filePath"] == ccacheMd5["filePath"] || currentMd5["fileRelPath"] == ccacheMd5["fileRelPath"]) {
+                    LogUtils.printDebugLog("currentMd5: $currentMd5, ccacheMd5: $ccacheMd5")
                     status = false
                     if (currentMd5["md5"] != ccacheMd5["md5"]) {
+                        LogUtils.printDebugLog("md5 not same, add in file list: " + currentMd5["filePath"].toString())
                         filePathList.add(currentMd5["filePath"].toString())
                     }
                 }
             }
             if (status) {
+                LogUtils.printDebugLog("not found in ccache md5 list, add in file list: " + currentMd5["filePath"].toString())
                 filePathList.add(currentMd5["filePath"].toString())
             }
         }
