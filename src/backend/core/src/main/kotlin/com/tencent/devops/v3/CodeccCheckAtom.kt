@@ -37,7 +37,8 @@ class CodeccCheckAtom : TaskAtom<CodeccCheckAtomParamV3> {
                 CodeccSdkUtils.executeAsyncTask(asyncTaskId, atomContext.param.pipelineStartUserName)
                 atomContext.param.codeCCTaskId = asyncTaskId.toString()
                 print("启动异步CodeCC任务成功，")
-                CodeccReportUtilsV2.asyncReport(atomContext, detailLink(atomContext.param.projectName, atomContext.param.codeCCTaskId))
+                CodeccReportUtilsV2.asyncReport(atomContext, detailLink(atomContext.param.projectName,
+                    atomContext.param.codeCCTaskId, atomContext.param.channelCode))
                 return
             }
             println("asyncTask is false")
@@ -89,7 +90,7 @@ class CodeccCheckAtom : TaskAtom<CodeccCheckAtomParamV3> {
             LogUtils.printDebugLog("atomContext.result.message: ${atomContext.result.message}")
             LogUtils.printDebugLog("atomContext.result.status: ${atomContext.result.status}")
             with(atomContext.param) {
-                println("CodeCC任务详情：<a href='${detailLink(projectName, codeCCTaskId)}' target='_blank'>查看详情</a>")
+                println("CodeCC任务详情：<a href='${detailLink(projectName, codeCCTaskId, atomContext.param.channelCode)}' target='_blank'>查看详情</a>")
             }
 
             //开源项目上报commitId
@@ -103,8 +104,9 @@ class CodeccCheckAtom : TaskAtom<CodeccCheckAtomParamV3> {
         }
     }
 
-    private fun detailLink(projectName: String, codeCCTaskId: String?): String {
-        return if (projectName.startsWith("git_")) {
+    private fun detailLink(projectName: String, codeCCTaskId: String?, channelCode: String?): String {
+        return if (projectName.startsWith("git_") || projectName.startsWith("github_")
+            || (!channelCode.isNullOrBlank() && "GIT" == channelCode)) {
             "${codeccDetail}/codecc/$projectName/task/$codeCCTaskId/detail"
         } else {
             "${codeccFrontHost}/console/codecc/$projectName/task/$codeCCTaskId/detail"
