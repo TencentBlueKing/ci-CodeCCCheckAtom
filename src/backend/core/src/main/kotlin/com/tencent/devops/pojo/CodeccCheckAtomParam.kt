@@ -57,4 +57,6 @@ open class CodeccCheckAtomParam : AtomBaseParam() {
 
     @JsonProperty("pipeline.start.channel")
     open var channelCode: String? = ""
+
+    open var multiPipelineMark: String? = null
 }

@@ -75,7 +75,7 @@ object CodeccSdkUtils {
 
         // init id, name, tool
         if (params.channelCode != "GONGFENGSCAN") {
-            val pipelineTaskVo = CodeccSdkApi.getTaskByPipelineId(params.pipelineId, params.pipelineStartUserName)
+            val pipelineTaskVo = CodeccSdkApi.getTaskByPipelineId(params.pipelineId, params.multiPipelineMark, params.pipelineStartUserName)
             params.codeCCTaskId = pipelineTaskVo.taskId.toString()
             params.codeCCTaskName = pipelineTaskVo.enName
             codeccExecuteConfig.tools = pipelineTaskVo.tools.map { it.toolName }
