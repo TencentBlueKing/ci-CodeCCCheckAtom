@@ -34,6 +34,7 @@ data class CommandParam(
     var pinpointHomeBin: String,
     var codeqlHomeBin: String,
     var clangHomeBin: String,
+    var resharperHomeBin: String,
     var spotBugsHomeBin: String,
     val goPath: String,
     val gatherDefectThreshold: Long, // 告警收敛的阈值

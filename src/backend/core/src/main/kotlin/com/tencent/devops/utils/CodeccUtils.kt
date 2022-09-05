@@ -328,7 +328,8 @@ open class CodeccUtils {
                 ?: "10000").toLong(),
             needPrintDefect = needPrintDefect(param.projectName),
             openScanPrj = param.openScanPrj,
-            extraPrams = getExtraParams(codeccExecuteConfig.atomContext)
+            extraPrams = getExtraParams(codeccExecuteConfig.atomContext),
+            resharperHomeBin = CodeccConfig.getConfig("RESHARPER_HOME_BIN") ?: "C:\\data\\codecc_software\\resharper_scan"
         )
         LogUtils.printLog("codecc scan command param : $commandParam")
 
