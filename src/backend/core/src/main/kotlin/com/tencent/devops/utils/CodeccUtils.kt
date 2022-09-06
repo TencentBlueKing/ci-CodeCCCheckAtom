@@ -66,8 +66,11 @@ import com.tencent.devops.utils.common.AtomUtils
 import com.tencent.devops.utils.script.BatScriptUtil
 import com.tencent.devops.utils.script.ScriptUtils
 import com.tencent.devops.utils.script.ShellUtil
-import java.io.*
-import java.lang.RuntimeException
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.math.max
@@ -540,12 +543,19 @@ open class CodeccUtils {
         }
     }
 
-    // 因为工具压缩值周超过100MB所以通过官网链接下载，py脚本另行下载
+    // 因为工具压缩大小超过100MB所以通过官网链接下载，py脚本另行下载
     fun downloadResharper(path: String) {
         val downloadUrl = "https://download.jetbrains.com/resharper/dotUltimate.2022.1.2/JetBrains.ReSharper.CommandLineTools.2022.1.2.zip";
         val dirFile = File(path)
         if (!dirFile.exists()) {
             dirFile.mkdirs()
+        } else {
+            val pyPath = path + File.separator + "sdk" + File.separator + "src" + File.separator + "scan.py"
+            val inspectcodePath = path + File.separator + "tool" + File.separator + "inspectcode.exe"
+            if (File(pyPath).exists() && File(inspectcodePath).exists()) {
+                LogUtils.printLog("resharper existing, return download")
+                return
+            }
         }
         val outputPath = path + File.separator + "resharper_scan.zip"
         downloadFile(downloadUrl, outputPath)
@@ -558,7 +568,7 @@ open class CodeccUtils {
     }
 
     private fun getResharperScanPy(path: String) {
-        val url = "https://raw.githubusercontent.com/other-shore-f/ci-codeccScan/master/resharper_scan/sdk/src/scan.py"
+        val url = "https://raw.githubusercontent.com/TencentBlueKing/ci-codeccScan/master/resharper_scan/sdk/src/scan.py"
         val savePath = path + File.separator + "sdk" + File.separator + "src"
         if (!File(savePath).exists()) {
             File(savePath).mkdirs()
