@@ -36,6 +36,7 @@ import com.tencent.devops.docker.Build
 import com.tencent.devops.docker.pojo.CommandParam
 import com.tencent.devops.docker.pojo.LandunParam
 import com.tencent.devops.docker.pojo.ToolConstants
+import com.tencent.devops.docker.tools.FileUtil
 import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.docker.utils.CodeccConfig
 import com.tencent.devops.pojo.CodeccCheckAtomParamV3
@@ -46,6 +47,7 @@ import com.tencent.devops.pojo.LinuxCodeccConstants.Companion.SVN_PASSWORD
 import com.tencent.devops.pojo.OSType
 import com.tencent.devops.pojo.OpenScanConfigParam
 import com.tencent.devops.pojo.codeccHost
+import com.tencent.devops.pojo.exception.CodeccDependentException
 import com.tencent.devops.pojo.exception.CodeccUserConfigException
 import com.tencent.devops.pojo.imageRegistryPwdKey
 import com.tencent.devops.utils.CodeccParamsHelper.addCommonParams
@@ -64,7 +66,10 @@ import com.tencent.devops.utils.common.AtomUtils
 import com.tencent.devops.utils.script.BatScriptUtil
 import com.tencent.devops.utils.script.ScriptUtils
 import com.tencent.devops.utils.script.ShellUtil
-import java.io.File
+import java.io.*
+import java.lang.RuntimeException
+import java.net.HttpURLConnection
+import java.net.URL
 import kotlin.math.max
 
 open class CodeccUtils {
@@ -532,6 +537,60 @@ open class CodeccUtils {
                 buildEnvs = listOf(),
                 runtimeVariables = codeccExecuteConfig.variable
             )
+        }
+    }
+
+    // 因为工具压缩值周超过100MB所以通过官网链接下载，py脚本另行下载
+    fun downloadResharper(path: String) {
+        val downloadUrl = "https://download.jetbrains.com/resharper/dotUltimate.2022.1.2/JetBrains.ReSharper.CommandLineTools.2022.1.2.zip";
+        val dirFile = File(path)
+        if (!dirFile.exists()) {
+            dirFile.mkdirs()
+        }
+        val outputPath = path + File.separator + "resharper_scan.zip"
+        downloadFile(downloadUrl, outputPath)
+        LogUtils.printLog("download resharper rar file success")
+        FileUtil.unzipFile(outputPath, "$path${File.separator}tool")
+        LogUtils.printLog("unzip resharper success ")
+        LogUtils.printLog("start get scan.py")
+        getResharperScanPy(path)
+        LogUtils.printLog("scan.py get success")
+    }
+
+    private fun getResharperScanPy(path: String) {
+        val url = "https://raw.githubusercontent.com/other-shore-f/ci-codeccScan/master/resharper_scan/sdk/src/scan.py"
+        val savePath = path + File.separator + "sdk" + File.separator + "src"
+        if (!File(savePath).exists()) {
+            File(savePath).mkdirs()
+        }
+        downloadFile(url, "$savePath${File.separator}scan.py")
+    }
+
+    fun downloadFile(downloadUrl: String, saveFilePath: String) {
+        val inputStream: InputStream?
+        val outputStream: OutputStream?
+        try {
+            val url = URL(downloadUrl)
+            val conn = url.openConnection() as HttpURLConnection
+            conn.requestMethod = "GET"
+            conn.doInput = true
+            conn.doOutput = true
+            conn.useCaches = false
+            conn.connect()
+            inputStream = conn.inputStream
+            outputStream = FileOutputStream(saveFilePath)
+            val bytes = ByteArray(2048)
+            var end = inputStream.read(bytes)
+            while (end != -1) {
+                outputStream.write(bytes, 0, end)
+                end = inputStream.read(bytes)
+            }
+            inputStream.close()
+            outputStream.close()
+            conn.disconnect()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            throw CodeccDependentException("download resharper file failure: ${e.message}")
         }
     }
 }
