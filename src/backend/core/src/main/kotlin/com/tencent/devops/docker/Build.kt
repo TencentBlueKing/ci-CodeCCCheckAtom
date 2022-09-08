@@ -55,6 +55,10 @@ object Build {
             throw CodeccUserConfigException("pinpoint工具不支持MACOS和Windows第三方构建机, 请重新选择规则集", "")
         }
 
+        if (scanTools.contains(ToolConstants.RESHARPER) && AgentEnv.isThirdParty() && (CodeccEnvHelper.getOS() != OSType.WINDOWS)) {
+            throw CodeccUserConfigException("resharper工具不支持MACOS和LINUX第三方构建机，请重新选择规则集", "")
+        }
+
         // 如果是开源扫描的工程，则要根据条件进行过滤
         if (null != codeccTaskInfo && codeccTaskInfo!!.createFrom == "gongfeng_scan") {
             LogUtils.printDebugLog("codeccTaskInfo create from is gongfeng_scan")

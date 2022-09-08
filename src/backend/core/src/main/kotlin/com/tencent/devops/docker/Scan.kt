@@ -19,6 +19,7 @@ import com.tencent.devops.pojo.scan.LARGE_REPORT_HEAD_HTML
 import com.tencent.devops.pojo.scan.LARGE_REPORT_TAIL_HTML
 import com.tencent.devops.pojo.scan.ScanRepo
 import com.tencent.devops.utils.CodeccParamsHelper
+import com.tencent.devops.utils.CodeccUtils
 import com.tencent.devops.utils.script.ScriptUtils
 import org.apache.commons.lang3.StringUtils
 import java.io.File
@@ -51,12 +52,16 @@ class Scan(
         LogUtils.printLog("toolName: $toolName")
         LogUtils.printLog("compile_tools: ${ToolConstants.COMPILE_TOOLS}")
         if (toolName in ToolConstants.COMPILE_TOOLS) {
-            val toolFolder = "/data/codecc_software/${toolName}_scan"
+            var toolFolder = "/data/codecc_software/${toolName}_scan"
             val command = CodeccConfig.getConfig("${toolName.toUpperCase()}_SCAN_COMMAND")!!
                 .replace("##", " ")
                 .replace("{input.json}", inputFile)
                 .replace("{output.json}", outputFile)
             LogUtils.printLog("command: $command")
+            if (toolName == ToolConstants.RESHARPER) {
+                toolFolder = CodeccConfig.getConfig("RESHARPER_HOME_BIN") ?: "C:\\data\\codecc_software\\resharper_scan"
+                CodeccUtils().downloadResharper(toolFolder)
+            }
             if (File(toolFolder).exists()) {
                 LogUtils.printLog("enter tool folder: $toolFolder")
                 LogUtils.printLog("tool scan command: $command")
