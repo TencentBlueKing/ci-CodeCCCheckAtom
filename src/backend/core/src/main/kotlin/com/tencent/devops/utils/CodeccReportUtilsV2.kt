@@ -15,7 +15,9 @@ import com.tencent.devops.pojo.exception.CodeccDependentException
 import com.tencent.devops.pojo.report.CodeccCallback
 import java.io.BufferedReader
 import java.io.File
+import java.net.URL
 import java.nio.file.Files
+import com.tencent.devops.pojo.codeccDetail
 
 @SuppressWarnings
 object CodeccReportUtilsV2 {
@@ -168,7 +170,9 @@ object CodeccReportUtilsV2 {
             val toolNameCn = it["tool_name_cn"] as String
             val codeccOptions = codeccOptionMap[toolNameEn] ?: getLintMap(toolNameCn)
 
-            indexHtmlBody.append("<a class=\"code-check-head\" target='_blank' href='${it["defect_detail_url"]}'>\n")
+            indexHtmlBody.append("<a class=\"code-check-head\" target='_blank' " +
+                    "href='${getDefectDetailUrl(it["defect_detail_url"] 
+                            as? String, param.channelCode, param.pipelineBuildId)}'>\n")
             indexHtmlBody.append("<div class=\"code-check-title\">$toolNameCn</div>\n")
             indexHtmlBody.append("<div class=\"tool-display-circle\">\n" +
                 "                                <div class=\"circle-content\"></div>\n" +
@@ -281,6 +285,17 @@ object CodeccReportUtilsV2 {
         val indexHtml = File(tempDir, "index.html")
         indexHtml.writeText(indexHtmlBody.toString())
         return indexHtml
+    }
+
+    private fun getDefectDetailUrl(originUrl: String?, channelCode: String?, buildId: String?): String {
+        if (originUrl.isNullOrBlank()) {
+            return ""
+        }
+        if ("GIT" == channelCode) {
+            val buildUrl = buildId ?: ""
+            return codeccDetail + URL(originUrl).path.removePrefix("/console") + "?buildId=" + buildUrl
+        }
+        return originUrl
     }
 
     private fun getLintMap(toolName: String): Map<String, Any> {
