@@ -68,7 +68,7 @@ class CodeccCheckAtomParamV3 : CodeccCheckAtomParam() {
     @JsonProperty("_CODECC_FILTER_TOOLS")
     override var filterTools: String? = null // [TOOL1,TOOL2]
 
-    @JsonProperty("pipeline.start.channel")
+    @JsonProperty("BK_CI_START_CHANNEL")
     override var channelCode: String? = ""
 
     @JsonProperty("BK_CI_REPO_WEB_HOOK_HASHID")

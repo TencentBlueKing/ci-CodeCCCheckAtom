@@ -375,6 +375,7 @@ open class CodeccUtils {
 
     fun needPrintDefect(projectCode: String): Boolean {
         return projectCode.startsWith("_") || projectCode.startsWith("git_")
+                || projectCode.startsWith("github_")
     }
 
     open fun doOldPreCodeccSingleCommand(
