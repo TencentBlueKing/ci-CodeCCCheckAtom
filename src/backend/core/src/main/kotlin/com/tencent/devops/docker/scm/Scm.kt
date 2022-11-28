@@ -36,7 +36,7 @@ abstract class Scm(
         try {
             DockerRun.runImage(imageParam, commandParam, toolName)
         } catch (e: Throwable) {
-            LogUtils.printLog("Scm operate exception, message: ${e.message}")
+            LogUtils.printErrorLog("Scm operate exception, message: ${e.message}", e)
             scmOpFail(inputFile)
             throw CodeccTaskExecException(errorMsg = e.message ?: "", toolName = toolName)
         }
