@@ -12,6 +12,7 @@ import request from '@/utils/request'
 import validDictionary from './utils/validDictionary'
 import ExtendsCustomRules from './utils/customRules'
 import store from './store/index'
+import i18n from './i18n';
 
 // 全量引入 bk-magic-vue 样式
 require('bk-magic-vue/dist/bk-magic-vue.min.css')
@@ -35,6 +36,7 @@ ExtendsCustomRules(VeeValidate.Validator.extend)
 
 global.atomVue = new Vue({
     el: '#pipeline-atom',
+    i18n,
     components: {
         PublicAtom,
         LocalAtom

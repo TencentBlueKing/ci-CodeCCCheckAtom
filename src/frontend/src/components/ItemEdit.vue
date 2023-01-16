@@ -21,7 +21,7 @@
             </template>
             <a class="text-link hover-click" v-if="!disabled" @click.stop.prevent="editParam(paramList.length, true)">
                 <i class="bk-icon icon-plus-circle" />
-                <span>{{ addBtnText }}</span>
+                <span>{{$t(addBtnText)}}</span>
             </a>
         </ul>
     </div>

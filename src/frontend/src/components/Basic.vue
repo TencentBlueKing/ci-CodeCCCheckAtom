@@ -2,8 +2,8 @@
     <section class="bk-form">
         <template>
             <div class="atom-txt" v-if="envSupport">
-                <span>Linux私有构建机/Mac/Win10需安装docker，Win7仅支持Coverity。
-                    <a target="_blank" :href="dockerHref">具体请见>></a>
+                <span>{{$t('Linux私有构建机/Mac/Win10需安装docker，Win7仅支持Coverity。')}}
+                    <a target="_blank" :href="dockerHref">{{ $t('具体请见') }}>></a>
                 </span>
             </div>
             <template v-for="(obj, key) in basicTabModel">
@@ -82,7 +82,7 @@
                 groupList: [
                     {
                         id: 'script',
-                        label: '编译脚本',
+                        label: this.$t('编译脚本'),
                         rely: ['COVERITY', 'KLOCWORK', 'PINPOINT', 'CODEQL', 'CLANG', 'CLANGWARNING', 'SPOTBUGS'],
                         item: ['scriptType', 'script']
                     }
@@ -141,7 +141,7 @@
                         return curTool && curTool.name || tool
                     })
                 }
-                return toolsCn.length ? `涉及工具：${toolsCn.join('、')}` : ''
+                return toolsCn.length ? `${this.$t('涉及工具')}：${toolsCn.join('、')}` : ''
             },
             envSupport () {
                 return ['MACOS', 'WINDOWS'].includes(this.containerInfo.baseOS) || (this.containerInfo.dispatchType && this.containerInfo.dispatchType.buildType.indexOf('THIRD_PARTY') !== -1)

@@ -26,7 +26,7 @@
             <div class="bk-select-extension">
                 <a class="bk-selector-create-item" @click="handleNewTask">
                     <i class="bk-icon icon-plus-circle" />
-                    新增任务
+                    {{$t('新增任务')}}
                 </a>
             </div>
         </div>

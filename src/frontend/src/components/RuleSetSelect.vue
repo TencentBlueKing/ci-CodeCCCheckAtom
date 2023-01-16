@@ -2,7 +2,7 @@
     <div class="rule-set-selector">
         <div class="rule-set-input" @click="openSelect">
             <p class="rule-set-value" :title="getValueShow(renderList)">{{ getValueShow(renderList) }}</p>
-            <span class="placeholder" v-if="!renderList.length">请选择</span>
+            <span class="placeholder" v-if="!renderList.length">{{$t('请选择')}}</span>
             <span class="bk-select-clear bk-icon icon-close-circle-shape" @click.stop="handleClear"></span>
         </div>
         <rule-set-dialog

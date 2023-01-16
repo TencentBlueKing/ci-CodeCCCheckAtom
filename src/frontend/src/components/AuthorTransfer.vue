@@ -10,7 +10,7 @@
                             :handle-change="(name, value) => handleParamChange(name, value, index)"
                             v-validate.initial="`required`"
                             name="sourceAuthor"
-                            placeholder="原处理人"
+                            :placeholder="$t('原处理人')"
                             :value="param.sourceAuthor" />
                     </form-field>
                     <form-field :is-error="errors.has(`param-${index}.targetAuthor`)" :error-msg="errors.first(`param-${index}.targetAuthor`)">
@@ -20,7 +20,7 @@
                             :handle-change="(name, value) => handleParamChange(name, value, index)"
                             v-validate.initial="`required`"
                             name="targetAuthor"
-                            placeholder="目标处理人"
+                            :placeholder="$t('目标处理人')"
                             :value="param.targetAuthor" />
                     </form-field>
                     <i @click.stop.prevent="editParam(index, false)" class="bk-icon icon-minus hover-click" v-if="!disabled" />
@@ -28,7 +28,7 @@
             </template>
             <a class="text-link hover-click" v-if="!disabled" @click.stop.prevent="editParam(paramList.length, true)">
                 <i class="bk-icon icon-plus-circle" />
-                <span>添加处理人转换</span>
+                <span>{{$t('添加处理人转换')}}</span>
             </a>
         </ul>
     </div>
