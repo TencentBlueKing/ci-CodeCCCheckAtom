@@ -3,7 +3,7 @@
         <template>
             <div class="atom-txt" v-if="envSupport">
                 <span>{{$t('Linux私有构建机/Mac/Win10需安装docker，Win7仅支持Coverity。')}}
-                    <a target="_blank" :href="dockerHref">{{ $t('具体请见') }}>></a>
+                    <a target="_blank" :href="dockerHref">{{$t('具体请见')}}>></a>
                 </span>
             </div>
             <template v-for="(obj, key) in basicTabModel">
@@ -158,9 +158,9 @@
                         "value": "BAT",
                         "label": "bat"
                     }]
-                    this.atomModel.script.default = "# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.bat\n# 确保build.bat能够编译代码\n# cd path/to/build.bat\n# call build.bat"
-                    if (this.atomValue.script === "# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.sh\n# 确保build.sh能够编译代码\n# cd path/to/build.sh\n# sh build.sh") {
-                        this.atomValue.script = "# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.bat\n# 确保build.bat能够编译代码\n# cd path/to/build.bat\n# call build.bat"
+                    this.atomModel.script.default = this.$t("# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.bat\n# 确保build.bat能够编译代码\n# cd path/to/build.bat\n# call build.bat")
+                    if (this.atomValue.script === this.$t("# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.sh\n# 确保build.sh能够编译代码\n# cd path/to/build.sh\n# sh build.sh")) {
+                        this.atomValue.script = this.$t("# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.bat\n# 确保build.bat能够编译代码\n# cd path/to/build.bat\n# call build.bat")
                     }
                 }
             }
@@ -201,7 +201,7 @@
 
                     return lang
                 })
-                this.groupList.unshift({ id: 'ruleSet', label: '规则集', item:ruleModelNameList })
+                this.groupList.unshift({ id: 'ruleSet', label: this.$t('规则集'), item:ruleModelNameList })
             })
             this.$store.dispatch('getToolList').then(res => {
                 this.atomModel.tools.list = res.map(item => {
@@ -234,9 +234,9 @@
                     const res = await this.$store.dispatch('listPageable', params)
                     this.list = res
                 } catch (err) {
-                    console.log(err, '获取规则集失败')
+                    console.log(err, this.$t('获取规则集失败'))
                     this.$bkMessage({
-                        message: '获取规则集失败',
+                        message: this.$t('获取规则集失败'),
                         theme: 'error'
                     })
                 } finally {
