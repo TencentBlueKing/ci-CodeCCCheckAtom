@@ -43,7 +43,8 @@ object DockerRun {
             projectId = commandParam.landunParam.devopsProjectId,
             pipelineId = commandParam.landunParam.devopsPipelineId,
             buildId = commandParam.landunParam.buildId,
-            param = param
+            param = param,
+            taskId = null
         ).data!!
 
         var extraOptions = dockerRunResponse.extraOptions
