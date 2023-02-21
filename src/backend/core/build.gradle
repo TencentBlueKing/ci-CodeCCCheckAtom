@@ -19,7 +19,7 @@ buildscript {
         jacksonVersion = "2.9.2"
         jacksonDatabindVersion = "2.13.4.2"
         compressVersion = "1.15"
-        javaPluginSdkVersion = "1.1.5"
+        javaPluginSdkVersion = "1.1.7"
         kotlinVersion = "1.5.30"
     }
 }
