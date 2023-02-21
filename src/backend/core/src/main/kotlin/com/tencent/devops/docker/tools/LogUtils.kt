@@ -47,6 +47,10 @@ object LogUtils {
         logger.errorInTag("[${getToolName()}]" + msg?.toString(), getToolName())
     }
 
+    fun printErrorLog(msg: Any?, e : Throwable) {
+        logger.error("[${getToolName()}]" + msg?.toString(), e)
+    }
+
     fun printStr(msg: Any?) {
         print(msg)
     }
