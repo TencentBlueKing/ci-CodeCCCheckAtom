@@ -12,10 +12,10 @@
       "rule": {},
       "type": "atom-checkbox-list",
       "required": true,
-      "label": "工程语言",
+      "label": "Programming Language",
       "list": [],
       "default": [],
-      "desc": "不同代码语言，可选择相匹配的工具",
+      "desc": "tools will match different programming language",
       "tabName": "basic"
     },
     "tools": {
@@ -23,7 +23,7 @@
       "required": true,
       "hidden": true,
       "type": "atom-checkbox-list",
-      "label": "代码检查工具",
+      "label": "Code Review Tool",
       "list": [],
       "default": [],
       "tabName": "basic"
@@ -31,15 +31,15 @@
     "asyncTask": {
       "rule": {},
       "type": "enum-input",
-      "label": "执行方式",
+      "label": "Sync Method",
       "list": [
         {
           "value": false,
-          "label": "同步"
+          "label": "Synchronize"
         },
         {
           "value": true,
-          "label": "异步"
+          "label": "Asynchronous"
         }
       ],
       "default": false,
@@ -52,14 +52,14 @@
         "asyncTaskRequired": true
       },
       "type": "task-select",
-      "label": "任务",
+      "label": "Task",
       "required": true,
       "tabName": "async",
       "inline": true,
       "list": {},
       "default": "",
       "rely": {},
-      "desc": "可选择CodeCC服务中自建任务，也可以直接输入任务ID。ID可从CodeCC链接中获取到，例如/codecc/myproj/task/25324/中的数字。支持流水线变量。"
+      "desc": "You can choose to create a task yourself in the CodeCC service, or you can directly enter the task ID. The task ID can be obtained from the CodeCC link (in /codecc/myproj/task/25324/, 25324 is the task ID). Support pipeline variables."
     },
     "goPath": {
       "rule": {},
@@ -67,8 +67,8 @@
       "label": "GOPATH",
       "default": "",
       "required": false,
-      "desc": "可帮助工具查找依赖库代码路径，更好地扫描告警",
-      "placeholder": "${WORKSPACE}下相对路径,多路径请用英文逗号分割,支持使用流水线变量",
+      "desc": "Help find the code path of the dependent library to get a more useful result",
+      "placeholder": "Relative paths under {WORKSPACE}, please use comma to separate multiple paths, support pipeline variables",
       "tabName": "basic",
       "inline": true,
       "rely": {
@@ -84,7 +84,7 @@
     "pyVersion": {
       "rule": {},
       "type": "enum-input",
-      "label": "Python版本",
+      "label": "Python Version",
       "required": true,
       "list": [
         {
@@ -112,7 +112,7 @@
     "scriptType": {
       "rule": {},
       "type": "enum-input",
-      "label": "脚本类型",
+      "label": "Script Type",
       "required": true,
       "hidden": false,
       "list": [
@@ -131,12 +131,12 @@
       "rule": {
         "scriptRequired": true
       },
-      "label": "脚本内容",
+      "label": "Script",
       "hidden": false,
-      "default": "# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.sh\n# 确保build.sh能够编译代码\n# cd path/to/build.sh\n# sh build.sh",
+      "default": "#Coverity/Klocwork will compile your code by calling the compilation script to identify defects\n# Please use build tools such as maven/cmake to write a compilation script build.sh\n# Make sure build.sh can compile the code\n# cd path/to/build.sh\n# sh build.sh",
       "required": true,
       "type": "atom-ace-editor",
-      "desc": "相应工具将使用该脚本编译代码，以便追踪编译过程，发现代码缺陷",
+      "desc": "The corresponding tool will use this script to compile the code in order to track the compilation process and find code defects",
       "tabName": "basic"
     },
     "languageRuleSetMap": {
@@ -166,52 +166,52 @@
     },
     "multiPipelineMark": {
       "rule": {},
-      "label": "附加标识",
-      "placeholder": "默认可不填。仅支持数字、字母和下划线。",
+      "label": "label",
+      "placeholder": "Optional. Only numbers, letters, and underscores are supported.",
       "type": "vuex-input",
       "default": "",
       "tabName": "basic",
-      "desc": "若流水线有多个代码分析插件可用此字段区分。",
+      "desc": "If the pipeline has multiple code analysis plugins, a label can be used to distinguish them.",
       "inline": true
     },
     "toolScanType": {
       "rule": {},
       "type": "radio-group",
-      "label": "扫描方式",
+      "label": "Scan Method",
       "required": true,
       "list": [
         {
-          "label": "增量扫描（推荐）",
+          "label": "Incremental Scan（recommended)",
           "value": "1"
         },
         {
-          "label": "MR/PR扫描",
+          "label": "MR/PR Scan",
           "value": "2"
         },
         {
-          "label": "全量扫描",
+          "label": "Full Scan",
           "value": "0"
         }
       ],
       "default": "1",
-      "desc": "增量扫描：扫描本次构建与上次构建的差异代码。首次为全量扫描。\nMR/PR扫描：扫描MR/PR的源分支与目标分支的差异代码。源分支代码需拉取到工作空间。\n全量扫描：扫描全部代码。Klocwork、Pinpoint、Gometalinter、重复率仅支持该扫描方式。"
+      "desc": "Incremental scan: Scan the difference code between current build and previous build. Full scan will be used in the first time.\nMR/PR Scan: Scan the difference code between the source branch and the target branch of MR/PR. The source branch code needs to be pulled to the workspace\nFull Scan: Scan all codes. Klocwork, Pinpoint, Gometalinter, and repetition rate only support this scanning method."
     },
     "mrCommentEnable": {
       "label": "",
       "default": true,
       "type": "atom-checkbox",
-      "text": "将扫描出的问题同步到工蜂代码查看页面"
+      "text": "Sync the defect info to Tencent internal Git viewing page"
     },
     "newDefectJudgeFromDate": {
       "default": "",
-      "label": "新告警判定",
-      "desc": "所选日期之后产生的告警为新告警"
+      "label": "New Alerts Threshold",
+      "desc": "Alerts sent after the selected date are New Alerts"
     },
     "transferAuthorList": {
       "default": [],
       "type": "author-transfer",
-      "label": "处理人转换",
-      "desc": "各工具原处理人的告警都将自动转给新处理人"
+      "label": "change owner",
+      "desc": "Alerts will sent to the new owner when the tools's ownership changed "
     },
     "path": {
       "default": [],
@@ -226,8 +226,8 @@
       "default": false,
       "placeholder": "",
       "type": "atom-checkbox",
-      "text": "是否是开源扫描项目",
-      "desc": "选中则走开源扫描流程",
+      "text": "use open sourced tool to scan project",
+      "desc": "Use open sourced scanning tool when selected",
       "required": false,
       "disabled": false,
       "hidden": true
@@ -236,11 +236,33 @@
   "output": {
     "BK_CI_CODECC_TASK_ID": {
       "type": "string",
-      "description": "CodeCC的任务id"
+      "description": "CodeCC task id"
     },
     "BK_CI_CODECC_TASK_STATUS": {
       "type": "string",
-      "description": "CodeCC任务是否运行成功，成功则未true，不然取不到"
+      "description": "Whether the CodeCC task runs successfully"
+    }
+  },
+  "releaseInfo": {
+    "projectId": "demo",
+    "name": "CodeCC Code Check",
+    "language": "java",
+    "logoUrl": "${{indexFile(\"images/logo.png\")}}",
+    "category": "TASK",
+    "classifyCode": "scm",
+    "jobType": "AGENT",
+    "os": ["LINUX", "MACOS", "WINDOWS"],
+    "labelCodes": [],
+    "summary":"Support all CodeCC code inspection tools under Linux, MacOS, and Windows systems, including code defects (bkcheck, etc.), security vulnerabilities (sensitive information, high-risk components, etc.), code specifications (CppLint, CheckStyle, etc.), cyclomatic complexity, repetition rate, etc. .",
+    "description": "${{indexFile(\"doc/aboutCodeCC_en.md\")}}",
+    "configInfo": {
+      "frontendType": "SPECIAL"
+    },
+    "versionInfo": {
+      "publisher": "admin",
+      "releaseType": "NEW",
+      "version": "1.0.0",
+      "versionContent": "Test"
     }
   }
 }
