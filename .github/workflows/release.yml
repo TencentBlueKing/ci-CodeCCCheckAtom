@@ -42,7 +42,7 @@ jobs:
       with:
         build-root-directory: src/backend/core
         gradle-version: 6.7.1
-        arguments: clean buildAndCopyZip -DmavenCredUserName=${{ secrets.NAME }} -DmavenCredPassword=${{ secrets.GITHUB_TOKEN }} -DmavenRepoUrl=http://maven.aliyun.com/nexus/content/groups/public/
+        arguments: clean buildZipWithEn -DmavenCredUserName=${{ secrets.NAME }} -DmavenCredPassword=${{ secrets.GITHUB_TOKEN }} -DmavenRepoUrl=http://maven.aliyun.com/nexus/content/groups/public/
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
       with:
@@ -59,7 +59,7 @@ jobs:
         release_name: ${{ github.ref }}
         draft: true
         prerelease: true
-    - name: Upload Release Asset
+    - name: Upload ZH_CN Release Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -68,3 +68,12 @@ jobs:
         asset_path: src/backend/core/build/distributions/CodeCCCheckAtom.zip
         asset_name: CodeCCCheckAtom.zip
         asset_content_type: application/zip
+    - name: Upload EN Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: src/backend/core/build/distributions/CodeCCCheckAtom_en.zip
+          asset_name: CodeCCCheckAtom_en.zip
+          asset_content_type: application/zip

@@ -120,6 +120,10 @@ allprojects {
         into "../../frontend/target/frontend"
     }
 
+    task cleanTarget(type:Delete) {
+        delete "../../../target"
+    }
+
     task copyDocs(type:Copy) {
         from "../../../docs"
         into "../../../target/file/docs"
@@ -130,20 +134,32 @@ allprojects {
         into "../../../target/file/images"
     }
 
-    task buildZip(type: Zip, dependsOn: [shadowJar, copyFrontend, copyDocs, copyImages]) {
+    task buildZipCn(type: Zip, dependsOn: [shadowJar, copyFrontend, cleanTarget, copyDocs, copyImages]) {
         from "build/libs", "task.json", "quality.json", "../../frontend/target", "../../../target"
         into "CodeCCCheckAtom"
+        archiveName "CodeCCCheckAtom.zip"
     }
 
-    task buildAndCopyZip(type: Copy, dependsOn: [buildZip]) {
-        from "build/distributions"
-        into "build/distributions"
+    task renameEnTaskJson(type:Copy) {
+        from "task_en.json"
+        into "../../../target/"
         rename { String fileName ->
             // a simple way is to remove the "-$version" from the jar filename
             // but you can customize the filename replacement rule as you wish.
-            fileName = "CodeCCCheckAtom.zip"
+            fileName = "task.json"
         }
     }
+
+    task buildZipWithEn(type: Zip, dependsOn: [buildZipCn, renameEnTaskJson]) {
+        from "build/libs", "quality.json", "../../frontend/target", "../../../target"
+        into "CodeCCCheckAtom"
+        archiveName "CodeCCCheckAtom_en.zip"
+    }
+
+//    task buildAndCopyZip(type: Copy, dependsOn: [buildZipCn, buildZipEn]) {
+//        from "build/distributions"
+//        into "build/distributions"
+//    }
 
     check.dependsOn ktlint
 
