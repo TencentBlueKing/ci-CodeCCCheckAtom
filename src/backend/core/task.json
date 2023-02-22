@@ -254,7 +254,7 @@
     "os": ["LINUX", "MACOS", "WINDOWS"],
     "labelCodes": [],
     "summary":"Support all CodeCC code inspection tools under Linux, MacOS, and Windows systems, including code defects (bkcheck, etc.), security vulnerabilities (sensitive information, high-risk components, etc.), code specifications (CppLint, CheckStyle, etc.), cyclomatic complexity, repetition rate, etc. .",
-    "description": "${{indexFile(\"doc/aboutCodeCC_en.md\")}}",
+    "description": "${{indexFile(\"docs/aboutCodeCC_en.md\")}}",
     "configInfo": {
       "frontendType": "SPECIAL"
     },
