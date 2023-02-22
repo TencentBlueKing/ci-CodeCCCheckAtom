@@ -8,11 +8,13 @@
     "public": "rimraf dist && webpack --mode production"
   },
   "dependencies": {
+    "axios": "^0.21.1",
     "bk-magic-vue": "^2.2.4",
     "bkci-atom-components": "^1.0.0",
-    "axios": "^0.21.1",
+    "js-cookie": "^3.0.1",
     "vee-validate": "^2.0.3",
     "vue": "^2.6.10",
+    "vue-i18n": "^8.10.0",
     "vue-router": "^2.8.1",
     "vuex": "^2.4.0"
   },

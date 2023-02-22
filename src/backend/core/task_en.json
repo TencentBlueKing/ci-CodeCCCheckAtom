@@ -242,5 +242,27 @@
       "type": "string",
       "description": "Whether the CodeCC task runs successfully"
     }
+  },
+  "releaseInfo": {
+    "projectId": "demo",
+    "name": "CodeCC Code Check",
+    "language": "java",
+    "logoUrl": "${{indexFile(\"images/logo.png\")}}",
+    "category": "TASK",
+    "classifyCode": "scm",
+    "jobType": "AGENT",
+    "os": ["LINUX", "MACOS", "WINDOWS"],
+    "labelCodes": [],
+    "summary":"Support all CodeCC code inspection tools under Linux, MacOS, and Windows systems, including code defects (bkcheck, etc.), security vulnerabilities (sensitive information, high-risk components, etc.), code specifications (CppLint, CheckStyle, etc.), cyclomatic complexity, repetition rate, etc. .",
+    "description": "${{indexFile(\"docs/aboutCodeCC_en.md\")}}",
+    "configInfo": {
+      "frontendType": "SPECIAL"
+    },
+    "versionInfo": {
+      "publisher": "admin",
+      "releaseType": "NEW",
+      "version": "1.0.0",
+      "versionContent": "Test"
+    }
   }
 }

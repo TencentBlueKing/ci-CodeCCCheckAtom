@@ -47,8 +47,8 @@ const customeRules = {
     },
     scriptRequired: {
         validate: function (value, args) {
-            const defValue1 = '# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.sh\n# 确保build.sh能够编译代码\n# cd path/to/build.sh\n# sh build.sh'
-            const defValue2 = '# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.bat\n# 确保build.bat能够编译代码\n# cd path/to/build.bat\n# call build.bat'
+            const defValue1 = this.$t('# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.sh\n# 确保build.sh能够编译代码\n# cd path/to/build.sh\n# sh build.sh')
+            const defValue2 = this.$t('# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.bat\n# 确保build.bat能够编译代码\n# cd path/to/build.bat\n# call build.bat')
             return value !== defValue1 && value !== defValue2
         }
     }

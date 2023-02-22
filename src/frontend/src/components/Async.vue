@@ -1,6 +1,6 @@
 <template>
     <div class="task-content" :style="{height: extraHeight + 'px'}">
-        <div class="atom-txt"><i class="bk-icon icon-exclamation-circle-shape"></i>如流水线配置了质量红线请谨慎使用异步功能，可能会由于结果异步输出导致红线拦截</div>
+        <div class="atom-txt"><i class="bk-icon icon-exclamation-circle-shape"></i>{{$t('如流水线配置了质量红线请谨慎使用异步功能，可能会由于结果异步输出导致红线拦截')}}</div>
         <template v-for="(obj, key) in asyncModel">
             <form-field
                 class="head-level" 

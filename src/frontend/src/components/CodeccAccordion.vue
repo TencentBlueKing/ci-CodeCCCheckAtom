@@ -14,7 +14,7 @@
                 </span>
                 <span v-if="desc" class="desc" v-bk-tooltips.top="desc">{{ desc }}</span>
                 <span class="fold-open"> 
-                    {{ isShow ? '收起' : '展开' }} 
+                    {{ isShow ? $t('收起') : $t('展开') }}
                     <i class="bk-icon icon-angle-down" style="display:inline-block">
                     </i>
                 </span>

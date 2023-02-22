@@ -38,10 +38,11 @@
                     <component :is="panel.name" :atom-props-model="atomModel" :atom-props-value="atomValue" :atom-props-container-info="containerInfo"></component>
                 </bk-tab-panel>
                 <template slot="setting">
-                    <a :href="linkUrl" target="_blank" class="codecc-link">前往CodeCC</a>
+                    <a :href="linkUrl" target="_blank" class="codecc-link">{{ $t('前往CodeCC') }}</a>
                 </template>
             </bk-tab>
         </div>
+        <bk-button @click="handleToggleLang">国际化</bk-button>
     </section>
 </template>
 
@@ -52,6 +53,7 @@
     import Scan from '@/components/Scan'
     import Shield from '@/components/Shield'
     import Async from '@/components/Async'
+    import { toggleLang } from './i18n'
 
     export default {
         name: 'atom',
@@ -65,9 +67,9 @@
         data () {
             return {
                 panels: [
-                    { name: 'basic', label: '基础设置' },
-                    { name: 'scan', label: '扫描配置' },
-                    { name: 'shield', label: '路径屏蔽' }
+                    { name: 'basic', label: this.$t('基础设置') },
+                    { name: 'scan', label: this.$t('扫描配置') },
+                    { name: 'shield', label: this.$t('路径屏蔽') }
                 ],
                 active: 'basic',
                 tabRedTips: {}
@@ -115,6 +117,9 @@
                 if (name === 'scan') {
                     window.localStorage.setItem('mr-20200702', '1')
                 }
+            },
+            handleToggleLang() {
+                toggleLang()
             }
         }
     }

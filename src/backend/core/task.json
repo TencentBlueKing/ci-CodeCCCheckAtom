@@ -242,5 +242,27 @@
       "type": "string",
       "description": "CodeCC任务是否运行成功，成功则未true，不然取不到"
     }
+  },
+  "releaseInfo": {
+    "projectId": "demo",
+    "name": "CodeCC代码检查",
+    "language": "java",
+    "logoUrl": "${{indexFile(\"images/logo.png\")}}",
+    "category": "TASK",
+    "classifyCode": "scm",
+    "jobType": "AGENT",
+    "os": ["LINUX", "MACOS", "WINDOWS"],
+    "labelCodes": [],
+    "summary":"支持Linux、MacOS、Windows系统下执行所有CodeCC代码检查工具，包括代码缺陷（bkcheck等）、安全漏洞（敏感信息、高危组件等）、代码规范（CppLint、CheckStyle等）、圈复杂度、重复率等。",
+    "description": "${{indexFile(\"docs/aboutCodeCC.md\")}}",
+    "configInfo": {
+      "frontendType": "SPECIAL"
+    },
+    "versionInfo": {
+      "publisher": "admin",
+      "releaseType": "NEW",
+      "version": "1.0.0",
+      "versionContent": "Test"
+    }
   }
 }

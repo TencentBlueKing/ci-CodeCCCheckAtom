@@ -9,8 +9,8 @@
         </bk-input>
         <div class="bk-options-wrapper" v-show="optionsVisible">
             <ul class="bk-options">
-                <li class="bk-select-empty" v-if="optionsLoading">正在加载中...</li>
-                <li class="bk-select-empty" v-else-if="!filterTaskList || !filterTaskList.length">无匹配数据</li>
+                <li class="bk-select-empty" v-if="optionsLoading">{{$t('正在加载中')}}...</li>
+                <li class="bk-select-empty" v-else-if="!filterTaskList || !filterTaskList.length">{{$t('无匹配数据')}}</li>
                 <li 
                     class="bk-option custom-option" 
                     v-show="!optionsLoading && filterTaskList && filterTaskList.length" 
@@ -26,7 +26,7 @@
             <div class="bk-select-extension">
                 <a class="bk-selector-create-item" @click="handleNewTask">
                     <i class="bk-icon icon-plus-circle" />
-                    新增任务
+                    {{$t('新增任务')}}
                 </a>
             </div>
         </div>
