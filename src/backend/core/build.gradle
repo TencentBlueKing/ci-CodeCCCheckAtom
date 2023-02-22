@@ -120,8 +120,18 @@ allprojects {
         into "../../frontend/target/frontend"
     }
 
-    task buildZip(type: Zip, dependsOn: [shadowJar, copyFrontend]) {
-        from "build/libs", "task.json", "quality.json", "../../frontend/target"
+    task copyDocs(type:Copy) {
+        from "../../../docs"
+        into "../../../target/file/docs"
+    }
+
+    task copyImages(type:Copy) {
+        from "../../../images"
+        into "../../../target/file/images"
+    }
+
+    task buildZip(type: Zip, dependsOn: [shadowJar, copyFrontend, copyDocs, copyImages]) {
+        from "build/libs", "task.json", "quality.json", "../../frontend/target", "../../../target"
         into "CodeCCCheckAtom"
     }
 
