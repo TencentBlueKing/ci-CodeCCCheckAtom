@@ -7,9 +7,9 @@
         :show-footer="false">
         <div class="main-content" v-bkloading="{ isLoading: loading, opacity: 0.3 }">
             <div class="info-header">
-                <span>选择规则集<i class="bk-icon icon-refresh checkerset-fresh" :class="fetchingList ? 'spin-icon' : ''" @click="refresh" /></span>
+                <span>{{$t('选择规则集')}}<i class="bk-icon icon-refresh checkerset-fresh" :class="fetchingList ? 'spin-icon' : ''" @click="refresh" /></span>
                 <div class="handle-option">
-                    <bk-select class="search-select" v-model="language" multiple style="width: 120px;" placeholder="请选择语言">
+                    <bk-select class="search-select" v-model="language" multiple style="width: 120px;" :placeholder="$t('请选择语言')">
                         <bk-option v-for="option in codeLangs"
                             :key="option.displayName"
                             :id="option.displayName"
@@ -18,7 +18,7 @@
                     </bk-select>
                     <bk-input
                         class="search-input"
-                        :placeholder="'快速搜索'"
+                        :placeholder="$t('快速搜索')"
                         :clearable="true"
                         :right-icon="'bk-icon icon-search'"
                         v-model="keyWord"
@@ -27,13 +27,13 @@
                     </bk-input>
                     <bk-popconfirm always
                         v-if="showTipsConfirm"
-                        confirm-text="我知道了" 
+                        :confirm-text="$t('我知道了')"
                         cancel-text=""
                         :delay="500"
                         :confirm-button-is-text="false" 
                         @confirm="handleTipsConfirm">
                         <div slot="content">
-                            <div>在此处关闭规则集弹框</div>
+                            <div>{{$t('在此处关闭规则集弹框')}}</div>
                         </div>
                         <i class="bk-icon icon-close" @click="closeDialog" />
                     </bk-popconfirm>
@@ -59,13 +59,13 @@
                                     <span class="name" :title="checkerSet.checkerSetName">{{checkerSet.checkerSetName}}</span>
                                     <span v-if="['DEFAULT', 'RECOMMEND'].includes(checkerSet.checkerSetSource)"
                                         :class="['use-mark', { 'preferred': checkerSet.checkerSetSource === 'DEFAULT', 'recommend': checkerSet.checkerSetSource === 'RECOMMEND' }]"
-                                    >{{checkerSet.checkerSetSource === 'DEFAULT' ? '精选' : '推荐'}}</span>
+                                    >{{checkerSet.checkerSetSource === 'DEFAULT' ? $t('精选') : $t('推荐')}}</span>
                                     <span class="language" :title="getCodeLang(checkerSet.codeLang)">{{getCodeLang(checkerSet.codeLang)}}</span>
                                 </p>
-                                <p class="checkerset-desc" :title="checkerSet.description">{{checkerSet.description || '暂无描述'}}</p>
+                                <p class="checkerset-desc" :title="checkerSet.description">{{checkerSet.description || $t('暂无描述')}}</p>
                                 <p class="other-msg">
-                                    <span>由 {{ checkerSet.creator }} 发布</span>
-                                    <span>共 {{checkerSet.checkerCount || 0}} 条规则</span>
+                                    <span>{{$t('由x发布',{ name: checkerSet.creator })}}</span>
+                                    <span>{{$t('共x条规则', { sum: checkerSet.checkerCount || 0 })}}</span>
                                 </p>
                             </div>
                             <div class="info-operate" 
@@ -85,12 +85,12 @@
                     <div v-if="!checkerSetList.length">
                         <div class="codecc-table-empty-text">
                             <img src="../images/empty.png" class="empty-img">
-                            <div>暂无数据</div>
+                            <div>{{$t('暂无数据')}}</div>
                         </div>
                     </div>
                 </bk-tab-panel>
                 <template slot="setting">
-                <a :href="linkUrl" target="_blank" class="codecc-link">创建规则集</a>
+                <a :href="linkUrl" target="_blank" class="codecc-link">{{$t('创建规则集')}}</a>
             </template>
             </bk-tab>
         </div>
@@ -170,7 +170,7 @@
             },
             classifyCodeList () {
                 if (this.categoryList.length) {
-                    return [{ cnName: '所有', enName: 'all' }, ...this.categoryList, { cnName: '研发商店', enName: 'store' }]
+                    return [{ cnName: this.$t('所有'), enName: 'all' }, ...this.categoryList, { cnName: this.$t('研发商店'), enName: 'store' }]
                 }
                 return []
             }
@@ -261,9 +261,9 @@
             getSelectText (checkerSet, index) {
                 let txt = ''
                 if (this.classifyCode === 'store' && !checkerSet.projectInstalled) {
-                    txt = '安装'
+                    txt = this.$t('安装')
                 } else {
-                    txt = this.checkIsSelected(checkerSet.checkerSetId) ? this.currentHoverItem === index ? '取消选中' : '已选中' : '选择'
+                    txt = this.checkIsSelected(checkerSet.checkerSetId) ? this.currentHoverItem === index ? this.$t('取消选中') : this.$t('已选中') : this.$t('选择')
                 }
                 return txt
             },
@@ -340,21 +340,21 @@
                 this.loading = true
                 this.$store.dispatch('install', params).then(res => {
                     if (res.code === '0') {
-                        this.$bkMessage({ theme: 'success', message: '安装成功' })
+                        this.$bkMessage({ theme: 'success', message: this.$t('安装成功') })
                         this.refresh()
                     }
                 }).catch(e => {
                     this.$bkMessage({
-                        message: '安装失败',
+                        message: this.$t('安装失败'),
                         theme: 'error'
                     })
                 })
             },
             getToolTips (hasMultiLang, notCurLang) {
                 if (hasMultiLang) {
-                    return '该规则集不适用于当前插件'
+                    return this.$t('该规则集不适用于当前插件')
                 } else if (notCurLang) {
-                    return '该规则集不适用于当前插件已选择的语言'
+                    return this.$t('该规则集不适用于当前插件已选择的语言')
                 }
                 return { disabled: true }
             },
