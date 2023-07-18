@@ -84,5 +84,11 @@ data class AnalyzeConfigInfo(
     val paramJson: String?,
 
     //判断是否需要使用白名单
-    val onlyScanWhitePath: Boolean? = true
+    val onlyScanWhitePath: Boolean? = true,
+
+    // WOODPECKER_COMMITSCAN 专用参数，增量扫描时间起点
+    val commitSince: Long? = 0L,
+
+    //上一次的buildID
+    val baseBuildId: String = ""
 )

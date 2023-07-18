@@ -6,6 +6,7 @@ const val ROLLING_WINDOW = 7
 @ExperimentalUnsignedTypes
 const val MIN_BLOCKSIZE : ULong= 3UL
 const val HASH_INIT = 0x27
+//todo 这两个状态位要看
 @ExperimentalUnsignedTypes
 const val FUZZY_STATE_NEED_LASTHASH = 1
 @ExperimentalUnsignedTypes

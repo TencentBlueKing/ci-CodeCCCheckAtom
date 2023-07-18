@@ -10,22 +10,23 @@ object ScriptUtils {
 
     fun execute(
         script: String,
-        dir: File,
+        dir: File?,
         buildEnvs: List<BuildEnv> = listOf(),
         runtimeVariables: Map<String, String> = emptyMap(),
         continueNoneZero: Boolean = false,
         prefix: String = "",
-        printErrorLog: Boolean = true
+        printErrorLog: Boolean = true,
+        print2Logger: Boolean = true
     ): String {
         return when (CodeccEnvHelper.getOS()) {
             OSType.LINUX, OSType.MAC_OS -> {
-                ShellUtil.execute(script, dir, buildEnvs, runtimeVariables, continueNoneZero, prefix, printErrorLog)
+                ShellUtil.execute(script, dir, buildEnvs, runtimeVariables, continueNoneZero, prefix, printErrorLog, print2Logger)
             }
             OSType.WINDOWS -> {
-                BatScriptUtil.execute(script, runtimeVariables, dir, prefix, printErrorLog)
+                BatScriptUtil.execute(script, runtimeVariables, dir, prefix, printErrorLog, print2Logger)
             }
             else -> {
-                ShellUtil.execute(script, dir, buildEnvs, runtimeVariables, continueNoneZero, prefix, printErrorLog)
+                ShellUtil.execute(script, dir, buildEnvs, runtimeVariables, continueNoneZero, prefix, printErrorLog, print2Logger)
             }
         }
     }
@@ -50,7 +51,7 @@ object ScriptUtils {
                 }
             }
             list.add("export LANG=zh_CN.UTF-8\n")
-            list.add("export PATH=/data/bkdevops/apps/codecc/go/bin:/data/bkdevops/apps/codecc/gometalinter/bin:\$PATH\n")
+            list.add("export PATH=\$PATH\n")
         }
 
         list.add(script)

@@ -11,7 +11,7 @@ class PipelineTaskResourceApi : BaseApi() {
     fun getAllBuildTask(): Result<List<PipelineBuildTaskInfo>> {
         val path = "/ms/process/api/build/task/getAllBuildTask"
         val request = buildGet(path)
-        val responseContent = request(request, "领取构建机任务详情失败")
+        val responseContent = request(request, "Failed to get build machine task details")
         return JsonUtil.to(responseContent, object : TypeReference<Result<List<PipelineBuildTaskInfo>>>() {})
     }
 }

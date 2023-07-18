@@ -26,6 +26,7 @@
 
 package com.tencent.devops.utils.common
 
+import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.pojo.repo.CodeSvnRepository
 import com.tencent.devops.pojo.ticket.CredentialType
 
@@ -36,7 +37,7 @@ object SvnUtil {
             // 兼容老的数据，老的数据是用的是password, 新的是username_password
             return if (credentialType == CredentialType.USERNAME_PASSWORD) {
                 if (credentials.size <= 1) {
-                    System.err.println("Fail to get the username($credentials) of the svn repo $repository")
+                    LogUtils.printErrorLog("Fail to get the username($credentials) of the svn repo $repository")
                     SvnCredential(repository.userName, credentials[0], null)
                 } else
                     SvnCredential(credentials[0], credentials[1], null)

@@ -26,8 +26,9 @@
 
 package com.tencent.devops.utils.script
 
-import com.tencent.devops.pojo.exception.CodeccTaskExecException
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
+import com.tencent.devops.docker.tools.LogUtils
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.user.CodeCCUserException
 import com.tencent.devops.pojo.script.BuildEnv
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -79,31 +80,37 @@ object ShellUtil {
 
     fun execute(
         script: String,
-        dir: File,
-        buildEnvs: List<BuildEnv>,
-        runtimeVariables: Map<String, String>,
+        dir: File?,
+        buildEnvs: List<BuildEnv> = listOf(),
+        runtimeVariables: Map<String, String> = mapOf(),
         continueNoneZero: Boolean = false,
         prefix: String = "",
-        printErrorLog: Boolean = true
+        printErrorLog: Boolean = true,
+        print2Logger: Boolean = true
     ): String {
         return try {
             executeUnixCommand(
                 command = getCommandFile(script, dir, buildEnvs, runtimeVariables, continueNoneZero).canonicalPath,
                 sourceDir = dir,
-                prefix = prefix
+                prefix = prefix,
+                print2Logger = print2Logger
             )
         } catch (e: Throwable) {
             if (printErrorLog) logger.error("Fail to execute shell script: ${e.message}")
-            throw CodeccUserConfigException("Fail to execute shell script: ${e.message}")
+            throw CodeCCUserException(
+                ErrorCode.USER_EXEC_SCRIPT_FAIL,
+                "Fail to execute shell script: ${e.message}"
+            )
         }
     }
 
     fun getCommandFile(
         script: String,
-        dir: File,
+        dir: File?,
         buildEnvs: List<BuildEnv>,
         runtimeVariables: Map<String, String>,
-        continueNoneZero: Boolean = false
+        continueNoneZero: Boolean = false,
+        print2Logger: Boolean = true
     ): File {
         val file = Files.createTempFile("devops_script", ".sh").toFile()
 //        file.deleteOnExit()
@@ -114,8 +121,7 @@ object ShellUtil {
             command.append(bashStr).append("\n")
         }
 
-        command.append("export $WORKSPACE_ENV=${dir.absolutePath}\n")
-            .append("export DEVOPS_BUILD_SCRIPT_FILE=${file.absolutePath}\n")
+        command.append("export DEVOPS_BUILD_SCRIPT_FILE=${file.absolutePath}\n")
         val commonEnv = runtimeVariables.filter {
             !specialEnv(it.key, it.value)
         }
@@ -131,11 +137,11 @@ object ShellUtil {
             buildEnvs.forEach { buildEnv ->
                 val home = File(getEnvironmentPathPrefix(), "${buildEnv.name}/${buildEnv.version}/")
                 if (!home.exists()) {
-                    println("环境变量路径(${home.absolutePath})不存在")
+                    LogUtils.printLog("The environment variable path (${home.absolutePath}) does not exist")
                 }
                 val envFile = File(home, buildEnv.binPath)
                 if (!envFile.exists()) {
-                    println("环境变量路径(${envFile.absolutePath})不存在")
+                    LogUtils.printLog("The environment variable path (${envFile.absolutePath}) does not exist")
                     return@forEach
                 }
                 // command.append("export $name=$path")
@@ -160,7 +166,8 @@ object ShellUtil {
         if (!continueNoneZero) {
             command.append("set -e\n")
         } else {
-            println("每行命令运行返回值非零时，继续执行脚本")
+            LogUtils.printLog("When the return value of each line of command is non-zero, continue to execute" +
+                " the script")
             command.append("set +e\n")
         }
 
@@ -169,13 +176,13 @@ object ShellUtil {
         command.append(script)
 
         file.writeText(command.toString())
-        executeUnixCommand("chmod +x ${file.absolutePath}", dir)
+        executeUnixCommand("chmod +x ${file.absolutePath}", dir, "", print2Logger)
 
         return file
     }
 
-    private fun executeUnixCommand(command: String, sourceDir: File, prefix: String = ""): String {
-        return CommandLineUtils.execute(command, sourceDir, true, prefix)
+    private fun executeUnixCommand(command: String, sourceDir: File?, prefix: String = "", print2Logger: Boolean = true): String {
+        return CommandLineUtils.execute(command, sourceDir, print2Logger, prefix)
     }
 
     private fun specialEnv(key: String, value: String): Boolean {

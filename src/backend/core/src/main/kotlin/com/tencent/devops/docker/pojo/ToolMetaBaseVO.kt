@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 @JsonIgnoreProperties(ignoreUnknown = true)
 open class ToolMetaBaseVO : CommonVO() {
     /**
-     * 工具模型,LINT、COMPILE、TSCLUA、CCN、DUPC，决定了工具的接入、告警、报表的处理及展示类型
+     * 工具模型,LINT、COMPILE、TSCLUA、CCN、DUPC，决定了工具的接入、问题、报表的处理及展示类型
      */
     open var pattern: String? = null
 

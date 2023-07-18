@@ -46,7 +46,7 @@ class CodeccCheckAtomParamV2 : CodeccCheckAtomParam() {
     var instantReportStatus: String? = null // 即时报告状态，有效：1，暂停：2
     var reportTools: String? = null
     var botWebhookUrl: String? = null
-    var botRemindSeverity: String? = null // 7-总告警数； 3-严重 + 一般告警数；1-严重告警数
+    var botRemindSeverity: String? = null // 7-总问题数； 3-严重 + 一般问题数；1-严重问题数
     var botRemaindTools: String? = null
     var botRemindRange: String? = null // 1-新增 2-遗留
 
@@ -59,7 +59,7 @@ class CodeccCheckAtomParamV2 : CodeccCheckAtomParam() {
     // 4.路径屏蔽tab
     var whileScanPaths: List<String>? = listOf() // 目前暂时不用
     var pathType: String? = "" // CUSTOM - 自定义 ； DEFAULT - 系统默认（目前之用CUSTOM）
-    var customPath: String? = null // 黑名单，添加后的代码路径将不会产生告警
+    var customPath: String? = null // 黑名单，添加后的代码路径将不会产生问题
     var filterDir: List<String>? = listOf() // 暂时不用
     var filterFile: List<String>? = listOf() // 暂时不用
 
@@ -68,6 +68,6 @@ class CodeccCheckAtomParamV2 : CodeccCheckAtomParam() {
     @JsonProperty("_CODECC_FILTER_TOOLS")
     override var filterTools: String? = null // [TOOL1,TOOL2]
 
-    @JsonProperty("pipeline.start.channel")
+    @JsonProperty("BK_CI_START_CHANNEL")
     override var channelCode: String? = ""
 }

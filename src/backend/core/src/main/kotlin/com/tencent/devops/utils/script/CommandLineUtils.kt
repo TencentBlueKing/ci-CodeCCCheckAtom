@@ -1,7 +1,9 @@
 package com.tencent.devops.utils.script
 
+import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.pojo.OSType
-import com.tencent.devops.pojo.exception.CodeccTaskExecException
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.plugin.CodeCCPluginException
 import com.tencent.devops.utils.CodeccEnvHelper
 import org.apache.commons.exec.CommandLine
 import org.apache.commons.exec.LogOutputStream
@@ -13,11 +15,14 @@ object CommandLineUtils {
 
     private val logger = LoggerFactory.getLogger(CommandLineUtils::class.java)
 
+
     private val specialChars = if (CodeccEnvHelper.getOS() == OSType.WINDOWS) {
         listOf('(', ')', '[', ']', '{', '}', '^', ';', '!', ',', '`', '~', '\'', '"')
     } else {
         listOf('|', ';', '&', '$', '>', '<', '`', '!', '\\', '"', '*', '?', '[', ']', '(', ')', '\'')
     }
+
+    val errorMessage = StringBuilder()
 
     fun execute(command: String, workspace: File?, print2Logger: Boolean, prefix: String = "", printException: Boolean = false): String {
 
@@ -36,7 +41,7 @@ object CommandLineUtils {
 
                 val tmpLine = SensitiveLineParser.onParseLine(prefix + line)
                 if (print2Logger) {
-                    println(tmpLine)
+                    LogUtils.printStr(tmpLine)
                 }
                 result.append(tmpLine).append("\n")
             }
@@ -50,7 +55,8 @@ object CommandLineUtils {
 
                 val tmpLine = SensitiveLineParser.onParseLine(prefix + line)
                 if (print2Logger) {
-                    System.err.println(tmpLine)
+//                    System.err.println(tmpLine)
+                    errorMessage.append(tmpLine)
                 }
                 result.append(tmpLine).append("\n")
             }
@@ -59,7 +65,10 @@ object CommandLineUtils {
         try {
             val exitCode = executor.execute(cmdLine)
             if (exitCode != 0) {
-                throw CodeccTaskExecException("$prefix Script command execution failed with exit code($exitCode)")
+                throw CodeCCPluginException(
+                    ErrorCode.SCRIPT_COMMAND_EXECUTION_FAIL,
+                    "$prefix Script command execution failed with exit code($exitCode)"
+                )
             }
         } catch (t: Throwable) {
             if (printException) logger.warn("Fail to execute the command($command)", t)

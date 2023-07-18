@@ -5,5 +5,7 @@ enum class ScanType(code: Int) {
     INCREMENT(1),
     DIFF(2),
     FAST_INCREMENTAL(3),
-    PARTIAL_INCREMENTAL(4)
+    PARTIAL_INCREMENTAL(4),
+    DIFF_FILE(5),
+    DIFF_BRANCH(6)
 }

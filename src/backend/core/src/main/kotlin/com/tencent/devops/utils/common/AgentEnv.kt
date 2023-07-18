@@ -31,7 +31,8 @@ import com.tencent.devops.pojo.BuildType
 import com.tencent.devops.pojo.OSType
 import com.tencent.devops.pojo.env.Env
 import com.tencent.devops.pojo.env.LogMode
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.user.CodeCCUserException
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileInputStream
@@ -81,7 +82,10 @@ object AgentEnv {
 
         if (property == null) {
             if (!propertyFile.exists()) {
-                throw CodeccUserConfigException("The property file(${propertyFile.absolutePath}) is not exist")
+                throw CodeCCUserException(
+                    ErrorCode.USER_FILE_PATH_NOT_EXIST,
+                    "The property file(${propertyFile.absolutePath}) is not exist"
+                )
             }
             property = Properties()
             property!!.load(FileInputStream(propertyFile))

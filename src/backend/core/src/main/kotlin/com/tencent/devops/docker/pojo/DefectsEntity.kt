@@ -7,11 +7,11 @@ import com.fasterxml.jackson.annotation.JsonProperty
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DefectsEntity(
-        var checkerName: String? = null,
-        val description: String? = null,
-        val filePath: String? = null,
-        val line: String? = null,
-        var severity: String? = null,
+    var checkerName: String? = null,
+    val description: String? = null,
+    val filePath: String? = null,
+    val line: String? = null,
+    var severity: String? = null,
 
     val ccn: String? = null,
     @JsonProperty("condition_lines")
@@ -36,6 +36,36 @@ data class DefectsEntity(
     val filePathname: String? = null,
     val filename: String? = null,
     val pinpointHash: String? = null,
+    /**
+     * 语言
+     */
+    val language: String? = null,
 
-    val language: String? = null
+
+    /**
+     * 语言值
+     */
+    var langValue: Long? = null,
+    /**
+     * 注释忽略标记
+     */
+    val ignoreCommentDefect: Boolean? = false,
+    /**
+     * 注释忽略原因
+     */
+    val ignoreCommentReason: String? = null,
+
+    var author: String? = null,
+
+    var revision: String? = null,
+
+    var lineUpdateTime: Long? = null,
+
+    var branch: String? = null,
+
+    var relPath: String? = null,
+
+    var url: String? = null,
+
+    val defectInstances: List<DefectInstance>? = null
 )

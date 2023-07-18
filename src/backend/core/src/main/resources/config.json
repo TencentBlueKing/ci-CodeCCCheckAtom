@@ -1,7 +1,5 @@
 {
   "codeccScriptFile": "build_tool_external_rule_prod.py",
-  "codeccHost": "__BK_CODECC_PUBLIC_URL__",
-  "codeccFrontHost": "__BK_CI_PUBLIC_URL__",
-  "codeccDetail": "__BK_CODECC_PUBLIC_URL__",
-  "imageRegistryPwdKey": "__BK_CODECC_ENCRYPTOR_KEY__"
+  "codeccScriptZip": "codecc_scan_external_prod.zip",
+  "bkMagicVueCss": "https://magicbox.bk.tencent.com/static_api/v3/components_vue/2.0/bk-magic-vue.min.css"
 }

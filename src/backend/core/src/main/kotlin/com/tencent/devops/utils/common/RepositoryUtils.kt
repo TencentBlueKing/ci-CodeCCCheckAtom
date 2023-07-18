@@ -27,7 +27,10 @@
 package com.tencent.devops.utils.common
 
 import com.tencent.devops.api.RepositoryApi
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.third.ThirdParty
+import com.tencent.devops.pojo.exception.third.ThirdPartyException
+import com.tencent.devops.pojo.exception.user.CodeCCUserException
 import com.tencent.devops.pojo.repo.Repository
 import com.tencent.devops.pojo.repo.RepositoryConfig
 import org.slf4j.LoggerFactory
@@ -41,12 +44,20 @@ object RepositoryUtils {
             logger.info("Start to get the repo($repositoryConfig)")
             val result = repoApi.get(repositoryConfig)
             if (result.isNotOk() || result.data == null) {
-                throw CodeccUserConfigException("Fail to get the repo($repositoryConfig) because of ${result.message}")
+                throw CodeCCUserException(
+                    ErrorCode.USER_GET_REPO_FAIL,
+                    "Fail to get the repo($repositoryConfig) because of ${result.message}"
+                )
             }
             logger.info("Get the repo(${result.data})")
             return result.data!!
         } catch (ignored: Exception) {
-            throw CodeccUserConfigException("Fail to get the repo($repositoryConfig), ${ignored.message}")
+            throw ThirdPartyException(
+                ErrorCode.THIRD_REQUEST_FAIL,
+                "Fail to get the repo($repositoryConfig), ${ignored.message}",
+                emptyArray(),
+                ThirdParty.BK_CI
+            )
         }
     }
 

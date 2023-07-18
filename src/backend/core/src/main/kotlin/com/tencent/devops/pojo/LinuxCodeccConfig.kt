@@ -26,8 +26,6 @@
 
 package com.tencent.devops.pojo
 
-import org.bouncycastle.crypto.agreement.srp.SRP6Client
-
 val MOUNT_PATH = System.getProperty("devops.codecc.script.path", "/data/devops/codecc")
 val SCRIPT_PATH = System.getProperty("devops.codecc.script.path", "$MOUNT_PATH/script")
 val SOFTWARE_PATH = System.getProperty("devops.codecc.software.path", "$MOUNT_PATH/software")
@@ -48,8 +46,3 @@ val MONO_PATH = System.getProperty("devops.codecc.software.mono.path", "mono/bin
 val GRADLE_PATH = System.getProperty("devops.codecc.software.gradle.path", "gradle/bin")
 val MAVEN_PATH = System.getProperty("devops.codecc.software.maven.path", "maven/bin")
 val ANT_PATH = System.getProperty("devops.codecc.software.ant.path", "ant/bin")
-
-var codeccHost: String = ""
-var codeccFrontHost: String = ""
-var codeccDetail: String = ""
-var imageRegistryPwdKey: String = ""

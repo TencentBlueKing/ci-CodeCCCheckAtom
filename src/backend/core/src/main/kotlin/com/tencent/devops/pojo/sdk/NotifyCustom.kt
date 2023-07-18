@@ -113,7 +113,7 @@ data class NotifyCustom(
     val botWebhookUrl: String? = null,
 
     /**
-     * 群机器人通知告警级别，多个级别直接相加
+     * 群机器人通知问题级别，多个级别直接相加
      */
 
     val botRemindSeverity: Int? = null,

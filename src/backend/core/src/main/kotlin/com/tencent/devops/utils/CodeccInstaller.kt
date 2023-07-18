@@ -26,11 +26,9 @@
 
 package com.tencent.devops.utils
 
-import com.tencent.bk.devops.plugin.utils.OkhttpUtils
-import com.tencent.devops.api.CodeccApi
+import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.pojo.CodeccCheckAtomParamV3
 import com.tencent.devops.pojo.LinuxCodeccConstants
-import com.tencent.devops.utils.common.AgentEnv
 import com.tencent.devops.utils.script.CommandLineUtils
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
@@ -39,11 +37,9 @@ import java.io.File
 
 object CodeccInstaller {
 
-    private val api = CodeccApi()
-
     fun setUpPython3(param: CodeccCheckAtomParamV3) {
         // 安装python 3.x
-        println("[初始化] download python 3.x")
+        LogUtils.printLog("download python 3.x")
         val constants = LinuxCodeccConstants(param.bkWorkspace)
         getTool(constants.THIRD_PYTHON3_TAR_FILE, Runnable {
             setupPython3(constants.THIRD_PYTHON3_TAR_FILE)
@@ -53,16 +49,9 @@ object CodeccInstaller {
     // toolFile: 工具文件下载到绝对路径
     // callback: 下载完工具执行的操作
     private fun getTool(toolFile: File, callback: Runnable = Runnable { }) {
-        val md5File = File(toolFile.canonicalPath + ".md5")
-        val md5 = if (md5File.exists()) md5File.readText() else ""
-        val response = api.downloadTool("PYTHON3", CodeccEnvHelper.getOS(), md5, AgentEnv.is32BitSystem())
-        OkhttpUtils.downloadFile(response, toolFile)
-        if (response.code != 304) {
+        val file = CodeccScriptUtils().downloadPython(toolFile.parentFile)
+        if (file != null) {
             callback.run()
-            // 写入md5
-            md5File.writeText(getMD5(toolFile))
-        } else {
-            println("PYTHON3 is newest, do not install")
         }
     }
 
@@ -76,7 +65,7 @@ object CodeccInstaller {
     private fun setupPython3(pythonFile: File) {
         // 解压tgz
         val pythonPath = pythonFile.canonicalPath.removeSuffix(".tgz")
-        println("解压${pythonFile.name}到: $pythonFile")
+        LogUtils.printLog("Decompress ${pythonFile.name} to: $pythonFile")
         unzipTgzFile(pythonFile.canonicalPath, pythonPath)
 
         // 执行相关命令

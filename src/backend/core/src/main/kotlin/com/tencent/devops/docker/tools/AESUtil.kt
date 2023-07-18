@@ -26,7 +26,8 @@
 
 package com.tencent.devops.docker.tools
 
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.plugin.CodeCCPluginException
 import org.bouncycastle.crypto.engines.AESEngine
 import org.bouncycastle.crypto.modes.CBCBlockCipher
 import org.bouncycastle.crypto.paddings.PKCS7Padding
@@ -56,7 +57,10 @@ object AESUtil {
             secureRandom = SecureRandom.getInstance("SHA1PRNG")
             secureRandom.setSeed(key.toByteArray(charset(UTF8)))
         } catch (e: Exception) {
-            throw CodeccUserConfigException(e.message ?: "")
+            throw CodeCCPluginException(
+                ErrorCode.PLUGIN_DECRYPT_ERROR,
+                e.message ?: ""
+            )
         }
 
         keyGenerator.init(SEED, secureRandom)

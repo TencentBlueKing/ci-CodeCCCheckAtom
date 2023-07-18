@@ -1,0 +1,1622 @@
+{
+  "COVERITY": {
+    "title": "Coverity",
+    "normalLegend": [
+      {
+        "key": "New Add",
+        "value": "latest_new_add_count"
+      },
+      {
+        "key": "Closed",
+        "value": "latest_closed_count"
+      }
+    ],
+    "normalKey": "Closed",
+    "normalVal": "latest_closed_count",
+    "activeKey": "New Add",
+    "activeVal": "latest_new_add_count",
+    "mainKey": "To be fixed",
+    "mainVal": "latest_exist_count",
+    "charts": [
+      {
+        "type": "Pie",
+        "title": "All Issue Status",
+        "color": [
+          "#ffb400",
+          "#30d878",
+          "#3c96ff",
+          "#dde4eb"
+        ],
+        "opts": [
+          {
+            "key": "total_new",
+            "text": "To be fixed"
+          },
+          {
+            "key": "total_close",
+            "text": "Repaired"
+          },
+          {
+            "key": "total_ignore",
+            "text": "Ignored"
+          },
+          {
+            "key": "total_excluded",
+            "text": "Filtered"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issue to be fixed",
+        "xkey": "name",
+        "ykey": "total_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "KLOCWORK": {
+    "title": "Klocwork",
+    "normalLegend": [
+      {
+        "key": "New Add",
+        "value": "latest_new_add_count"
+      },
+      {
+        "key": "Closed",
+        "value": "latest_closed_count"
+      }
+    ],
+    "normalKey": "Closed",
+    "normalVal": "latest_closed_count",
+    "activeKey": "New Add",
+    "activeVal": "latest_new_add_count",
+    "mainKey": "To be fixed",
+    "mainVal": "latest_exist_count",
+    "charts": [
+      {
+        "type": "Pie",
+        "title": "All Issue Status",
+        "color": [
+          "#ffb400",
+          "#30d878",
+          "#3c96ff",
+          "#dde4eb"
+        ],
+        "opts": [
+          {
+            "key": "total_new",
+            "text": "To be repaired"
+          },
+          {
+            "key": "total_close",
+            "text": "Repaired"
+          },
+          {
+            "key": "total_ignore",
+            "text": "Ignored"
+          },
+          {
+            "key": "total_excluded",
+            "text": "Filtered"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "total_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "PINPOINT": {
+    "title": "Pinpoint",
+    "normalLegend": [
+      {
+        "key": "New Add",
+        "value": "latest_new_add_count"
+      },
+      {
+        "key": "Closed",
+        "value": "latest_closed_count"
+      }
+    ],
+    "normalKey": "Closed",
+    "normalVal": "latest_closed_count",
+    "activeKey": "New Add",
+    "activeVal": "latest_new_add_count",
+    "mainKey": "To be fixed",
+    "mainVal": "latest_exist_count",
+    "charts": [
+      {
+        "type": "Pie",
+        "title": "All Issue Status",
+        "color": [
+          "#ffb400",
+          "#30d878",
+          "#3c96ff",
+          "#dde4eb"
+        ],
+        "opts": [
+          {
+            "key": "total_new",
+            "text": "To be repaired"
+          },
+          {
+            "key": "total_close",
+            "text": "Repaired"
+          },
+          {
+            "key": "total_ignore",
+            "text": "Ignored"
+          },
+          {
+            "key": "total_excluded",
+            "text": "Filtered"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "total_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "CPPLINT": {
+    "title": "CppLint",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "FLAKE8": {
+    "title": "Flake8",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "PYLINT": {
+    "title": "PyLint",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#a1eaee"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "TSCLUA": {
+    "title": "TSCLUA",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#a1eaee"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "TSCCPP": {
+    "title": "TSC-Cpp",
+    "normalKey": "Closed",
+    "normalVal": "latest_closed_count",
+    "activeKey": "New add",
+    "activeVal": "latest_new_add_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ]
+      }
+    ]
+  },
+  "ESLINT": {
+    "title": "ESLint",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "CHECKSTYLE": {
+    "title": "Checkstyle",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "STYLECOP": {
+    "title": "StyleCop",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "DETEKT": {
+    "title": "detekt",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "PHPCS": {
+    "title": "PHPCS",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "SENSITIVE": {
+    "title": "Sensitive Info Detection",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "OCCHECK": {
+    "title": "OCCheck",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "GOML": {
+    "title": "Gometalinter",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "GOCILINT": {
+    "title": "GolangCI-Lint",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "CCN": {
+    "title": "Cyclomatic Complexity",
+    "normalLegend": [
+      {
+        "key": "Risk Function",
+        "value": "total_risk_func_count"
+      },
+      {
+        "key": "Average CCN",
+        "value": "average_ccn"
+      }
+    ],
+    "normalKey": "Average Cyclomatic Complexity",
+    "normalVal": "average_ccn",
+    "normalChange": "changed_ccn",
+    "activeKey": "Risk Function",
+    "activeVal": "total_risk_func_count",
+    "activeChange": "changed_risk_func_count",
+    "mainKey": "Average CCN",
+    "mainVal": "average_ccn",
+    "hasChange": true,
+    "changeNormalVal": "changed_ccn",
+    "changeActiveVal": "changed_risk_func_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "Risk Function Impact Distribution",
+        "opts": [
+          {
+            "key": "super_high",
+            "text": "Extremely High Risk",
+            "color": "#dde4eb"
+          },
+          {
+            "key": "high",
+            "text": "High Risk",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "medium",
+            "text": "Medium Risk",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "low",
+            "text": "Low Risk",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Line",
+        "title": "Average CCN Trend",
+        "opts": "average_ccn_chart",
+        "xkey": "date",
+        "ykey": "averageCCN",
+        "enable": true
+      }
+    ]
+  },
+  "DUPC": {
+    "title": "Code Duplicate Rate",
+    "normalLegend": [
+      {
+        "key": "Duplicate File",
+        "value": "total_dupfile_count"
+      },
+      {
+        "key": "Code Duplicate Rate",
+        "value": "current_dup_rate"
+      }
+    ],
+    "normalKey": "Code Duplicate Rate",
+    "normalVal": "current_dup_rate",
+    "normalChange": "changed_dup_rate",
+    "activeKey": "Duplicate File",
+    "activeVal": "total_dupfile_count",
+    "activeChange": "changed_dupfile_count",
+    "mainKey": "Code Duplicate Rate",
+    "mainVal": "current_dup_rate",
+    "hasChange": true,
+    "changeNormalVal": "changed_dup_rate",
+    "changeActiveVal": "changed_dupfile_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "The Distribution By Duplicated Files",
+        "opts": [
+          {
+            "key": "super_high",
+            "text": "Extremely High Risk",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "high",
+            "text": "High Risk",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "medium",
+            "text": "Medium Risk",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "Line",
+        "title": "Code Duplicate Rate Trend",
+        "opts": "dupc_chart",
+        "xkey": "date",
+        "ykey": "averageCCN",
+        "enable": true
+      }
+    ]
+  },
+  "HORUSPY": {
+    "title": "Horus High Risk Components",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "WOODPECKER_SENSITIVE": {
+    "title": "Woodpecker Sensitive Information",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  },
+  "RIPS": {
+    "title": "RIPS",
+    "normalLegend": [
+      {
+        "key": "Issue Count",
+        "value": "newfile_total_defect_count"
+      },
+      {
+        "key": "File Count",
+        "value": "newfile_total_count"
+      }
+    ],
+    "normalKey": "File Count",
+    "normalVal": "newfile_total_count",
+    "normalChange": "newfile_changed_count",
+    "activeKey": "Issue Count",
+    "activeVal": "newfile_total_defect_count",
+    "activeChange": "newfile_changed_defect_count",
+    "mainKey": "Total Issue Count",
+    "mainVal": "newfile_total_defect_count",
+    "hasChange": true,
+    "changeNormalVal": "newfile_changed_count",
+    "changeActiveVal": "newfile_changed_defect_count",
+    "charts": [
+      {
+        "type": "Bar",
+        "title": "To be fixed severity",
+        "opts": [
+          {
+            "key": "total_new_serious",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "total_new_normal",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "total_new_prompt",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      },
+      {
+        "type": "AuthorBar",
+        "title": "Author of issues to be fixed",
+        "xkey": "name",
+        "ykey": "prompt_count",
+        "opts": [
+          {
+            "key": "serious_count",
+            "text": "High",
+            "color": "#3c96ff"
+          },
+          {
+            "key": "normal_count",
+            "text": "Medium",
+            "color": "#7fcaff"
+          },
+          {
+            "key": "prompt_count",
+            "text": "Low",
+            "color": "#a1eaee"
+          }
+        ],
+        "enable": true
+      }
+    ]
+  }
+}

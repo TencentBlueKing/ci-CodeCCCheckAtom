@@ -8,22 +8,51 @@
     "target": "$bk_java_path -Dfile.encoding=utf8 -jar CodeCCCheckAtom.jar"
   },
   "input": {
+    "beAutoLang": {
+      "default": false,
+      "type": "enum-input",
+      "label": "Language",
+      "list": [
+        {
+          "value": false,
+          "label": "Self Configuration"
+        }
+      ],
+      "tabName": "basic",
+      "inline": true
+    },
     "languages": {
       "rule": {},
       "type": "atom-checkbox-list",
       "required": true,
-      "label": "Programming Language",
+      "label": "",
       "list": [],
       "default": [],
-      "desc": "tools will match different programming language",
+      "desc": "Different coding languages, you can choose matching tools",
       "tabName": "basic"
+    },
+    "checkerSetType": {
+      "rule": {},
+      "type": "enum-input",
+      "label": "Checker Set",
+      "list": [
+        {
+          "value": "normal",
+          "label": "Self Configuration",
+          "disabled": false
+        }
+      ],
+      "default": "normal",
+      "desc": "",
+      "tabName": "basic",
+      "inline": true
     },
     "tools": {
       "rule": {},
       "required": true,
       "hidden": true,
       "type": "atom-checkbox-list",
-      "label": "Code Review Tool",
+      "label": "Code Check Tool",
       "list": [],
       "default": [],
       "tabName": "basic"
@@ -31,11 +60,11 @@
     "asyncTask": {
       "rule": {},
       "type": "enum-input",
-      "label": "Sync Method",
+      "label": "Execution Method",
       "list": [
         {
           "value": false,
-          "label": "Synchronize"
+          "label": "Synchronous"
         },
         {
           "value": true,
@@ -56,7 +85,7 @@
       "required": true,
       "tabName": "async",
       "inline": true,
-      "list": {},
+      "list": [],
       "default": "",
       "rely": {},
       "desc": "You can choose to create a task yourself in the CodeCC service, or you can directly enter the task ID. The task ID can be obtained from the CodeCC link (in /codecc/myproj/task/25324/, 25324 is the task ID). Support pipeline variables."
@@ -68,7 +97,7 @@
       "default": "",
       "required": false,
       "desc": "Help find the code path of the dependent library to get a more useful result",
-      "placeholder": "Relative paths under {WORKSPACE}, please use comma to separate multiple paths, support pipeline variables",
+      "placeholder": "Relative paths under ${WORKSPACE}, please use comma to separate multiple paths, support pipeline variables",
       "tabName": "basic",
       "inline": true,
       "rely": {
@@ -77,6 +106,10 @@
           {
             "key": "tools",
             "value": "GOML"
+          },
+          {
+            "key": "checkerSetType",
+            "value": "normal"
           }
         ]
       }
@@ -105,6 +138,10 @@
           {
             "key": "tools",
             "value": "PYLINT"
+          },
+          {
+            "key": "checkerSetType",
+            "value": "normal"
           }
         ]
       }
@@ -133,7 +170,7 @@
       },
       "label": "Script",
       "hidden": false,
-      "default": "#Coverity/Klocwork will compile your code by calling the compilation script to identify defects\n# Please use build tools such as maven/cmake to write a compilation script build.sh\n# Make sure build.sh can compile the code\n# cd path/to/build.sh\n# sh build.sh",
+      "default": "#Coverity/Klocwork will compile your code by calling the compilation script to identify defects\\n# Please use build tools such as maven/cmake to write a compilation script build.sh\\n# Make sure build.sh can compile the code\\n# cd path/to/build.sh\\n# sh build.sh",
       "required": true,
       "type": "atom-ace-editor",
       "desc": "The corresponding tool will use this script to compile the code in order to track the compilation process and find code defects",
@@ -152,7 +189,7 @@
       "required": true,
       "tabName": "basic",
       "inline": true,
-      "list": {},
+      "list": [],
       "default": [],
       "rely": {
         "operation": "AND",
@@ -164,9 +201,22 @@
         ]
       }
     },
-    "multiPipelineMark": {
+    "checkerSetEnvType": {
       "rule": {},
-      "label": "label",
+      "type": "rule-set-env-select",
+      "label": "Version",
+      "required": false,
+      "tabName": "basic",
+      "inline": true,
+      "list": [],
+      "default": "prod",
+      "rely": {}
+    },
+    "multiPipelineMark": {
+      "rule": {
+        "markVariable": true
+      },
+      "label": "Label",
       "placeholder": "Optional. Only numbers, letters, and underscores are supported.",
       "type": "vuex-input",
       "default": "",
@@ -174,44 +224,267 @@
       "desc": "If the pipeline has multiple code analysis plugins, a label can be used to distinguish them.",
       "inline": true
     },
+    "rtxReceiverType": {
+      "type": "selector",
+      "label": "Recipient",
+      "default": "1",
+      "options": [
+        {
+          "id": "4",
+          "name": "Issues Handler"
+        },
+        {
+          "id": "0",
+          "name": "All"
+        },
+        {
+          "id": "1",
+          "name": "Administrator Only"
+        },
+        {
+          "id": "2",
+          "name": "Customize"
+        },
+        {
+          "id": "3",
+          "name": "None (Do not send)"
+        }
+      ],
+      "inline": true
+    },
+    "rtxReceiverList": {
+      "type": "company-staff-input",
+      "label": "Custom Recipient",
+      "default": [],
+      "rely": {
+        "operation": "AND",
+        "expression": [
+          {
+            "key": "rtxReceiverType",
+            "value": "2"
+          }
+        ]
+      },
+      "inline": true
+    },
+    "botWebhookUrl": {
+      "label": "Webhook Address",
+      "placeholder": "After the code inspection is completed, push the remaining problems of Coverity and Klocwork to the group",
+      "type": "vuex-input",
+      "default": "",
+      "inline": true
+    },
+    "botContent": {
+      "label": "Notification Content"
+    },
+    "botRemindRange": {
+      "type": "enum-input",
+      "default": "2",
+      "label": "Issue",
+      "list": [
+        {
+          "value": "2",
+          "label": "New + Stock Issue"
+        },
+        {
+          "value": "1",
+          "label": "New Issue"
+        }
+      ],
+      "innerTab": true,
+      "inline": true
+    },
+    "botRemindSeverity": {
+      "type": "selector",
+      "default": "7",
+      "options": [
+        {
+          "id": "7",
+          "name": "Total Issue"
+        },
+        {
+          "id": "3",
+          "name": "Critical + Moderate Issue"
+        },
+        {
+          "id": "1",
+          "name": "Critical Issue"
+        }
+      ],
+      "innerTab": true,
+      "inline": true
+    },
+    "botRemaindTools": {
+      "type": "selector",
+      "default": [],
+      "label": "Tool",
+      "innerTab": true,
+      "inline": true,
+      "optionsConf": {
+        "multiple": true
+      }
+    },
+    "emailReceiverType": {
+      "type": "selector",
+      "label": "Recipient",
+      "default": "1",
+      "options": [
+        {
+          "id": "4",
+          "name": "Issues Handler"
+        },
+        {
+          "id": "0",
+          "name": "All"
+        },
+        {
+          "id": "1",
+          "name": "Administrator Only"
+        },
+        {
+          "id": "2",
+          "name": "Customize"
+        },
+        {
+          "id": "3",
+          "name": "None (Do not send)"
+        }
+      ],
+      "inline": true
+    },
+    "emailReceiverList": {
+      "type": "company-staff-input",
+      "label": "Custom Recipient",
+      "default": [],
+      "rely": {
+        "operation": "AND",
+        "expression": [
+          {
+            "key": "emailReceiverType",
+            "value": "2"
+          }
+        ]
+      },
+      "inline": true
+    },
+    "emailCCReceiverList": {
+      "type": "company-staff-input",
+      "label": "CC",
+      "default": [],
+      "inline": true,
+      "inputType": "all"
+    },
+    "instantReportStatus": {
+      "label": "Instant Report",
+      "default": "2",
+      "type": "enum-input",
+      "inline": true,
+      "list": [
+        {
+          "value": "1",
+          "label": "Enabled"
+        },
+        {
+          "value": "2",
+          "label": "Disabled"
+        }
+      ]
+    },
+    "timerEmail": {
+      "label": "Regular Report"
+    },
+    "reportDate": {
+      "default": [],
+      "label": "Weekly",
+      "type": "week-selector",
+      "innerTab": true,
+      "inline": true
+    },
+    "reportTime": {
+      "default": "",
+      "label": "Time",
+      "innerTab": true,
+      "inline": true
+    },
+    "reportTools": {
+      "type": "selector",
+      "default": [],
+      "label": "Tool",
+      "innerTab": true,
+      "inline": true,
+      "optionsConf": {
+        "multiple": true
+      }
+    },
     "toolScanType": {
       "rule": {},
       "type": "radio-group",
-      "label": "Scan Method",
+      "label": "Scan Type",
       "required": true,
       "list": [
         {
-          "label": "Incremental Scan（recommended)",
+          "label": "Fast Full Scan",
           "value": "1"
-        },
-        {
-          "label": "MR/PR Scan",
-          "value": "2"
         },
         {
           "label": "Full Scan",
           "value": "0"
+        },
+        {
+          "label": "Diff Scan",
+          "value": "6"
+        },
+        {
+          "label": "MR/PR Scan",
+          "value": "2"
         }
       ],
       "default": "1",
-      "desc": "Incremental scan: Scan the difference code between current build and previous build. Full scan will be used in the first time.\nMR/PR Scan: Scan the difference code between the source branch and the target branch of MR/PR. The source branch code needs to be pulled to the workspace\nFull Scan: Scan all codes. Klocwork, Pinpoint, Gometalinter, and repetition rate only support this scanning method."
+      "descLinkText": "Learn more",
+      "desc": "Quick full scan: All files will be scanned for the first time. Subsequent scans of unchanged files will reuse previous scan results to increase scan speed.\nFull Scan: Scan all files every time. Klocwork, Pinpoint, Gometalinter, and repetition rate only support this scanning method.\nDifference scanning: Scan the difference files between the current workspace branch and the comparison branch.\nMR/PR scan: scan the difference between the source branch and the target branch of MR/PR, the default is the difference row, and the difference file can be selected. The source branch code needs to be pulled to the workspace. MR/PR scans do not support manual execution or pipelined retries."
     },
-    "mrCommentEnable": {
-      "label": "",
-      "default": true,
-      "type": "atom-checkbox",
-      "text": "Sync the defect info to Tencent internal Git viewing page"
-    },
-    "newDefectJudgeFromDate": {
+    "diffBranch": {
+      "tabName": "diffbr",
+      "required": true,
+      "label": "Compare Branch",
+      "placeholder": "For example, master, supports pipeline variables",
+      "type": "vuex-input",
       "default": "",
-      "label": "New Alerts Threshold",
-      "desc": "Alerts sent after the selected date are New Alerts"
+      "desc": "",
+      "inline": true
+    },
+    "byFile": {
+      "tabName": "mrpr",
+      "label": "",
+      "default": false,
+      "type": "atom-checkbox",
+      "text": "Show all issues in diff files from source branch and target branch"
+    },
+    "prohibitIgnore": {
+      "tabName": "scan",
+      "rule": {},
+      "type": "radio-group",
+      "label": "Disable Page Ignoring Issue",
+      "required": true,
+      "list": [
+        {
+          "label": "Allow ignoring issues on the page",
+          "value": false
+        },
+        {
+          "label": "Disallow ignoring issues on the page",
+          "value": true
+        }
+      ],
+      "default": false,
+      "descLinkText": "Learn more",
+      "desc": "It is forbidden to ignore the problem directly from the page, you can use a comment to ignore at the end of the code line or on the previous line, for example // NOCC:rule1(ignore reason). Currently Coverity, Klocwork, and Pinpoint do not support this function."
     },
     "transferAuthorList": {
       "default": [],
       "type": "author-transfer",
-      "label": "change owner",
-      "desc": "Alerts will sent to the new owner when the tools's ownership changed "
+      "label": "Handlers Mapping",
+      "desc": "Issues from the original handlers of each tool will be automatically transferred to the new handlers"
     },
     "path": {
       "default": [],
@@ -221,13 +494,30 @@
       "default": [],
       "type": "item-edit"
     },
+    "scanTestSource": {
+      "default": false,
+      "type": "atom-checkbox",
+      "disabled": false,
+      "text": "Still perform code style check on the test_source code."
+    },
     "openScanPrj": {
       "label": "",
       "default": false,
       "placeholder": "",
       "type": "atom-checkbox",
-      "text": "use open sourced tool to scan project",
-      "desc": "Use open sourced scanning tool when selected",
+      "text": "Is it an open source scanning project",
+      "desc": "Select to go through the open source scanning process",
+      "required": false,
+      "disabled": false,
+      "hidden": true
+    },
+    "openScanFilterEnable": {
+      "label": "",
+      "default": false,
+      "placeholder": "",
+      "type": "atom-checkbox",
+      "text": "Whether to allow open source scanning to set filter path",
+      "desc": "Check to allow open source scanning to set the filter path",
       "required": false,
       "disabled": false,
       "hidden": true
@@ -240,7 +530,7 @@
     },
     "BK_CI_CODECC_TASK_STATUS": {
       "type": "string",
-      "description": "Whether the CodeCC task runs successfully"
+      "description": "Whether the CodeCC task runs successfully, if successful, it is not true, otherwise it cannot be obtained"
     }
   },
   "releaseInfo": {
@@ -254,7 +544,7 @@
     "os": ["LINUX", "MACOS", "WINDOWS"],
     "labelCodes": [],
     "summary":"Support all CodeCC code inspection tools under Linux, MacOS, and Windows systems, including code defects (bkcheck, etc.), security vulnerabilities (sensitive information, high-risk components, etc.), code specifications (CppLint, CheckStyle, etc.), cyclomatic complexity, repetition rate, etc. .",
-    "description": "${{indexFile(\"docs/aboutCodeCC_en.md\")}}",
+    "description": "${{indexFile(\"docs/desc_en.md\")}}",
     "configInfo": {
       "frontendType": "SPECIAL"
     },

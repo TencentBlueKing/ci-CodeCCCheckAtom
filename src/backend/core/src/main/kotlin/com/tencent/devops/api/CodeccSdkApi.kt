@@ -27,43 +27,68 @@
 package com.tencent.devops.api
 
 import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.inject.Inject
 import com.tencent.bk.devops.atom.api.BaseApi
 import com.tencent.bk.devops.plugin.pojo.Result
 import com.tencent.bk.devops.plugin.utils.JsonUtil
 import com.tencent.bk.devops.plugin.utils.OkhttpUtils
 import com.tencent.devops.docker.tools.LogUtils
-import com.tencent.devops.pojo.*
-import com.tencent.devops.pojo.exception.CodeccDependentException
-import com.tencent.devops.pojo.exception.CodeccException
+import com.tencent.devops.injector.service.CodeCCSdkService
+import com.tencent.devops.pojo.ActualExeToolsVO
+import com.tencent.devops.pojo.BaseDataVO
+import com.tencent.devops.pojo.BuildVO
+import com.tencent.devops.pojo.CodeccCheckAtomParam
+import com.tencent.devops.pojo.CodeccCheckAtomParamV2
+import com.tencent.devops.pojo.CodeccCheckAtomParamV3
+import com.tencent.devops.pojo.CoverityResult
+import com.tencent.devops.pojo.HeadFileInfo
+import com.tencent.devops.pojo.IgnoreDefectInfo
+import com.tencent.devops.pojo.OSType
+import com.tencent.devops.pojo.env.PluginRuntimeInfo
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.plugin.CodeCCBusinessException
+import com.tencent.devops.pojo.exception.plugin.CodeCCHttpStatusException
+import com.tencent.devops.pojo.exception.plugin.CodeCCPluginException
+import com.tencent.devops.pojo.report.CodeccCallback
 import com.tencent.devops.pojo.report.TaskFailReportReq
+import com.tencent.devops.pojo.scan.SetForceFullScanReqVO
 import com.tencent.devops.pojo.sdk.CodeYmlFilterPathVO
 import com.tencent.devops.pojo.sdk.FilterPathInput
 import com.tencent.devops.pojo.sdk.NotifyCustom
+import com.tencent.devops.pojo.sdk.RuntimeUpdateMetaVO
 import com.tencent.devops.pojo.sdk.ScanConfiguration
 import com.tencent.devops.utils.CodeccConfigUtils
 import com.tencent.devops.utils.CodeccEnvHelper
 import com.tencent.devops.utils.CodeccEnvHelper.getOS
+import com.tencent.devops.utils.I18NUtils
 import com.tencent.devops.utils.common.AtomUtils
+import com.tencent.devops.utils.script.ScriptUtils
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
+import java.net.SocketException
+import java.net.SocketTimeoutException
 import java.net.URLEncoder
+import java.util.concurrent.TimeUnit
 
 object CodeccSdkApi : BaseApi() {
 
-    private val codeccApiUrl: String = codeccHost
-    private val createPath: String = "/ms/task/api/build/task"
-    private val openScanTaskPath: String = "/ms/task/api/build/openScan/task"
-    private val openScanUpdateCommitId: String = "/ms/task/api/build/openScan/buildId/{buildId}"
-    private val updatePath: String = "/ms/task/api/build/task"
+    private val codeccApiUrl: String = CodeccConfigUtils.getPropConfig("codeccHost")!!
     private val existPath: String = "/ms/task/api/build/task/exists"
     private val deletePath: String = "/ms/task/api/build/task"
-    private val startPath: String = "/ms/task/api/build/task/startSignal/taskId/{taskId}/buildId/{buildId}"
+    private val startPath: String = "/ms/task/api/build/task/startSignal/taskId/{taskId}/buildId/{buildId}?timeout={timeout}"
     private val executePath: String = "/ms/task/api/build/task/execute"
     private val metadataPath = "/ms/task/api/build/meta/metadatas"
     private val getTaskPath: String = "/ms/task/api/build/task/pipeline/{pipelineId}?userId={userId}"
-    private val relationshipPath = "/ms/defect/api/build/checkerSet/relationships"
+    private val relationshipPath = "/ms/report/api/build/checkerSet/relationships"
+    private val baseDataPath = "/ms/task/api/build/baseData/paramType/LANG/params"
+    private val ignoreDefectPath = "/ms/report/api/build/ignore/taskId/{taskId}"
+    private val headFilePath = "/ms/report/api/build/headFile/taskId/{taskId}"
+    private val redLineMetadataReportStatusPath = "/ms/report/api/build/snapshot/projectId/{projectId}/taskId/{taskId}/buildId/{buildId}/metadataReportStatus"
+    private val saveBuildInfoPath = "/ms/report/api/build/buildInfo/"
+    private val getLanguageTagPath = "/ms/report/api/build/i18n/getLanguageTag"
 
     private val objectMapper = JsonUtil.getObjectMapper()
     private const val USER_NAME_HEADER = "X-DEVOPS-UID"
@@ -71,7 +96,10 @@ object CodeccSdkApi : BaseApi() {
     private const val CONTENT_TYPE = "Content-Type"
     private const val CONTENT_TYPE_JSON = "application/json"
 
-    fun createTask(param: CodeccCheckAtomParam, openScanProj: Boolean? = false): CoverityResult {
+    @Inject
+    lateinit var codeCCSdkService: CodeCCSdkService
+
+    fun createTask(param: CodeccCheckAtomParamV3, openScanProj: Boolean? = false): CoverityResult {
         with(param) {
             val devopsToolParams = mutableListOf<DevOpsToolParams>()
             devopsToolParams.addAll(
@@ -92,30 +120,69 @@ object CodeccSdkApi : BaseApi() {
             } else {
                 langList = null
             }*/
+
+            // 工具集成冒烟测试, 如果是插件配置了自动识别语言，则不替换
+            if (!param.debugLangList.isNullOrBlank() && (param.beAutoLang == null || param.beAutoLang == false)) {
+                LogUtils.printLog("debugLangList is not null: ${param.debugLangList}")
+                param.languages = jacksonObjectMapper().writeValueAsString(param.debugLangList!!.split(","))
+            }
+
+            //如果是stream项目，则中文名为代码库名(YAML名)，如果是其他情况则按正常情况走
+            val uploadPipelineName = if (projectName.startsWith("git_")) {
+                projectNameCn.substringAfterLast("/").plus("/$pipelineName")
+            } else {
+                val repoName = System.getenv("BK_CI_GIT_REPO_NAME")
+                if (!repoName.isNullOrBlank()) {
+                    repoName.substringAfterLast("/").plus("/$pipelineName")
+                } else {
+                    pipelineName
+                }
+            }
+            val uploadNameCn = if (projectName.startsWith("git_")) {
+                projectNameCn.substringAfterLast("/").plus(pipelineName)
+            } else {
+                val repoName = System.getenv("BK_CI_GIT_REPO_NAME")
+                val prefix = if (!repoName.isNullOrBlank()) {
+                    repoName.substringAfterLast("/").plus("/$pipelineName")
+                } else {
+                    pipelineName
+                }
+                if(multiPipelineMark.isNullOrBlank())
+                    prefix
+                else
+                    "$prefix($multiPipelineMark)"
+            }
+
             var body = mapOf(
                 "projectId" to projectName,
                 "projectName" to projectNameCn,
                 "pipelineId" to pipelineId,
                 "multiPipelineMark" to if(multiPipelineMark.isNullOrBlank()) null else multiPipelineMark,
-                "pipelineName" to pipelineName,
+                "pipelineName" to uploadPipelineName,
                 "scanType" to (scanType ?: (if (openScanProj == true) "0" else "1")),
                 "compilePlat" to getPlatForm(),
                 "devopsCodeLang" to (languages ?: "[]"),
                 "devopsTools" to "",
                 "devopsToolParams" to devopsToolParams,
                 "checkerSetList" to getRuleSetV3(param),
-                "nameCn" to if(multiPipelineMark.isNullOrBlank()) pipelineName else "$pipelineName($multiPipelineMark)",
+                "checkerSetEnvType" to if (param.checkerSetType.isNullOrBlank() || param.checkerSetType == "normal") {
+                    ""
+                } else {
+                    param.checkerSetEnvType
+                },
+                "nameCn" to uploadNameCn,
                 "atomCode" to "CodeccCheckAtomDebug",
                 "projectBuildCommand" to script,
                 "projectBuildType" to if (getOS() == OSType.WINDOWS) "BAT" else "SHELL",
                 "compilePlat" to getOS().name,
                 "forceToUpdateOpenSource" to (System.getenv("FORCE_UPDATE_CODECC_OPEN_SOURCE") == "true"),
                 "openSourceCheckerSetType" to System.getenv("OPEN_SOURCE_CHECKER_SET_TYPE"),
-                "checkerSetType" to (param.checkerSetType ?: "normal")
+                "checkerSetType" to (param.checkerSetType ?: "normal"),
+                "autoLang" to param.beAutoLang
             )
             val codeccOpenSourceJson = System.getenv("BK_CI_OPEN_SOURCE_JSON")
             if (!codeccOpenSourceJson.isNullOrBlank() && openScanProj == true) {
-                println("add opensource custom input param")
+                LogUtils.printLog("add opensource custom input param")
                 val codeccParamMap = try {
                     JsonUtil.to(codeccOpenSourceJson, object : TypeReference<Map<String, String>>() {})
                 } catch (e: Exception) {
@@ -131,24 +198,19 @@ object CodeccSdkApi : BaseApi() {
                 DEVOPS_PROJECT_ID to param.projectName,
                 CONTENT_TYPE to CONTENT_TYPE_JSON
             )
-            val url = if (openScanProj == true) {
-                LogUtils.printDebugLog("create open scan project")
-                openScanTaskPath
-            } else {
-                createPath
-            }
+            val url = codeCCSdkService.getCreateTaskUrl(openScanProj)
             val result =
                 getCodeccResult(taskExecution(objectMapper.writeValueAsString(body), url, header, "POST"))
             val resultMap = result.data as Map<String, Any>
 
-            println("[初始化] Create CodeCC task response: $resultMap")
+            LogUtils.printLog("Create CodeCC task response: $resultMap")
 
-            param.codeCCTaskName = resultMap["nameEn"]?.toString() ?: throw CodeccDependentException("create task fail")
-            param.codeCCTaskId = resultMap["taskId"]?.toString() ?: throw CodeccDependentException("create task fail")
-
-            // 通知codecc启动
-            startTask(param.codeCCTaskId!!, param.pipelineBuildId)
-
+            param.codeCCTaskName = resultMap["nameEn"]?.toString()
+                ?: throw CodeCCBusinessException(ErrorCode.CODECC_REQUIRED_FIELD_IS_EMPTY, "create task fail",
+                    arrayOf("nameEn"), null)
+            param.codeCCTaskId = resultMap["taskId"]?.toString()
+                ?: throw CodeCCBusinessException(ErrorCode.CODECC_REQUIRED_FIELD_IS_EMPTY, "create task fail",
+                    arrayOf("taskId"), null)
             return result
         }
     }
@@ -163,30 +225,28 @@ object CodeccSdkApi : BaseApi() {
         return JsonUtil.to(responseContent, object : TypeReference<Result<Boolean>>() {})
     }
 
-    /**
-     * 上报commitId至映射表
-     */
-    fun updateCommitId(buildId: String, commitId: String) {
-        val path = openScanUpdateCommitId.replace("{buildId}", buildId)
-        taskExecution(
-                jsonBody = commitId,
-                path = path,
-                method = "PUT"
-        )
-    }
 
-    private fun startTask(taskId: String, buildId: String) {
+    fun startTask(taskId: String, buildId: String) {
+        //获取超时时间(S)
+        val timeout = getTimeoutValue() ?: TimeUnit.DAYS.toSeconds(1)
         val path = startPath.replace("{taskId}", taskId).replace("{buildId}", buildId)
+                .replace("{timeout}", timeout.toString())
         taskExecution(path = path)
     }
 
     fun getRuleSetV3(param: CodeccCheckAtomParam): List<RuleSetCheckV3> {
         return if (param is CodeccCheckAtomParamV3) {
             if (param.languageRuleSetMap.isNullOrBlank()) return listOf()
-            val languageRuleSetMap =
-                JsonUtil.getObjectMapper().readValue<Map<String, List<String>>>(param.languageRuleSetMap!!)
             val ruleSetIds = mutableSetOf<String>()
-            languageRuleSetMap.values.forEach { ruleSetIds.addAll(it) }
+            // 如果工具集成冒烟测试变量（规则集列表）为空，或者插件配置了自动识别语言
+            if (param.debugCheckerSetList.isNullOrBlank() || param.beAutoLang == true) {
+                val languageRuleSetMap =
+                    JsonUtil.getObjectMapper().readValue<Map<String, List<String>>>(param.languageRuleSetMap!!)
+                languageRuleSetMap.values.forEach { ruleSetIds.addAll(it) }
+            } else {
+                LogUtils.printLog("debugCheckerSetList is not null: ${param.debugCheckerSetList}")
+                param.debugCheckerSetList!!.split(",").forEach { ruleSetIds.add(it) }
+            }
             return ruleSetIds.map { RuleSetCheckV3(it) }
         } else {
             listOf()
@@ -201,7 +261,7 @@ object CodeccSdkApi : BaseApi() {
         }
     }
 
-    fun updateTask(param: CodeccCheckAtomParam, openScanProj: Boolean? = false): CoverityResult {
+    fun updateTask(param: CodeccCheckAtomParamV3, openScanProj: Boolean? = false): CoverityResult {
         return with(param) {
             val devopsToolParams = mutableListOf(
                 DevOpsToolParams("compilePlat", getPlatForm()),
@@ -228,11 +288,12 @@ object CodeccSdkApi : BaseApi() {
 //                "toolCheckerSets" to genToolCheckerV2(this),
                 "nameCn" to pipelineName,
                 "forceToUpdateOpenSource" to (System.getenv("FORCE_UPDATE_CODECC_OPEN_SOURCE") == "true"),
-                "openSourceCheckerSetType" to System.getenv("OPEN_SOURCE_CHECKER_SET_TYPE")
+                "openSourceCheckerSetType" to System.getenv("OPEN_SOURCE_CHECKER_SET_TYPE"),
+                "autoLang" to param.beAutoLang
             )
             val codeccOpenSourceJson = System.getenv("BK_CI_OPEN_SOURCE_JSON")
             if (!codeccOpenSourceJson.isNullOrBlank() && openScanProj == true) {
-                println("add opensource custom input param")
+                LogUtils.printLog("add opensource custom input param")
                 val codeccParamMap = try {
                     JsonUtil.to(codeccOpenSourceJson, object : TypeReference<Map<String, String>>() {})
                 } catch (e: Exception) {
@@ -244,27 +305,22 @@ object CodeccSdkApi : BaseApi() {
                     body = body.plus(mapOf("pipelineId" to pipelineId))
                 }
             }
-            println("Update the coverity task($body)")
+            LogUtils.printLog("Update the coverity task($body)")
             val header = mutableMapOf(
                 USER_NAME_HEADER to param.pipelineStartUserName,
                 CONTENT_TYPE to CONTENT_TYPE_JSON
             )
             // 设置url
-            val url = if (openScanProj == true) {
-                LogUtils.printDebugLog("create open scan project")
-                openScanTaskPath
-            } else {
-                updatePath
-            }
+            val url = codeCCSdkService.getUpdateTaskUrl(openScanProj)
             getCodeccResult(taskExecution(objectMapper.writeValueAsString(body), url, header, "PUT"))
         }
     }
 
     fun isTaskExist(taskId: String): Boolean {
-        println("Check the coverity task if exist")
+        LogUtils.printLog("Check the coverity task if exist")
         val header = mutableMapOf(CONTENT_TYPE to CONTENT_TYPE_JSON)
         val result = getCodeccResult(taskExecution("", "$existPath/$taskId", header, "GET"))
-        println("Get the exist result($result)")
+        LogUtils.printLog("Get the exist result($result)")
         return result.data == true
     }
 
@@ -278,16 +334,16 @@ object CodeccSdkApi : BaseApi() {
         taskExecution(objectMapper.writeValueAsString(body), "$deletePath/$taskId", headers, "DELETE")
     }
 
-    fun getTaskByPipelineId(pipelineId: String, multiPipelineMark: String?, userId: String): PipelineTaskVO {
-        println("get the codecc task if exist: $pipelineId, $userId")
+    fun getTaskByPipelineId(pipelineId: String, multiPipelineMark: String?, userId: String): PipelineTaskVO? {
+        LogUtils.printLog("get the codecc task if exist: $pipelineId, $userId")
         val header = mutableMapOf(CONTENT_TYPE to CONTENT_TYPE_JSON)
         val path = if (multiPipelineMark.isNullOrBlank())
             getTaskPath.replace("{pipelineId}", pipelineId).replace("{userId}", userId)
-        else
+                else
             getTaskPath.replace("{pipelineId}", pipelineId).replace("{userId}", userId).plus("&multiPipelineMark=$multiPipelineMark")
         val result = taskExecution("", path, header, "GET")
-        println("Get the codecc task($result)")
-        return JsonUtil.to(result, object : TypeReference<Result<PipelineTaskVO>>() {}).data!!
+        LogUtils.printLog("Get the codecc task($result)")
+        return JsonUtil.to(result, object : TypeReference<Result<PipelineTaskVO>>() {}).data
     }
 
     fun updateScanConfiguration(scanConfiguration: ScanConfiguration, userId: String): Result<Boolean> {
@@ -338,7 +394,7 @@ object CodeccSdkApi : BaseApi() {
             )
             JsonUtil.to(responseContent, object : TypeReference<Result<Boolean>>() {})
         } else {
-            println("do not add filter path")
+            LogUtils.printLog("do not add filter path")
             Result(true)
         }
     }
@@ -365,7 +421,7 @@ object CodeccSdkApi : BaseApi() {
             )
             return JsonUtil.to(responseContent, object : TypeReference<Result<Boolean>>() {})
         } catch (e: Throwable) {
-            println(e.message)
+            LogUtils.printErrorLog(e.message)
         }
         return Result(false)
     }
@@ -385,6 +441,76 @@ object CodeccSdkApi : BaseApi() {
             method = "POST"
         )
         return JsonUtil.to(responseContent, object : TypeReference<Result<Boolean>>() {})
+    }
+
+    fun addCodeYmlRepoOwner(params: CodeccCheckAtomParamV3, codeYmlFilterPathVO: CodeYmlFilterPathVO): Result<Boolean> {
+        val path = "/ms/task/api/build/task/code/yml/repoOwner/update"
+        val headers = mutableMapOf(
+            "X-DEVOPS-UID" to params.pipelineStartUserName,
+            "X-DEVOPS-TASK-ID" to params.codeCCTaskId!!
+        )
+
+        val jsonBody = objectMapper.writeValueAsString(codeYmlFilterPathVO)
+        val responseContent = taskExecution(
+            headers = headers,
+            jsonBody = jsonBody,
+            path = path,
+            method = "POST"
+        )
+        return JsonUtil.to(responseContent, object : TypeReference<Result<Boolean>>() {})
+    }
+
+    fun runtimeInfoUpdate(params: CodeccCheckAtomParamV3): Result<Boolean> {
+        val path = "/ms/task/api/build/task/runtime/update"
+        val headers = mutableMapOf(
+            "X-DEVOPS-UID" to params.pipelineStartUserName,
+            "X-DEVOPS-TASK-ID" to params.codeCCTaskId!!
+        )
+        //获取超时时间(S)
+        val timeout = getTimeoutValue()
+        val runtimeUpdateMetaVO = RuntimeUpdateMetaVO(
+            params.codeCCTaskId!!,
+            params.pipelineBuildId,
+            params.projectName,
+            params.projectNameCn,
+            params.pipelineTaskId,
+            params.taskName,
+            timeout
+        )
+        val jsonBody = objectMapper.writeValueAsString(runtimeUpdateMetaVO)
+        val responseContent = taskExecution(
+            headers = headers,
+            jsonBody = jsonBody,
+            path = path,
+            method = "POST"
+        )
+        return JsonUtil.to(responseContent, object : TypeReference<Result<Boolean>>() {})
+    }
+
+    private fun getTimeoutValue() : Int? {
+        //获取超时时间（分钟）
+        val timeout = System.getenv("BK_CI_ATOM_TIMEOUT")
+        if (timeout.isNullOrEmpty()) {
+            return null
+        }
+        return try {
+            timeout.toInt() * 60
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun saveBuildInfo(buildVO: BuildVO, params: CodeccCheckAtomParamV3) {
+        val headers = mutableMapOf(
+            "X-DEVOPS-UID" to params.pipelineStartUserName
+        )
+        val jsonBody = objectMapper.writeValueAsString(buildVO)
+        taskExecution(
+            headers = headers,
+            jsonBody = jsonBody,
+            path = saveBuildInfoPath,
+            method = "POST"
+        )
     }
 
     private fun getFileInput(params: CodeccCheckAtomParamV3): FilterPathInput {
@@ -429,7 +555,7 @@ object CodeccSdkApi : BaseApi() {
         )
         oldPaths.minus(newSplitPaths).forEach { path ->
             taskExecution(path = "/ms/task/api/build/task/del/filter?path=${URLEncoder.encode(path, "utf8")}&pathType=CUSTOM", headers = headers, method = "DELETE")
-            println("delete filter path success: $path")
+            LogUtils.printLog("delete filter path success: $path")
         }
     }
 
@@ -439,7 +565,7 @@ object CodeccSdkApi : BaseApi() {
         )
         val path = "/ms/task/api/build/meta/toolList?isDetail=false"
         val responseContent = taskExecution(path = path, headers = headers, printLog = false)
-        println("get tool type successs")
+        LogUtils.printLog("get tool type successs")
         return JsonUtil.to(responseContent, object : TypeReference<Result<List<ToolType>>>() {}).data ?: listOf()
     }
 
@@ -449,7 +575,7 @@ object CodeccSdkApi : BaseApi() {
         )
         val responseContent =
             taskExecution(path = "$metadataPath?metadataType=TOOL_TYPE", headers = headers, printLog = false)
-        println("get metadata tool type success")
+        LogUtils.printLog("get metadata tool type success, $responseContent")
         val result = JsonUtil.getObjectMapper().readValue<Result<Map<String, List<Map<String, String>>>>>(responseContent).data
             ?: mapOf()
         return (result["TOOL_TYPE"] as List<Map<String, Any>>).map {
@@ -473,7 +599,7 @@ object CodeccSdkApi : BaseApi() {
                 method = "POST"
             )
         } catch (e : Exception){
-            println("report codecc server fail!")
+            LogUtils.printErrorLog("report codecc server fail!")
         }
     }
 
@@ -489,10 +615,11 @@ object CodeccSdkApi : BaseApi() {
             printLog = false,
             method = "POST"
         )
-        println("install checker set result: $responseContent")
+        LogUtils.printLog("install checker set result: $responseContent")
         val result = JsonUtil.getObjectMapper().readValue<Result<Boolean>>(responseContent).data
         if (result != true) {
-            throw CodeccDependentException("install checker set fail: $checkerSetList")
+            throw CodeCCBusinessException(ErrorCode.CODECC_RETURN_PARAMS_CHECK_FAIL,
+                "install checker set fail: $checkerSetList", arrayOf(""))
         }
     }
 
@@ -513,10 +640,80 @@ object CodeccSdkApi : BaseApi() {
                     headers,
                     "POST"
             )
-            println("upload actual exe tools: $respStr")
+            LogUtils.printLog("upload actual exe tools: $respStr")
         } catch (e: Exception) {
-            println("upload actual tools fail!")
+            LogUtils.printErrorLog("upload actual tools fail!")
         }
+    }
+
+    fun getLangBaseData(userId: String): List<BaseDataVO> {
+        val headers = mutableMapOf(
+            "X-DEVOPS-UID" to userId
+        )
+        val respStr = taskExecution(path = baseDataPath, headers = headers, printLog = false)
+        return JsonUtil.getObjectMapper().readValue<Result<List<BaseDataVO>>>(respStr).data
+            ?: throw CodeCCBusinessException(
+                ErrorCode.CODECC_REQUIRED_FIELD_IS_EMPTY,
+                "no default lang checker set config", arrayOf("data")
+            )
+    }
+
+    fun changeScanType(
+        taskId: Long,
+        setForceFullScanReqVO: SetForceFullScanReqVO
+    ) {
+        val headers = mutableMapOf(
+            "X-DEVOPS-TASK-ID" to taskId.toString()
+        )
+        val path = "/ms/report/api/build/toolBuildInfo/tasks/$taskId/forceFullScanSymbol"
+        val jsonBody = objectMapper.writeValueAsString(setForceFullScanReqVO)
+        val responseContent = taskExecution(path = path, headers = headers, jsonBody = jsonBody, method = "POST")
+        LogUtils.printDebugLog("response body: $responseContent")
+    }
+
+    /**
+     * 获取忽略注释信息
+     */
+    fun getIgnoreDefectInfo(taskId: Long) : IgnoreDefectInfo?{
+        val responseContent = taskExecution(
+            path = ignoreDefectPath.replace("{taskId}", taskId.toString())
+        )
+        return JsonUtil.getObjectMapper().readValue<Result<IgnoreDefectInfo>>(responseContent).data
+    }
+
+    /**
+     * 获取忽略注释信息
+     */
+    fun getHeadFileInfo(taskId: Long) : HeadFileInfo?{
+        val responseContent = taskExecution(
+            path = headFilePath.replace("{taskId}", taskId.toString())
+        )
+        return JsonUtil.getObjectMapper().readValue<Result<HeadFileInfo>>(responseContent).data
+    }
+
+    fun getCodeccReport(projectId: String, taskId: String, buildId: String): CodeccCallback? {
+        val reportPath = "/ms/report/api/build/snapshot/project/{projectId}/tasks/{taskId}/get?buildId={buildId}"
+        val responseContent = taskExecution(
+            path = reportPath.replace("{taskId}", taskId)
+                .replace("{projectId}", projectId)
+                .replace("{buildId}", buildId)
+        )
+        val callback = JsonUtil.getObjectMapper().readValue<Result<CodeccCallback?>>(responseContent).data
+        callback?.taskId = taskId
+        LogUtils.printLog("get codecc report snapshot success: " +
+            "${callback?.taskId}, ${callback?.toolSnapshotList?.size}")
+        return callback
+    }
+
+    fun getRedLineMetadataReportStatus(projectId: String, taskId: String, buildId: String) : Result<Boolean?> {
+        val path = redLineMetadataReportStatusPath.replace("{projectId}", projectId).replace("{taskId}", taskId).replace("{buildId}", buildId)
+        val responseContent = taskExecution(path = path, method = "GET", printLog = false)
+        return JsonUtil.to(responseContent, object : TypeReference<Result<Boolean?>>() {})
+    }
+
+    fun getI18NLanguageTag(userId: String): String {
+        val responseContent = taskExecution(path = getLanguageTagPath)
+        return JsonUtil.getObjectMapper().readValue<Result<String>>(responseContent).data!!
     }
 
     fun taskExecution(
@@ -527,6 +724,7 @@ object CodeccSdkApi : BaseApi() {
         printLog: Boolean = true
     ): String {
 
+        I18NUtils.addAcceptLanguageHeader(headers)
         val requestBody = RequestBody.create(
             "application/json; charset=utf-8".toMediaTypeOrNull(), jsonBody
         )
@@ -548,7 +746,9 @@ object CodeccSdkApi : BaseApi() {
                 buildPut(path, requestBody, headers)
             }
             else -> {
-                throw CodeccException(errorMsg = "error method to execute: $method")
+                throw CodeCCPluginException(
+                    ErrorCode.UNSUPPORTED_HTTP_METHOD, "error method to execute: $method", arrayOf(method)
+                )
             }
         }
 
@@ -561,25 +761,47 @@ object CodeccSdkApi : BaseApi() {
             LogUtils.printDebugLog("CodeCC http request body: $jsonBody")
         }
 
-        OkhttpUtils.doHttp(backendRequest).use { response ->
-            val responseBody = response.body!!.string()
-            if (!response.isSuccessful) {
-                System.err.println(
-                    "Fail to execute($path) task($jsonBody) " +
-                        "because of ${response.message} with response: $responseBody"
-                )
-                throw CodeccDependentException("Fail to invoke CodeCC request")
+        try {
+            OkhttpUtils.doShortHttp(backendRequest).use { response ->
+                val responseBody = response.body.use { body -> body!!.string() }
+                if (!response.isSuccessful) {
+                    LogUtils.printErrorLog(
+                        "Fail to execute($path) task($jsonBody) " +
+                            "because of ${response.message} with response: $responseBody"
+                    )
+                    throw CodeCCHttpStatusException(response.code, "Fail to invoke CodeCC request")
+                }
+                if (printLog) {
+                    LogUtils.printDebugLog("Get the task response body - $responseBody")
+                }
+                return responseBody
             }
-            if (printLog) {
-                LogUtils.printDebugLog("Get the task response body - $responseBody")
-            }
-            return responseBody
+        } catch (ex: SocketException) {
+            LogUtils.printErrorLog("execute command: curl ${backendRequest.url}")
+            ScriptUtils.execute("curl ${backendRequest.url}", null)
+            throw ex
+        } catch (ex: SocketTimeoutException) {
+            LogUtils.printErrorLog("execute command: curl ${backendRequest.url}")
+            ScriptUtils.execute("curl ${backendRequest.url}", null)
+            throw ex
         }
+    }
+
+    private fun getCommonHeader(): MutableMap<String, String> {
+        return mutableMapOf(
+            "x-devops-build-id" to (PluginRuntimeInfo.buildId ?: ""),
+            "x-devops-project-id" to (PluginRuntimeInfo.projectId ?: "")
+        )
     }
 
     private fun getCodeccResult(responseBody: String): CoverityResult {
         val result = objectMapper.readValue<CoverityResult>(responseBody)
-        if (result.code != "0" || result.status != 0) throw CodeccDependentException("execute CodeCC task fail, code: ${result.code}, status: ${result.status} msg: ${result.message}")
+        if (result.code != "0" || result.status != 0) {
+            throw CodeCCBusinessException(
+                ErrorCode.CODECC_RETURN_STATUS_CODE_ERROR, "execute CodeCC task fail",
+                arrayOf(result.status.toString(), result.code, result.message ?: "")
+            )
+        }
         return result
     }
 
@@ -665,6 +887,8 @@ object CodeccSdkApi : BaseApi() {
         val taskId: Long,
         val enName: String,
         val cnName: String,
+        val autoLang: Boolean,
+        val codeLanguages: List<String>,
         val tools: List<PipelineTaskToolVO>
     )
 

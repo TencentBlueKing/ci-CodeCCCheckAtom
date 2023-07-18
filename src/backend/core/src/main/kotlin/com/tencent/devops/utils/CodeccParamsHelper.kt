@@ -26,13 +26,10 @@
 
 package com.tencent.devops.utils
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.atom.AtomContext
 import com.tencent.bk.devops.atom.api.SdkEnv
 import com.tencent.bk.devops.plugin.common.OS
-import com.tencent.devops.docker.pojo.LandunParam
-import com.tencent.devops.docker.utils.CodeccWeb
+import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.pojo.BuildType
 import com.tencent.devops.pojo.CodeccCheckAtomParamV3
 import com.tencent.devops.pojo.CodeccExecuteConfig
@@ -41,11 +38,8 @@ import com.tencent.devops.pojo.LinuxCodeccConstants
 import com.tencent.devops.pojo.OSType
 import com.tencent.devops.pojo.ProjectLanguage
 import com.tencent.devops.pojo.WindowsCodeccConstants
-import com.tencent.devops.pojo.codeccDetail
-import com.tencent.devops.pojo.codeccFrontHost
-import com.tencent.devops.pojo.codeccHost
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
-import com.tencent.devops.pojo.imageRegistryPwdKey
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.plugin.CodeCCBusinessException
 import com.tencent.devops.utils.common.AgentEnv
 import com.tencent.devops.utils.common.AtomUtils
 
@@ -64,7 +58,7 @@ object CodeccParamsHelper {
 //        list.add("-DSCM_TYPE=$repoScmType")
         map["SCM_TYPE"] = repoScmType
 
-        val svnUerPassPair = codeccExecuteConfig.repos.firstOrNull()?.svnUerPassPair
+        val svnUerPassPair = codeccExecuteConfig.repos.firstOrNull { it.type == "SVN" }?.svnUerPassPair
         if (svnUerPassPair != null) {
 //            list.add("-DSVN_USER=${svnUerPassPair.first}")
             map["SVN_USER"] = svnUerPassPair.first
@@ -77,6 +71,13 @@ object CodeccParamsHelper {
 //                list.add("-DSCM_SSH_ACCESS=$repoScmType")
                 map["SCM_SSH_ACCESS"] = repoScmType
             }
+        }
+
+        if (repoScmType == "perforce") {
+            map["PERFORCE_TICKET_ID"] = codeccExecuteConfig.repos.firstOrNull()?.perforceTicketId ?: ""
+            map["PERFORCE_DEPOT_URL"] = codeccExecuteConfig.repos.firstOrNull()?.perforceDepotUrl ?: ""
+            map["PERFORCE_STREAM"] = codeccExecuteConfig.repos.firstOrNull()?.perforceStream ?: ""
+            map["PERFORCE_CHARSET"] = codeccExecuteConfig.repos.firstOrNull()?.perforceCharset ?: ""
         }
 
 //        list.add("-DREPO_URL_MAP='${getRepoUrlMap(codeccExecuteConfig)}'")
@@ -94,7 +95,7 @@ object CodeccParamsHelper {
         val agentId = SdkEnv.getSdkHeader()["X-DEVOPS-AGENT-ID"] ?: ""
         val agentSecretKey = SdkEnv.getSdkHeader()["X-DEVOPS-AGENT-SECRET-KEY"] ?: ""
         if (AgentEnv.isThirdParty()) {
-            println("[初始化] 检测到这是第三方构建机")
+            LogUtils.printStr("[init] Detected that this is a third-party build machine")
             map["DEVOPS_PROJECT_ID"] = param.projectName
             map["DEVOPS_BUILD_TYPE"] = BuildType.AGENT.name
             map["DEVOPS_AGENT_ID"] = agentId
@@ -102,14 +103,14 @@ object CodeccParamsHelper {
             map["DEVOPS_AGENT_VM_SID"] = SdkEnv.getVmSeqId()
 
         } else if (AgentEnv.getBuildType() == BuildType.DOCKER.name) {
-            println("[初始化] 检测到这是docker公共构建机")
+            LogUtils.printStr("[init] Detected that this is the docker public build machine")
             map["DEVOPS_PROJECT_ID"] = param.projectName
             map["DEVOPS_BUILD_TYPE"] = BuildType.DOCKER.name
             map["DEVOPS_AGENT_ID"] = agentId
             map["DEVOPS_AGENT_SECRET_KEY"] = agentSecretKey
             map["DEVOPS_AGENT_VM_SID"] = ""
         } else if (AgentEnv.getBuildType() == OS.MACOS.name) {
-            println("检测到这是Macos 公共构建机")
+            LogUtils.printStr( "[init] Detected that this is the Macos public build machine")
             map["DEVOPS_PROJECT_ID"] = param.projectName
             map["DEVOPS_BUILD_TYPE"] = BuildType.MACOS.name
             map["DEVOPS_AGENT_ID"] = agentId
@@ -130,7 +131,13 @@ object CodeccParamsHelper {
         val buildId = param.pipelineBuildId
         val repoScmType = CodeccRepoHelper.getScmType(codeccExecuteConfig.repos)
 
-        list.add(param.codeCCTaskName ?: throw CodeccUserConfigException("codecc task name is empty"))
+        list.add(
+            param.codeCCTaskName ?: throw CodeCCBusinessException(
+                ErrorCode.CODECC_RETURN_PARAMS_CHECK_FAIL,
+                "codecc task name is empty",
+                arrayOf("codecc task name")
+            )
+        )
         list.add("-DLANDUN_BUILDID=$buildId")
         list.add("-DCERT_TYPE=${CodeccRepoHelper.getCertType(codeccExecuteConfig.repos)}")
         list.add("-DSCM_TYPE=$repoScmType")
@@ -148,6 +155,7 @@ object CodeccParamsHelper {
         list.add("-DREPO_URL_MAP='${getRepoUrlMap(codeccExecuteConfig)}'")
         list.add("-DREPO_RELPATH_MAP='${getRepoRealPathMap(codeccExecuteConfig)}'")
         list.add("-DREPO_SCM_RELPATH_MAP='${getRepoScmRelPathMap(codeccExecuteConfig)}'")
+//        list.add("-DREPOS='${codeccExecuteConfig.repos}'")
         if (param.path.isNullOrBlank()) {
             list.add("-DSUB_CODE_PATH_LIST=")
         } else {
@@ -159,14 +167,14 @@ object CodeccParamsHelper {
         val agentSecretKey = SdkEnv.getSdkHeader()["X-DEVOPS-AGENT-SECRET-KEY"] ?: ""
         // 构建机信息
         if (AgentEnv.isThirdParty()) {
-            println("检测到这是第三方构建机")
+            LogUtils.printStr("Detected that this is a third-party build machine")
             list.add("-DDEVOPS_PROJECT_ID=${param.projectName}")
             list.add("-DDEVOPS_BUILD_TYPE=${BuildType.AGENT.name}")
             list.add("-DDEVOPS_AGENT_ID=$agentId")
             list.add("-DDEVOPS_AGENT_SECRET_KEY=$agentSecretKey")
             list.add("-DDEVOPS_AGENT_VM_SID=${SdkEnv.getVmSeqId()}")
         } else if (AgentEnv.getBuildType() == BuildType.DOCKER.name) {
-            println("检测到这是docker公共构建机")
+            LogUtils.printStr("Detected that this is the docker public build machine")
             list.add("-DDEVOPS_PROJECT_ID=${param.projectName}")
             list.add("-DDEVOPS_BUILD_TYPE=${BuildType.DOCKER.name}")
             list.add("-DDEVOPS_AGENT_ID=$agentId")
@@ -329,6 +337,10 @@ object CodeccParamsHelper {
         }
     }
 
+    fun getClangToolPath(constants: LinuxCodeccConstants): String {
+        return constants.CLANG_PATH.canonicalPath
+    }
+
     fun getPyLint2Path(constants: LinuxCodeccConstants): String {
         return if (CodeccEnvHelper.getOS() != OSType.WINDOWS) {
             constants.PYLINT2_PATH
@@ -378,7 +390,6 @@ object CodeccParamsHelper {
     }
 
     fun getCodeccExecuteConfig(atomContext: AtomContext<CodeccCheckAtomParamV3>): CodeccExecuteConfig {
-        initCodeccSensitvieConfig(atomContext)
         val variable = CodeccEnvHelper.getVariable()
         val repos = CodeccRepoHelper.getCodeccRepos(variable)
         val coverityConfig = CodeccExecuteConfig(
@@ -389,14 +400,7 @@ object CodeccParamsHelper {
             variable = variable,
             filterTools = AtomUtils.transferPathParam(atomContext.param.filterTools)
         )
-        println("[初始化] buildVariables coverityConfig: $coverityConfig")
+        LogUtils.printStr("[init] buildVariables coverityConfig: $coverityConfig")
         return coverityConfig
-    }
-
-    private fun initCodeccSensitvieConfig(atomContext: AtomContext<CodeccCheckAtomParamV3>) {
-        codeccHost = atomContext.getSensitiveConfParam("BK_CODECC_PRIVATE_URL")
-        codeccFrontHost = atomContext.getSensitiveConfParam("BK_CI_PUBLIC_URL")
-        codeccDetail = atomContext.getSensitiveConfParam("BK_CODECC_PUBLIC_URL")
-        imageRegistryPwdKey = atomContext.getSensitiveConfParam("BK_CODECC_ENCRYPTOR_KEY")
     }
 }
