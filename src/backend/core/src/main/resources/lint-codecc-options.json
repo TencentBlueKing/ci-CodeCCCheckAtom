@@ -2,7 +2,7 @@
   "title": "title",
   "normalLegend": [
     {
-      "key": "告警数",
+      "key": "问题数",
       "value": "newfile_total_defect_count"
     },
     {
@@ -13,10 +13,10 @@
   "normalKey": "文件数",
   "normalVal": "newfile_total_count",
   "normalChange": "newfile_changed_count",
-  "activeKey": "告警数",
+  "activeKey": "问题数",
   "activeVal": "newfile_total_defect_count",
   "activeChange": "newfile_changed_defect_count",
-  "mainKey": "告警总数",
+  "mainKey": "问题总数",
   "mainVal": "newfile_total_defect_count",
   "hasChange": true,
   "changeNormalVal": "newfile_changed_count",
@@ -24,7 +24,7 @@
   "charts": [
     {
       "type": "Bar",
-      "title": "待修复告警级别",
+      "title": "待修复问题级别",
       "opts": [
         {
           "key": "total_new_serious",
@@ -45,8 +45,8 @@
       "enable": true
     },
     {
-      "type": "Bar",
-      "title": "待修复告警作者",
+      "type": "AuthorBar",
+      "title": "待修复问题作者",
       "xkey": "name",
       "ykey": "prompt_count",
       "opts": [

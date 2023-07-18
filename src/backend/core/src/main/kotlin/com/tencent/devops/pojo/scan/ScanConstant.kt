@@ -5,7 +5,7 @@ const val LARGE_REPORT_HEAD_HTML = "<!DOCTYPE html>\n" +
     "\n" +
     "<head>\n" +
     "    <meta charset=\"UTF-8\">\n" +
-    "    <title>CodeCC问题收敛详情</title>\n" +
+    "    <title>large.report.head.html.title</title>\n" +
     "\t<style>\n" +
     "        body {\n" +
     "            font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n" +
@@ -115,7 +115,7 @@ const val LARGE_REPORT_HEAD_HTML = "<!DOCTYPE html>\n" +
     "\n" +
     "<body>\n" +
     "    <div id=\"overview\">\n" +
-    "        <h1>CodeCC问题收敛详情</h1>\n" +
+    "        <h1>large.report.head.html.h1</h1>\n" +
     "\t\t<br/>\n" +
     "        <div>\n"
 

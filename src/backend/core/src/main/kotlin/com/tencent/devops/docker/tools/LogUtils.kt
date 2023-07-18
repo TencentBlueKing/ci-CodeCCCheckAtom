@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory
 
 object LogUtils {
 
-    private var isDebug = true
+    private var isDebug = false
 
     private val logger = LoggerFactory.getLogger(LogUtils::class.java)
 
@@ -47,8 +47,8 @@ object LogUtils {
         logger.errorInTag("[${getToolName()}]" + msg?.toString(), getToolName())
     }
 
-    fun printErrorLog(msg: Any?, e : Throwable) {
-        logger.error("[${getToolName()}]" + msg?.toString(), e)
+    fun printErrorLog(msg: Any?, t: Throwable) {
+        logger.error("[${getToolName()}]" + msg?.toString(), getToolName(), t)
     }
 
     fun printStr(msg: Any?) {

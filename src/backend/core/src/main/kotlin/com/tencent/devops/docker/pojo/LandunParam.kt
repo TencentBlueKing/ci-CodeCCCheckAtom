@@ -20,10 +20,12 @@ data class LandunParam(
     val ldEnvType: String, // getEnvType()
     val streamCodePath: String,
 
-        val channelCode: String?,
+    val channelCode: String?,
 
-        val toolNames: String?,
-        var toolImageTypes: String?
+    val toolNames: String?,
+    var toolImageTypes: String?,
+
+    val taskId: String
 ) {
     fun copy(): LandunParam {
         val json = jacksonObjectMapper().writeValueAsString(this)

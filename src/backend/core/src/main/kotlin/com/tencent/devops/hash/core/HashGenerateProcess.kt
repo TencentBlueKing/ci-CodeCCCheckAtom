@@ -4,14 +4,11 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.tencent.bk.devops.plugin.utils.JsonUtil
 import com.tencent.devops.hash.pojo.*
 import java.io.File
-import java.nio.charset.Charset
 
 @ExperimentalUnsignedTypes
 object HashGenerateProcess {
 
-    private val filterCharList = listOf(32.toChar(), 12.toChar(), 10.toChar(), 13.toChar(), 9.toChar(), 11.toChar(), 65533.toChar())
-
-    fun hashMethod(range: Int, inputFileName: String, outputFileName: String) {
+    /*fun hashMethod(range: Int, inputFileName: String, outputFileName: String) {
         val startTime = System.currentTimeMillis()
         val inputFile = File(inputFileName)
         if (!inputFile.exists()) {
@@ -74,19 +71,13 @@ object HashGenerateProcess {
             return emptyList()
         }
         val hashFileList = hashCCNInputList.groupBy { it.startLine to it.endLine }
-        val lineList = hashFile.readLines(Charset.forName("ascii")).toMutableList()
+        val lineList = hashFile.readLines()
         val hashCCNOutputList = mutableListOf<HashCCNOutputFile>()
         hashFileList.forEach { (t, u) ->
             try {
-                var startIndex = t.first.toInt() - 1
-                if (startIndex < 0) {
-                    startIndex = 0
-                }
-                var endIndex = t.second.toInt() - 1
-                if (endIndex < 0) {
-                    endIndex = 0
-                }
-                if (startIndex > endIndex) {
+                val startIndex = t.first.toInt() - 1
+                val endIndex = t.second.toInt() - 1
+                if (startIndex >= endIndex) {
                     hashCCNOutputList.addAll(
                             u.map {
                                 HashCCNOutputFile(
@@ -105,8 +96,8 @@ object HashGenerateProcess {
                     )
                     return@forEach
                 }
-                val inputStr = lineList.subList(startIndex, if (endIndex > lineList.size - 1) lineList.size else endIndex + 1)
-                    .fold(StringBuilder()) { buff, str -> buff.append(str.filter { it !in filterCharList }) }
+                val inputStr = lineList.subList(startIndex, if (endIndex > lineList.size - 1) lineList.size - 1 else endIndex)
+                        .fold(StringBuilder()) { buff, str -> buff.append(str.replace("\\s".toRegex(), "")) }
                 val fuzzyHash = FuzzyHashGenerate.fuzzyHashGenerate(inputStr.toString())
                 hashCCNOutputList.addAll(
                         u.map {
@@ -150,6 +141,9 @@ object HashGenerateProcess {
     }
 
 
+    *//**
+     * 单个文件分组生成模糊哈希
+     *//*
     @ExperimentalUnsignedTypes
     private fun generateSingleHash(filePath: String, hashLintInputList: List<HashLintInputFile>, range: Int):
             List<HashLintOutputFile> {
@@ -158,30 +152,22 @@ object HashGenerateProcess {
             return emptyList()
         }
         val sortHashGenerateInputList = hashLintInputList.groupBy { it.line }
-        val lineList = hashFile.readLines(Charset.forName("ascii")).toMutableList()
 //        var hashedLineNum = sortedHashInputList[i].line.toInt()
         val hashGenerateOutputList = mutableListOf<HashLintOutputFile>()
+        val lineList = hashFile.readLines()
         if(lineList.isNullOrEmpty()){
             return emptyList()
         }
         sortHashGenerateInputList.forEach { (t, u) ->
             try {
                 var startIndex = t.toInt() - 1
-                if (startIndex < 0) {
-                    startIndex = 0
-                }
                 var endIndex = t.toInt() - 1
-                if (endIndex < 0) {
-                    endIndex = 0
-                }
-                lineList[startIndex] = lineList[startIndex].filter { it !in filterCharList }
                 var i = 1
                 while (i <= range) {
                     if ((--startIndex) < 0) {
                         startIndex = 0
                         break
                     }
-                    lineList[startIndex] = lineList[startIndex].filter { it !in filterCharList }
                     if (lineList[startIndex].trim() != "") {
                         i++
                     }
@@ -192,13 +178,13 @@ object HashGenerateProcess {
                         endIndex = lineList.size - 1
                         break
                     }
-                    lineList[endIndex] = lineList[endIndex].filter { it !in filterCharList }
                     if (lineList[endIndex].trim() != "") {
                         i++
                     }
                 }
-                val inputStr = lineList.subList(startIndex, endIndex + 1).joinToString(separator = "")
-                val fuzzyHash = FuzzyHashGenerate.fuzzyHashGenerate(inputStr)
+                val inputStr = lineList.subList(startIndex, endIndex)
+                        .fold(StringBuilder()) { buff, str -> buff.append(str.replace("\\s".toRegex(), "")) }
+                val fuzzyHash = FuzzyHashGenerate.fuzzyHashGenerate(inputStr.toString())
                 hashGenerateOutputList.addAll(
                         u.map {
                             HashLintOutputFile(
@@ -227,5 +213,5 @@ object HashGenerateProcess {
 
         }
         return hashGenerateOutputList
-    }
+    }*/
 }

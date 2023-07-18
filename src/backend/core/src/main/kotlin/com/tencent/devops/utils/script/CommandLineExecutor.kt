@@ -1,10 +1,10 @@
 package com.tencent.devops.utils.script
 
-import com.tencent.devops.pojo.exception.CodeccTaskExecException
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.plugin.CodeCCPluginException
+import com.tencent.devops.pojo.exception.user.CodeCCUserException
 import org.apache.commons.exec.CommandLine
 import org.apache.commons.exec.DefaultExecutor
-import org.apache.commons.exec.ExecuteException
 import org.apache.commons.exec.ExecuteStreamHandler
 import org.apache.commons.exec.Executor
 import org.slf4j.LoggerFactory
@@ -20,7 +20,10 @@ class CommandLineExecutor : DefaultExecutor() {
 
     override fun execute(command: CommandLine, environment: MutableMap<String, String>?): Int {
         if (workingDirectory != null && !workingDirectory.exists()) {
-            throw CodeccUserConfigException(workingDirectory.toString() + " doesn't exist.")
+            throw CodeCCUserException(
+                ErrorCode.USER_FILE_PATH_NOT_EXIST,
+                "$workingDirectory doesn't exist."
+            )
         }
 
         return executeInternal(command, environment, workingDirectory, streamHandler)
@@ -54,7 +57,10 @@ class CommandLineExecutor : DefaultExecutor() {
             streams.setProcessErrorStream(process.errorStream)
         } catch (e: IOException) {
             process.destroy()
-            throw CodeccTaskExecException(e.message ?: "")
+            throw CodeCCPluginException(
+                ErrorCode.UNKNOWN_PLUGIN_ERROR,
+                e.message ?: ""
+            )
         }
 
         streams.start()
@@ -113,12 +119,18 @@ class CommandLineExecutor : DefaultExecutor() {
                 try {
                     watchdog.checkException()
                 } catch (e: Exception) {
-                    throw CodeccTaskExecException(e.message ?: "")
+                    throw CodeCCPluginException(
+                        ErrorCode.UNKNOWN_PLUGIN_ERROR,
+                        e.message ?: ""
+                    )
                 }
             }
 
             if (this.isFailure(exitValue)) {
-                throw CodeccTaskExecException("Process exited with an error: $exitValue")
+                throw CodeCCPluginException(
+                    ErrorCode.UNKNOWN_PLUGIN_ERROR,
+                    "Process exited with an error: $exitValue"
+                )
             }
 
             return exitValue

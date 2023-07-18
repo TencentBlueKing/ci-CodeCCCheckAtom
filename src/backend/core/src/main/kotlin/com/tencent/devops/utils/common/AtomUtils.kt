@@ -2,6 +2,7 @@ package com.tencent.devops.utils.common
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.plugin.utils.JsonUtil
+import com.tencent.devops.docker.tools.LogUtils
 
 object AtomUtils {
 
@@ -20,7 +21,7 @@ object AtomUtils {
         return try {
             parseStringToList(path)
         } catch (e: Exception) {
-            System.err.println("transfer path param warning: ${e.message}")
+            LogUtils.printErrorLog("transfer path param warning: ${e.message}")
             return path?.trim()?.split(",") ?: listOf()
         }
     }

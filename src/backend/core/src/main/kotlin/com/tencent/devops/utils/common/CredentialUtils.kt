@@ -27,7 +27,10 @@
 package com.tencent.devops.utils.common
 
 import com.tencent.devops.api.CredentialApi
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.third.ThirdParty
+import com.tencent.devops.pojo.exception.third.ThirdPartyException
+import com.tencent.devops.pojo.exception.user.CodeCCUserException
 import com.tencent.devops.pojo.ticket.CredentialType
 import org.slf4j.LoggerFactory
 import java.util.Base64
@@ -43,7 +46,10 @@ object CredentialUtils {
 
     fun getCredentialWithType(credentialId: String): Pair<List<String>, CredentialType> {
         if (credentialId.trim().isEmpty()) {
-            throw CodeccUserConfigException("The credential Id is empty")
+            throw CodeCCUserException(
+                ErrorCode.USER_CREDENTIAL_EMPTY,
+                "The credential Id is empty"
+            )
         }
         val pair = DHUtil.initKey()
         val encoder = Base64.getEncoder()
@@ -53,7 +59,7 @@ object CredentialUtils {
 
         if (result.isNotOk() || result.data == null) {
             logger.error("Fail to get the credential($credentialId) because of ${result.message}")
-            throw CodeccUserConfigException(result.message!!)
+            throw ThirdPartyException(ErrorCode.THIRD_REQUEST_FAIL, result.message!!, emptyArray(), ThirdParty.BK_CI)
         }
 
         val credential = result.data!!

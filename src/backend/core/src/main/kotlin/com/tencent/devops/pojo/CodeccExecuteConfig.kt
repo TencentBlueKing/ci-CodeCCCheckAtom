@@ -54,7 +54,13 @@ data class CodeccExecuteConfig(
         var authType: String = "",
         var repoHashId: String = "",
         @JsonIgnore
-        var svnUerPassPair: Pair<String, String>? = null
+        var svnUerPassPair: Pair<String, String>? = null,
+
+        val perforceTicketId: String? = "",
+        val perforceDepotUrl: String? = "",
+        val perforceStream: String? = "",
+        val perforceCharset: String? = "",
+        val perforceClientName: String? = ""
     )
 
     override fun toString(): String {

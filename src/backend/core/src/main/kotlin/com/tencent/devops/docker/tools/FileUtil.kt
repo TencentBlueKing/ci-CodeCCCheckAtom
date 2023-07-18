@@ -26,6 +26,14 @@
 
 package com.tencent.devops.docker.tools
 
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.plugin.CodeCCPluginException
+import net.lingala.zip4j.ZipFile
+import net.lingala.zip4j.model.ZipParameters
+import net.lingala.zip4j.model.enums.AesKeyStrength
+import net.lingala.zip4j.model.enums.CompressionLevel
+import net.lingala.zip4j.model.enums.CompressionMethod
+import net.lingala.zip4j.model.enums.EncryptionMethod
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
@@ -214,22 +222,22 @@ object FileUtil {
 
     fun unzipFile(zipFile: String, destDir: String = "./") {
         val blockSize = 4096
-        val inputStream = ZipArchiveInputStream(BufferedInputStream(FileInputStream(File(zipFile)), blockSize))
-
-        while (true) {
-            val entry = inputStream.nextZipEntry ?: break
-            if (entry.isDirectory) { // 是目录
-                val dir = File(destDir, entry.name)
-                if (!dir.exists()) dir.mkdirs()
-            } else { // 是文件
-                val parentDir = File(File(destDir, entry.name).parent)
-                if (!parentDir.exists()) parentDir.mkdirs()
-                File(destDir, entry.name).outputStream().use { outputStream ->
-                    while (true) {
-                        val buf = ByteArray(4096)
-                        val len = inputStream.read(buf)
-                        if (len == -1) break
-                        outputStream.write(buf, 0, len)
+        ZipArchiveInputStream(BufferedInputStream(FileInputStream(File(zipFile)), blockSize)).use { inputStream ->
+            while (true) {
+                val entry = inputStream.nextZipEntry ?: break
+                if (entry.isDirectory) { // 是目录
+                    val dir = File(destDir, entry.name)
+                    if (!dir.exists()) dir.mkdirs()
+                } else { // 是文件
+                    val parentDir = File(File(destDir, entry.name).parent)
+                    if (!parentDir.exists()) parentDir.mkdirs()
+                    File(destDir, entry.name).outputStream().use { outputStream ->
+                        while (true) {
+                            val buf = ByteArray(4096)
+                            val len = inputStream.read(buf)
+                            if (len == -1) break
+                            outputStream.write(buf, 0, len)
+                        }
                     }
                 }
             }
@@ -246,5 +254,95 @@ object FileUtil {
         resultPath = resultPath.replace(".", "\\.")
         resultPath = resultPath.replace("*", ".*")
         return resultPath
+    }
+
+    /**
+     * 加密压缩目录或文件
+     * @param needZipPath 需压缩的路径（指定文件或目录）
+     * @param toFilePath  zip压缩后的存放路径
+     * @param password    设置解压保护密码（可选）
+     * @param overwrite   默认覆盖已存在zip的文件
+     * @return zip文件完整路径
+     */
+    fun zipWithPassword(
+        needZipPath: String,
+        toFilePath: String,
+        zipFileName: String? = null,
+        password: String? = null,
+        overwrite: Boolean = false
+    ): String? {
+        val pathToZipFile: String
+        var zipFile: ZipFile? = null
+        try {
+            val needZipPathFile = File(needZipPath)
+            if (!needZipPathFile.exists()) {
+                throw CodeCCPluginException(ErrorCode.PLUGIN_FILE_NOT_FOUNT, "path is not found: $needZipPath")
+            }
+            // 如果zip文件名为空则以needZipPath最后一级路径为文件名
+            pathToZipFile = "$toFilePath/${(zipFileName ?: needZipPath.split(File.separator).last().plus(".zip"))}"
+            LogUtils.printLog("genera zip file name: $pathToZipFile")
+
+            // 生成的压缩文件（密码可选填）
+            zipFile = ZipFile(pathToZipFile, password?.toCharArray())
+            if (zipFile.file.exists() && overwrite) {
+                throw CodeCCPluginException(ErrorCode.PLUGIN_FILE_EXISTS, "path is exist: $pathToZipFile")
+            }
+
+            val parameters = ZipParameters()
+            // 压缩方式
+            parameters.compressionMethod = CompressionMethod.DEFLATE
+            parameters.compressionLevel = CompressionLevel.NORMAL
+            // 是否设置加密文件
+            parameters.isEncryptFiles = true
+            parameters.encryptionMethod = EncryptionMethod.AES
+            parameters.aesKeyStrength = AesKeyStrength.KEY_STRENGTH_256
+
+            // 要打包的路径
+            val listFiles: Array<File> = if (needZipPathFile.isDirectory) {
+                needZipPathFile.listFiles()!!
+            } else {
+                arrayOf(needZipPathFile)
+            }
+
+            listFiles.forEach { f ->
+                LogUtils.printLog("zip file add: ${f.path}")
+                if (f.isDirectory) {
+                    zipFile.addFolder(f, parameters)
+                } else {
+                    zipFile.addFile(f, parameters)
+                }
+            }
+            LogUtils.printLog("total file: ${listFiles.size}")
+        } catch (e: Exception) {
+            LogUtils.printErrorLog("executed zipWithPassword failed! ${e.message}", e)
+            return null
+        } finally {
+            zipFile?.close()
+        }
+
+        return pathToZipFile
+    }
+
+    /**
+     * 解压带密码的zip文件
+     * @param zipFilePath     zip文件路径
+     * @param destinationPath 解压目标路径
+     * @param password        密码（可选）
+     */
+    fun unzipWithPassword(
+        zipFilePath: String,
+        destinationPath: String,
+        password: String? = null
+    ) {
+        var zipFile: ZipFile? = null
+        try {
+            zipFile = ZipFile(zipFilePath, password?.toCharArray())
+            zipFile.extractAll(destinationPath)
+            LogUtils.printLog("unzipWithPassword success! $zipFilePath unzip to $destinationPath")
+        } catch (e: Exception) {
+            LogUtils.printErrorLog("unzipWithPassword error: ${e.message}", e)
+        } finally {
+            zipFile?.close()
+        }
     }
 }

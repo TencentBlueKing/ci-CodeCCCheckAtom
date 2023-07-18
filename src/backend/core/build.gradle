@@ -21,6 +21,8 @@ buildscript {
         compressVersion = "1.15"
         javaPluginSdkVersion = "1.1.7"
         kotlinVersion = "1.5.30"
+        reflectionsVersion = "0.9.10"
+        injectVersion = "5.1.0"
     }
 }
 
@@ -38,17 +40,6 @@ static def getValue(String key, Object defaultValue) {
 
 def mavenCredUserName = getValue("mavenCredUserName", getProperty("MAVEN_CRED_USERNAME"))
 def mavenCredPassword = getValue("mavenCredPassword", getProperty("MAVEN_CRED_PASSWORD"))
-
-//clean{
-//    delete fileTree('src/main/resources/codecc_agent.zip')
-//}
-
-//task zip(type: Zip) {
-//    from ('src/main/codecc_agent')
-//    archiveName 'codecc_agent.zip'
-//    into 'codecc_agent'
-//    destinationDir(file('src/main/resources/'))
-//}
 
 configurations {
     ktlint
@@ -83,19 +74,28 @@ allprojects {
     }
 
     dependencies {
-        compile "com.tencent.devops.ci-plugins:java-plugin-sdk:${javaPluginSdkVersion}"
-        compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-        compile "org.bouncycastle:bcprov-jdk16:$bouncyCastleVersion"
-        compile "org.apache.commons:commons-exec:$commonExecVersion"
-        compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
-        compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion"
-        compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
-        compile "com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion"
-        compile "org.apache.commons:commons-compress:$compressVersion"
-        compile "org.hashids:hashids:1.0.3"
-        compile group: 'commons-codec', name: 'commons-codec', version: '1.15'
-        compile "org.tukaani:xz:1.2"
-        testCompile group: 'junit', name: 'junit', version: '4.12'
+        implementation "com.tencent.devops.ci-plugins:java-plugin-sdk:${javaPluginSdkVersion}"
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+//        ktlint "com.github.shyiko:ktlint:0.34.2"
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.1")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.1")
+        implementation "org.bouncycastle:bcprov-jdk16:$bouncyCastleVersion"
+        implementation "org.apache.commons:commons-exec:$commonExecVersion"
+        implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+        implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion"
+        implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
+        implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion"
+        implementation "org.apache.commons:commons-compress:$compressVersion"
+        implementation "org.hashids:hashids:1.0.3"
+        implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
+        implementation "org.tukaani:xz:1.2"
+        testImplementation group: 'junit', name: 'junit', version: '4.12'
+        implementation "org.reflections:reflections:$reflectionsVersion"
+        implementation "org.json:json:20171018"
+        implementation 'com.perforce:p4java:2021.2.2240592'
+        implementation "org.apache.httpcomponents:fluent-hc:4.5.13"
+        implementation "net.lingala.zip4j:zip4j:2.11.4"
+        implementation "com.google.inject:guice:$injectVersion"
     }
 
 
@@ -156,12 +156,11 @@ allprojects {
         archiveName "CodeCCCheckAtom_en.zip"
     }
 
-//    task buildAndCopyZip(type: Copy, dependsOn: [buildZipCn, buildZipEn]) {
-//        from "build/distributions"
-//        into "build/distributions"
-//    }
+    task buildAndCopyZip(type: Copy, dependsOn: [buildZipWithEn]) {
 
-    check.dependsOn ktlint
+    }
+
+//    check.dependsOn ktlint
 
     // 固定入口类 不要改
     mainClassName = "com.tencent.bk.devops.atom.AtomRunner"

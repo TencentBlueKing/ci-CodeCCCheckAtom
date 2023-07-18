@@ -1,17 +1,18 @@
 package com.tencent.devops.docker
 
-import com.tencent.bk.devops.plugin.docker.PcgDevCloudExecutor
+import com.google.inject.Inject
 import com.tencent.bk.devops.plugin.docker.DockerApi
 import com.tencent.bk.devops.plugin.docker.pojo.DockerRunLogRequest
 import com.tencent.bk.devops.plugin.docker.pojo.DockerRunLogResponse
-import com.tencent.bk.devops.plugin.docker.pojo.DockerRunRequest
 import com.tencent.bk.devops.plugin.docker.pojo.common.DockerStatus
 import com.tencent.devops.docker.pojo.CommandParam
 import com.tencent.devops.docker.pojo.ImageParam
 import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.docker.utils.CodeccConfig
-import com.tencent.devops.pojo.exception.CodeccDependentException
-import com.tencent.devops.pojo.exception.CodeccTaskExecException
+import com.tencent.devops.injector.service.DockerRunService
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.third.ThirdParty
+import com.tencent.devops.pojo.exception.third.ThirdPartyException
 import java.io.File
 
 object DockerRun {
@@ -20,43 +21,37 @@ object DockerRun {
     // 64位containerId，预留docker后续升级拓展位
     private val containerIdRegex = Regex("^[0-9a-z]{64,}$")
 
+    @Inject
+    lateinit var dockerRunService: DockerRunService
+
     fun runImage(imageParam: ImageParam, commandParam: CommandParam, toolName: String) {
         LogUtils.printLog("execute image params: $imageParam")
 
-        val param = DockerRunRequest(
-            userId = commandParam.landunParam.userId,
-            imageName = imageParam.imageName,
-            command = imageParam.command,
-            dockerLoginUsername = imageParam.registryUser,
-            dockerLoginPassword = imageParam.registryPwd,
-            workspace = File(commandParam.landunParam.streamCodePath),
-            extraOptions = imageParam.env.plus(mapOf(
-                "devCloudAppId" to (commandParam.extraPrams["devCloudAppId"] ?: ""),
-                "devCloudUrl" to (commandParam.extraPrams["devCloudUrl"] ?: ""),
-                "devCloudToken" to (commandParam.extraPrams["devCloudToken"] ?: ""),
-                PcgDevCloudExecutor.PCG_TOKEN_SECRET_ID to (commandParam.extraPrams[PcgDevCloudExecutor.PCG_TOKEN_SECRET_ID] ?: ""),
-                PcgDevCloudExecutor.PCG_TOKEN_SECRET_KEY to (commandParam.extraPrams[PcgDevCloudExecutor.PCG_TOKEN_SECRET_KEY] ?: ""),
-                PcgDevCloudExecutor.PCG_REQUEST_HOST to (commandParam.extraPrams[PcgDevCloudExecutor.PCG_REQUEST_HOST] ?: "")
-            ))
-        )
+        val param = dockerRunService.getDockerRunRequestParam(imageParam, commandParam)
+
+        LogUtils.printLog("begin to run docker.")
+
         val dockerRunResponse = api.dockerRunCommand(
             projectId = commandParam.landunParam.devopsProjectId,
             pipelineId = commandParam.landunParam.devopsPipelineId,
             buildId = commandParam.landunParam.buildId,
-            param = param,
-            taskId = null
+            param = param
         ).data!!
+
+        LogUtils.printLog("start docker success")
 
         var extraOptions = dockerRunResponse.extraOptions
         val channelCode = CodeccConfig.getConfig("LANDUN_CHANNEL_CODE")
 
-        val isGongFengScan = channelCode == "GONGFENGSCAN" || commandParam.extraPrams["BK_CODECC_SCAN_MODE"] == "GONGFENGSCAN"
+        val isGongFengScan = channelCode == "GONGFENGSCAN"
+                || commandParam.extraPrams["BK_CODECC_SCAN_MODE"] == "GONGFENGSCAN"
 
         val timeGap = if (isGongFengScan) 30 * 1000L else 5000L
         for (i in 1..100000000) {
-            Thread.sleep(timeGap)
+            var runLogResponseExtraOptions = mutableMapOf<String, String>()
+            extraOptions.forEach {runLogResponseExtraOptions.put(it.key, it.value.toString()) }
 
-            val runLogResponse = getRunLogResponse(api, commandParam, extraOptions, timeGap)
+            val runLogResponse = getRunLogResponse(api, commandParam, runLogResponseExtraOptions, timeGap)
 
             extraOptions = runLogResponse.extraOptions
 
@@ -80,10 +75,16 @@ object DockerRun {
                     return
                 }
                 DockerStatus.failure -> {
-                    throw CodeccTaskExecException(errorMsg = "docker run fail: $runLogResponse", toolName = toolName)
+                    throw ThirdPartyException(
+                        ErrorCode.THIRD_REQUEST_FAIL,
+                        "docker run fail: $runLogResponse",
+                        emptyArray(),
+                        ThirdParty.BK_CI
+                    )
                 }
                 else -> {
                     if (i % 16 == 0) LogUtils.printLog("docker run status: $runLogResponse")
+                    Thread.sleep(timeGap)
                 }
             }
         }
@@ -107,15 +108,18 @@ object DockerRun {
         } catch (e: Exception) {
             LogUtils.printErrorLog("get docker run log response: $response")
             LogUtils.printErrorLog("fail to get docker run log: ${commandParam.landunParam.buildId}, " +
-                    "${commandParam.landunParam.devopsVmSeqId}, " +
-                    extraOptions.filter { !it.key.contains("token", ignoreCase = true)  }
+                "${commandParam.landunParam.devopsVmSeqId}, " +
+                extraOptions.filter { !it.key.contains("token", ignoreCase = true)  }
             )
 
             // container id不存在则认为失败
             val containerId = extraOptions["dockerContainerId"]
             if (containerId.isNullOrBlank() || !containerId.matches(containerIdRegex)) {
                 LogUtils.printErrorLog("get docker containerId fail : $containerId")
-                throw CodeccDependentException(e.message ?: "")
+                throw ThirdPartyException(
+                    ErrorCode.THIRD_REQUEST_FAIL, e.message ?: "", emptyArray(),
+                    ThirdParty.BK_CI
+                )
             } else {
                 e.printStackTrace()
             }

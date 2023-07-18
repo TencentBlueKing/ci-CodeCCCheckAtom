@@ -27,23 +27,19 @@
 package com.tencent.devops.utils
 
 import com.fasterxml.jackson.core.type.TypeReference
-import com.tencent.bk.devops.atom.AtomContext
 import com.tencent.bk.devops.atom.pojo.StringData
 import com.tencent.bk.devops.atom.utils.http.SdkUtils
 import com.tencent.bk.devops.plugin.utils.JsonUtil
-import com.tencent.devops.api.CodeccApi
+import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.pojo.BuildScriptType
-import com.tencent.devops.pojo.CodeccCheckAtomParam
 import com.tencent.devops.pojo.CodeccCheckAtomParamV3
 import com.tencent.devops.pojo.CodeccExecuteConfig
 import com.tencent.devops.pojo.OSType
 import com.tencent.devops.utils.common.AgentEnv
 import java.io.File
-import java.util.*
+import java.util.Locale
 
 object CodeccEnvHelper {
-
-    private val api = CodeccApi()
 
     private val ENV_FILES = arrayOf("result.log", "result.ini")
 
@@ -52,7 +48,7 @@ object CodeccEnvHelper {
     init {
         // 第三方构建机
         if (AgentEnv.isThirdParty()) {
-            println("[初始化] 检测到这是第三方构建机")
+            LogUtils.printStr("[init] Detected that this is a 3rd party build machine")
         }
     }
 
@@ -80,12 +76,6 @@ object CodeccEnvHelper {
             val split = it.split("=", ignoreCase = false, limit = 2)
             split[0].trim() to StringData(split[1].trim())
         }.toMap()
-    }
-
-    fun saveTask(atomContext: AtomContext<out CodeccCheckAtomParam>) {
-        with(atomContext.param) {
-            api.saveTask(projectName, pipelineId, pipelineBuildId)
-        }
     }
 
     fun getScriptType(): BuildScriptType {
@@ -120,7 +110,7 @@ object CodeccEnvHelper {
         if (AgentEnv.isThirdParty()) {
             when (getOS()) {
                 OSType.LINUX -> {
-//                    CodeccInstaller.setUpPython3(codeccExecuteConfig.atomContext.param)
+                    CodeccInstaller.setUpPython3(codeccExecuteConfig.atomContext.param)
                 }
                 else -> {
                 }
@@ -135,12 +125,12 @@ object CodeccEnvHelper {
         val buildId = param.pipelineBuildId
 
         // Copy the nfs coverity file to workspace
-        println("[初始化] get the workspace: ${workspace.canonicalPath}")
-        println("[初始化] get the workspace parent: ${workspace.parentFile?.canonicalPath} | '${File.separatorChar}'")
-        println("[初始化] get the workspace parent string: ${workspace.parent}")
+        LogUtils.printLog("[init] get the workspace: ${workspace.canonicalPath}")
+        LogUtils.printLog("[init] get the workspace parent: ${workspace.parentFile?.canonicalPath} | '${File.separatorChar}'")
+        LogUtils.printLog("[init] get the workspace parent string: ${workspace.parent}")
 
         val tempDir = File(workspace, ".temp")
-        println("[初始化] get the workspace path parent: ${tempDir.canonicalPath}")
+        LogUtils.printLog("[init] get the workspace path parent: ${tempDir.canonicalPath}")
         codeccWorkspace = File(tempDir, "codecc_$buildId")
         if (!codeccWorkspace!!.exists()) {
             codeccWorkspace!!.mkdirs()
@@ -150,7 +140,7 @@ object CodeccEnvHelper {
     }
 
     fun deleteCodeccWorkspace() {
-        println("delete the workspace path parent: ${codeccWorkspace}")
+        LogUtils.printLog("delete the workspace path parent: ${codeccWorkspace}")
         if (codeccWorkspace != null){
             codeccWorkspace!!.deleteOnExit()
         }

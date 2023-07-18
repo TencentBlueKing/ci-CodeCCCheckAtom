@@ -3,65 +3,66 @@ package com.tencent.devops.docker
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.inject.Inject
+import com.tencent.bk.devops.atom.pojo.StringData
 import com.tencent.bk.devops.plugin.utils.JsonUtil
-import com.tencent.devops.docker.pojo.AnalyzeConfigInfo
-import com.tencent.devops.docker.pojo.CommandParam
-import com.tencent.devops.docker.pojo.DefectsEntity
-import com.tencent.devops.docker.pojo.ScanType
-import com.tencent.devops.docker.pojo.ToolConstants
+import com.tencent.devops.docker.pojo.*
 import com.tencent.devops.docker.scm.ScmBlame
 import com.tencent.devops.docker.scm.ScmDiff
 import com.tencent.devops.docker.scm.ScmIncrement
-import com.tencent.devops.docker.scm.ScmInfo
 import com.tencent.devops.docker.scm.pojo.ScmDiffItem
 import com.tencent.devops.docker.tools.FileUtil
 import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.docker.utils.CodeccConfig
 import com.tencent.devops.docker.utils.CodeccWeb
 import com.tencent.devops.docker.utils.CommonUtils
-import com.tencent.devops.pojo.exception.CodeccDependentException
-import com.tencent.devops.pojo.exception.CodeccRepoServiceException
-import com.tencent.devops.pojo.exception.CodeccTaskExecException
+import com.tencent.devops.injector.service.ThirdEnvService
+import com.tencent.devops.pojo.CodeccExecuteConfig
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.plugin.CodeCCScmException
+import com.tencent.devops.pojo.exception.plugin.CodeCCToolException
 import com.tencent.devops.utils.CompressUtils
+import com.tencent.devops.utils.FilePathUtils
 import org.apache.commons.codec.digest.DigestUtils
-import org.apache.commons.io.FileUtils
+import java.io.BufferedReader
 import java.io.File
 import java.lang.reflect.Field
 import java.text.SimpleDateFormat
-import java.util.Base64
-import java.util.Date
+import java.util.*
 
 object ScanComposer {
+
+    @Inject
+    lateinit var thirdEnvService: ThirdEnvService
 
     // 单工具scan
     fun scan(streamName: String, toolName: String, commandParam: CommandParam) {
         val startTime = Date()
         val ft = SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
         LogUtils.printLog("start scan time: " + ft.format(startTime))
-        // 获取本次扫描版本信息
-//        LogUtils.printDebugLog("start scm info...")
-//        if (!ScmInfo(commandParam, toolName, streamName, 0).scmOperate()) {
-////            uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
-//            throw CodeccRepoServiceException("scm info failed.")
-//        }
-//        LogUtils.printDebugLog("start scm success")
 
         // get CodeCC API data
         LogUtils.printDebugLog("Get properties info from server...")
         val analyzeConfigInfo = CodeccWeb.getConfigDataByCodecc(streamName, toolName, commandParam)
         LogUtils.printDebugLog("Get properties info from server success")
-        if (commandParam.repoUrlMap.isBlank()) {
+        if (commandParam.repos.isNullOrEmpty()) {
             LogUtils.printDebugLog("No scm change scan type to full scan")
             analyzeConfigInfo.scanType = ScanType.FULL
             CodeccWeb.changScanType(commandParam.landunParam, analyzeConfigInfo.taskId, streamName, toolName)
         }
         if (analyzeConfigInfo.scanType == ScanType.FAST_INCREMENTAL){
+            LogUtils.printLog("commit not change, fast increment scanning ...")
             if (ToolConstants.COVERITY == toolName || ToolConstants.KLOCWORK == toolName) {
                 getStatusFromCodecc(commandParam, analyzeConfigInfo, toolName, 5)
             }else{
                 getStatusFromCodecc(commandParam, analyzeConfigInfo, toolName, 4)
             }
             LogUtils.printLog(" scan finished: ${ft.format(startTime)} to ${ft.format(Date())}")
+            if (toolName == ToolConstants.SCC) {
+                LogUtils.printLog("fast increment no need to set ignore flag")
+                IgnoreDefectParser.getIgnoreDefectInfo(null, analyzeConfigInfo.taskId, null, null)
+                OCHeaderFileParser.getOcHeadFileInfo(null, analyzeConfigInfo.taskId, null, null)
+            }
             return
         }
         if (analyzeConfigInfo.scanType == ScanType.PARTIAL_INCREMENTAL){
@@ -75,8 +76,7 @@ object ScanComposer {
             return
         }
         // check third env
-        CodeccConfig.checkThirdEnv(commandParam, toolName)
-        CodeccConfig.downloadToolZip(commandParam, toolName)
+        thirdEnvService.checkThirdEnv(commandParam, toolName)
 
         // 排队开始
         CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 1, 3)
@@ -100,29 +100,39 @@ object ScanComposer {
         val diffFileList = mutableListOf<ScmDiffItem.DiffFileItem>()
         if (analyzeConfigInfo.scanType == ScanType.INCREMENT) {
             LogUtils.printDebugLog("scan type is increment...")
-            if (!ScmIncrement(commandParam, toolName, streamName, analyzeConfigInfo.taskId, analyzeConfigInfo, incrementFiles, deleteFiles).scmOperate()) {
+            if (!ScmIncrement(commandParam, toolName, streamName, analyzeConfigInfo.taskId, analyzeConfigInfo, incrementFiles, deleteFiles).scmLocalOperate()) {
                 uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
 //                CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 3, 2)
                 LogUtils.printDebugLog("scm increment failed")
-                throw CodeccRepoServiceException(errorMsg = "scm increment failed.", toolName = toolName)
+                throw CodeCCScmException(
+                    ErrorCode.SCM_INCREMENT_FAIL,
+                    "scm increment failed."
+                )
             }
             if (toolName == ToolConstants.COVERITY) {
-                downloadCovResult(commandParam, streamName, toolName)
+                downloadCovResult(commandParam, streamName, analyzeConfigInfo.baseBuildId, toolName)
             }
-        } else if (analyzeConfigInfo.scanType == ScanType.DIFF) {
-//            if (toolName == ToolConstants.COVERITY) {
-//                downloadCovResult(commandParam, streamName, toolName)
-//            }
-            if (toolName == ToolConstants.COVERITY || toolName == ToolConstants.KLOCWORK || toolName == ToolConstants.PINPOINT || toolName == ToolConstants.DUPC) {
+        } else if (analyzeConfigInfo.scanType == ScanType.DIFF
+                || analyzeConfigInfo.scanType == ScanType.DIFF_FILE
+                || analyzeConfigInfo.scanType == ScanType.DIFF_BRANCH) {
+            //coverity工具且非编译型语言，支持增量
+            if (toolName == ToolConstants.COVERITY && !checkIncludeCompileLanuage(analyzeConfigInfo.language)) {
+                downloadCovResult(commandParam, streamName, analyzeConfigInfo.baseBuildId, toolName)
+            }
+            if (toolName == ToolConstants.KLOCWORK || toolName == ToolConstants.PINPOINT || toolName == ToolConstants.DUPC) {
                 LogUtils.printDebugLog("scan type is diff is not support in tool $toolName")
                 analyzeConfigInfo.scanType = ScanType.FULL
                 CodeccWeb.changScanType(commandParam.landunParam, analyzeConfigInfo.taskId, streamName, toolName)
             } else {
                 LogUtils.printDebugLog("scan type is diff...")
-                if (!ScmDiff(commandParam, toolName, streamName, analyzeConfigInfo.taskId, incrementFiles, deleteFiles, diffFileList).scmOperate()) {
+                if (!ScmDiff(commandParam, toolName, streamName, analyzeConfigInfo.taskId, analyzeConfigInfo.scanType,
+                        incrementFiles, deleteFiles, diffFileList).scmLocalOperate()) {
                     uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
 //                    CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 3, 2)
-                    throw CodeccRepoServiceException(errorMsg = "scm diff failed.", toolName = toolName)
+                    throw CodeCCScmException(
+                        ErrorCode.SCM_DIFF_FAIL,
+                        "scm diff failed."
+                    )
                 }
             }
         }
@@ -130,11 +140,16 @@ object ScanComposer {
         // 工具扫描
         LogUtils.printDebugLog("tool scan start...")
         if (!Scan(commandParam, toolName, streamName, analyzeConfigInfo, incrementFiles, diffFileList).scan()) {
-//            if (toolName == ToolConstants.COVERITY && (commandParam.openScanPrj == true || commandParam.repoUrlMap.contains("bkdevops-plugins") ||  ! checkIncludeCompileLanuage(analyzeConfigInfo.language))){
-            if (toolName == ToolConstants.COVERITY){
-                val cov_empty_file = File( generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "cov_empty.txt")
-                if (cov_empty_file.exists()){
-                    println("Ignore coverity ERROR: Coverity can not capture any file!")
+            if (toolName == ToolConstants.COVERITY) {
+                val cov_empty_file = File(
+                    generateToolDataPath(
+                        commandParam.dataRootPath,
+                        streamName,
+                        toolName
+                    ) + File.separator + "cov_empty.txt"
+                )
+                if (cov_empty_file.exists()) {
+                    LogUtils.printErrorLog("Ignore coverity ERROR: Coverity can not capture any file!")
                     // 构建结束
                     CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 1, 1)
                     CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 5, 3)
@@ -143,24 +158,74 @@ object ScanComposer {
                 }
             }
             uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
-            throw CodeccTaskExecException(errorMsg = "tool scan failed.", toolName = toolName)
+            throw CodeCCToolException(
+                ErrorCode.TOOL_RUN_FAIL,
+                "tool scan failed.",
+                emptyArray(),
+                toolName
+            )
         }
         LogUtils.printDebugLog("tool scan finish")
-
+        val newDefectProcessor = commandParam.extraPrams["newDefectProcessor"] ?: "true"
         LogUtils.printDebugLog("getScanFileList...")
-        val filePathList = getScanFileList(commandParam.dataRootPath, streamName, toolName)
+        val filePathList = getScanFileList(commandParam.dataRootPath, streamName, toolName, newDefectProcessor.toBoolean())
         LogUtils.printDebugLog("getScanFileList filePathList size: ${filePathList.size}")
 
         // 添加md5
-        LogUtils.printDebugLog("append md5...")
-        md5Files(commandParam, streamName, toolName, filePathList)
-        LogUtils.printDebugLog("append md5 success")
+        if(!newDefectProcessor.toBoolean() || toolName == ToolConstants.GITHUBSTATISTIC) {
+            LogUtils.printDebugLog("append md5...")
+            md5Files(commandParam, streamName, toolName, filePathList)
+            LogUtils.printDebugLog("append md5 success")
+        }
 
-        // 增量文件如果告警为0，则加入到删除文件列表中
+        // 增量文件如果问题为0，则加入到删除文件列表中
         LogUtils.printDebugLog("checkUpdateFilesIsExistDefects...")
 
         // 没有拉代码插件，则不需要这段
-        if (commandParam.repoUrlMap.isNotBlank()) {
+        if (commandParam.repos.isNullOrEmpty()) {
+            commandParam.scmType = "git"
+            commandParam.repos = listOf(
+                CodeccExecuteConfig.RepoItem(
+                    repositoryConfig = null,
+                    type = "git",
+                    relPath = "",
+                    relativePath = "",
+                    url = "",
+                    repoHashId = ""
+                )
+            );
+            LogUtils.printDebugLog("commandParam.repos2: ${commandParam.repos}")
+            if (toolName !in ToolConstants.CODE_TOOLS_ACOUNT || !newDefectProcessor.toBoolean()) {
+                LogUtils.printDebugLog("ScmBlame...")
+//                if (toolName.equals("pvs")){
+                LogUtils.printDebugLog("localSCMBlameRun:  ${commandParam.localSCMBlameRun}")
+                if (commandParam.localSCMBlameRun != null && commandParam.localSCMBlameRun) {
+                    if (!ScmBlame(commandParam, toolName, streamName, analyzeConfigInfo.taskId).scmLocalOperate()) {
+                        uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
+                        LogUtils.printDebugLog("scm blame failed")
+                        throw CodeCCScmException(
+                            ErrorCode.SCM_BLAME_FAIL,
+                            "scm blame failed."
+                        )
+                    }
+                } else {
+                    if (!ScmBlame(commandParam, toolName, streamName, analyzeConfigInfo.taskId).scmOperate()) {
+                        uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
+                        LogUtils.printDebugLog("scm blame failed")
+                        throw CodeCCScmException(
+                            ErrorCode.SCM_BLAME_FAIL,
+                            "scm blame failed."
+                        )
+                    }
+                }
+
+                LogUtils.printDebugLog("ScmBlame success")
+            } else {
+                LogUtils.printDebugLog("code count tool no need scm blame")
+            }
+            commandParam.scmType = ""
+        }else {
+            LogUtils.printDebugLog("commandParam.repos1: ${commandParam.repos}")
             val deleteFileList = checkUpdateFilesIsExistDefects(incrementFiles, deleteFiles, filePathList, analyzeConfigInfo.scanType)
             LogUtils.printDebugLog("checkUpdateFilesIsExistDefects success, deleteFileList size: ${deleteFileList.size}")
 
@@ -173,30 +238,24 @@ object ScanComposer {
             }
 
             // scmBlame()
-            LogUtils.printDebugLog("ScmBlame...")
-            if (!ScmBlame(commandParam, toolName, streamName, analyzeConfigInfo.taskId).scmOperate()) {
-                uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
-//                CodeccWeb.codeccUploadTaskLog(analyzeConfigInfo.taskId, streamName, toolName, commandParam.landunParam, 3, 2)
-                LogUtils.printDebugLog("scm blame failed")
-                throw CodeccRepoServiceException(errorMsg = "scm blame failed.", toolName = toolName)
+            if (toolName !in ToolConstants.CODE_TOOLS_ACOUNT || !newDefectProcessor.toBoolean()) {
+                LogUtils.printDebugLog("ScmBlame...")
+//                if (toolName.equals("pvs")){
+                if (!ScmBlame(commandParam, toolName, streamName, analyzeConfigInfo.taskId).scmOperate()) {
+                    uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
+                    LogUtils.printDebugLog("scm blame failed")
+                    throw CodeCCScmException(
+                        ErrorCode.SCM_BLAME_FAIL,
+                        "scm blame failed."
+                    )
+                }
+                LogUtils.printDebugLog("ScmBlame success")
+            } else {
+                LogUtils.printDebugLog("code count tool no need scm blame")
             }
-            LogUtils.printDebugLog("ScmBlame success")
-        }else{
-            // scmBlame()
-            commandParam.scmType = "git"
-            commandParam.repoUrlMap = "{}"
-            LogUtils.printDebugLog("ScmBlame...")
-            if (!ScmBlame(commandParam, toolName, streamName, analyzeConfigInfo.taskId).scmOperate()) {
-                uploadErrorLog(analyzeConfigInfo, streamName, toolName, commandParam)
-                LogUtils.printDebugLog("scm blame failed")
-                throw CodeccRepoServiceException(errorMsg = "scm blame failed.", toolName = toolName)
-            }
-            LogUtils.printDebugLog("ScmBlame success")
-            commandParam.scmType = ""
-            commandParam.repoUrlMap = ""
         }
 
-        // 打印告警
+        // 打印问题
         if (commandParam.needPrintDefect && toolName !in ToolConstants.CODE_TOOLS_ACOUNT) {
             LogUtils.printDebugLog("print defects begin")
             printDefects(commandParam, streamName, toolName, analyzeConfigInfo)
@@ -209,8 +268,8 @@ object ScanComposer {
             val zipResultFile = File(zipResultFileName)
             if (zipResultFile.exists()) {
                 val toolPrefix = when (toolName) {
-                    ToolConstants.COVERITY -> "cov"
-                    ToolConstants.KLOCWORK -> "kw"
+                    ToolConstants.COVERITY -> "cov" + "_" + commandParam.landunParam.buildId
+                    ToolConstants.KLOCWORK -> "kw" + "_" + commandParam.landunParam.buildId
                     else -> ""
                 }
 
@@ -240,7 +299,7 @@ object ScanComposer {
             val dataToolPath = File(generateToolDataPath(commandParam.dataRootPath, streamName, toolName))
             LogUtils.printLog("start to delete file: ${dataToolPath.canonicalPath}")
             try {
-                FileUtils.deleteDirectory(dataToolPath)
+                dataToolPath.deleteOnExit()
             } catch (e: Throwable) {
                 LogUtils.printLog("delete temp file failed: ${e.message}")
             }
@@ -258,10 +317,16 @@ object ScanComposer {
         }
     }
 
-    private fun downloadCovResult(commandParam: CommandParam, streamName: String, toolName: String) {
+    private fun downloadCovResult(commandParam: CommandParam, streamName: String, baseBuildId: String, toolName: String) {
         val dataToolPath = generateToolDataPath(commandParam.dataRootPath, streamName, toolName)
         val filePath = commandParam.dataRootPath + File.separator + streamName + "_COVERITY_download_result.zip"
-        CodeccWeb.download(filePath, "${streamName}_cov_result.zip", "LAST_RESULT", commandParam.landunParam)
+        //缓存期，兼容未带buildid的路径
+        var size: Long = CodeccWeb.getDownloadFileSize("${streamName}_cov_${baseBuildId}_result.zip", "LAST_RESULT", commandParam.landunParam)
+        if (size > 0) {
+            CodeccWeb.download(filePath, "${streamName}_cov_${baseBuildId}_result.zip", "LAST_RESULT", commandParam.landunParam)
+        }else{
+            CodeccWeb.download(filePath, "${streamName}_cov_result.zip", "LAST_RESULT", commandParam.landunParam)
+        }
         if (File(filePath).exists()) {
             LogUtils.printLog("unzip $filePath to folder: $dataToolPath ...")
             try {
@@ -279,8 +344,12 @@ object ScanComposer {
         var countFailed = 0
         while (true) {
             if (countFailed > 5) {
-                LogUtils.printLog("Fail: 重试失败超过5次，异常退出！")
-                throw CodeccDependentException("Fail: 重试失败超过5次，异常退出！", toolName = toolName)
+                LogUtils.printLog("Fail: Retry failed more than 5 times, exit abnormally!")
+                throw CodeCCToolException(
+                    ErrorCode.TOOL_FINISH_STATUS_RETRY_LIMIT_REACHED,
+                    "Fail: Retry failed more than 5 times, exit abnormally!",
+                    arrayOf("5"), toolName
+                )
             }
             if (commandParam.openScanPrj == true) {
                 Thread.sleep(30000)
@@ -290,10 +359,15 @@ object ScanComposer {
 
             try {
                 val data = CodeccWeb.codeccGetData(commandParam.landunParam, analyzeConfigInfo.taskId, toolName)
-                    ?: throw CodeccDependentException("codeccGetData failed.", toolName = toolName)
+                    ?: throw CodeCCToolException(ErrorCode.TOOL_STATUS_RETURN_EMPTY,
+                        "codeccGetData failed.", emptyArray(), toolName
+                    )
                 if (data.flag == 2 || data.flag == 4) {
-                    val errorMsg = data.stepArray?.lastOrNull()?.msg ?: "任务被中断或发生异常!"
-                    throw CodeccDependentException("Fail: $errorMsg \n$data", toolName = toolName)
+                    val errorMsg = data.stepArray?.lastOrNull()?.msg ?: "Task was interrupted or exception occurred!"
+                    throw CodeCCToolException(
+                        ErrorCode.TOOL_STATUS_CHECK_FAIL, "Fail: $errorMsg \n$data",
+                        arrayOf(data.currStep.toString(), data.flag.toString()), toolName
+                    )
                 } else if (data.currStep == currentStep && data.flag == 1) {
                     LogUtils.printLog("")
                     LogUtils.printLog("finished!\n")
@@ -312,7 +386,7 @@ object ScanComposer {
     }
 
     private fun waitCodeccFinish(commandParam: CommandParam, streamName: String, toolName: String, analyzeConfigInfo: AnalyzeConfigInfo) {
-        // 通知后台解析告警文件
+        // 通知后台解析问题文件
         LogUtils.printLog("notify CodeCC to parse file")
         CodeccWeb.notifyCodeccFinish(commandParam.landunParam, streamName, toolName)
 
@@ -386,7 +460,7 @@ object ScanComposer {
                 if (defects is List<*>) {
                     defects.forEachIndexed { index, it ->
                         if (index > 10000) {
-                            LogUtils.printLog("缺陷数量超过10000条，将省略打印....")
+                            LogUtils.printLog("If the number of defects exceeds 10,000, printing will be omitted....")
                             return
                         }
                         val defectStr = jacksonObjectMapper().writeValueAsString(it)
@@ -453,11 +527,20 @@ object ScanComposer {
         return toolDataPath
     }
 
-    private fun getScanFileList(codeccWorkspace: String, streamName: String, toolName: String): List<String> {
+    private fun getScanFileList(codeccWorkspace: String, streamName: String, toolName: String, newDefectProcessor: Boolean): List<String> {
         if (toolName == ToolConstants.GITHUBSTATISTIC) {
             return mutableListOf<String>()
         }
         val toolDataPath = generateToolDataPath(codeccWorkspace, streamName, toolName)
+        if(newDefectProcessor) {
+            val filePathListFileName = generateToolDataPath(codeccWorkspace, streamName, toolName) + File.separator + "file_path_list.json"
+            val filePathListFile = File(filePathListFileName)
+            if(filePathListFile.exists()) {
+                LogUtils.printLog("read path list from temp content")
+                return jacksonObjectMapper().readValue(
+                    filePathListFile.bufferedReader().use(BufferedReader::readText), object : TypeReference<List<String>>(){})
+            }
+        }
         val toolScanInput = toolDataPath + File.separator + "tool_scan_output.json"
         return CodeccConfig.fileListFromDefects(toolScanInput)
     }
@@ -474,8 +557,8 @@ object ScanComposer {
             }
             val md5Info = mutableMapOf<String, String>()
             md5Info["filePath"] = filePahth
-            if (File(filePahth).isFile){
-                md5Info["fileRelPath"] = filePahth.replace(getRelFilePath(commandParam, filePahth), "/").replace("//", "/")
+            if (file.isFile){
+                md5Info["fileRelPath"] = FilePathUtils.getRelPath(file.absolutePath)
             }
             file.inputStream().use {
                 md5Info["md5"] = DigestUtils.md5Hex(it)
@@ -508,9 +591,9 @@ object ScanComposer {
             }
             val md5Info = mutableMapOf<String, String>()
             md5Info["filePath"] = filePahth
-            if (commandParam.repoRelPathMap.filterNot { it.key.isBlank() }.isNotEmpty()) {
-                commandParam.repoRelPathMap.forEach { repoRelPath ->
-                    val codePath = CommonUtils.changePathToDocker(File(commandParam.landunParam.streamCodePath, repoRelPath.value).canonicalPath)
+            if (commandParam.repos.filterNot { it.relPath.isBlank() }.isNotEmpty()) {
+                commandParam.repos.forEach { repo ->
+                    val codePath = CommonUtils.changePathToDocker(File(commandParam.landunParam.streamCodePath, repo.relPath).canonicalPath)
                     val re = Regex(codePath)
                     if (re.containsMatchIn(filePahth)) {
                         md5Info["fileRelPath"] = filePahth.replace(codePath, "/").replace("//", "/")
@@ -543,51 +626,6 @@ object ScanComposer {
         }
     }
 
-    private fun getRelFilePath(commandParam: CommandParam, filePath: String): String {
-        var scanDir = File(filePath).parent
-        var clyeNum = 4096
-        if (commandParam.scmType == "git" || commandParam.scmType == "github") {
-            while (clyeNum > 0){
-                scanDir = "$scanDir/.git"
-                if (File(scanDir).isDirectory){
-                    break
-                }else if (File(scanDir).isFile){
-                    break
-                }else{
-                    scanDir = File(File(scanDir).parent).parent
-                    if (scanDir == "/" || scanDir.endsWith(":/") || scanDir.endsWith(":\\")){
-                        break
-                    }
-                    clyeNum--
-                    LogUtils.printDebugLog(scanDir.toString())
-                }
-            }
-        }else if (commandParam.scmType == "svn"){
-            while (clyeNum > 0){
-                scanDir = "$scanDir/.svn"
-                if (File(scanDir).isDirectory){
-                    break
-                }else if (File(scanDir).isFile){
-                    break
-                }else{
-                    scanDir = File(File(scanDir).parent).parent
-                    if (scanDir == "/" || scanDir.endsWith(":/") || scanDir.endsWith(":\\")){
-                        break
-                    }
-                    clyeNum--
-                    LogUtils.printDebugLog(scanDir.toString())
-                }
-            }
-        }else{
-            val codePath = CommonUtils.changePathToDocker(File(commandParam.landunParam.streamCodePath).canonicalPath)
-            scanDir = scanDir.replace(codePath, "/").replace("//", "/")
-        }
-        if (scanDir.endsWith(".git") || scanDir.endsWith(".svn")){
-            scanDir = File(scanDir).parent
-        }
-        return scanDir
-    }
-
     private fun checkUpdateFilesIsExistDefects(
         incrementFiles: List<String>,
         deleteFiles: List<String>,
@@ -616,7 +654,7 @@ object ScanComposer {
         deleteFileList: List<String>
     ): MutableMap<String, Any?>? {
         val scmInfoFile = commandParam.dataRootPath+ File.separator + "scm_info_output.json"
-        if (!File(scmInfoFile).exists()) {
+        if (!File(scmInfoFile).exists() || commandParam.scmType == "perforce") {
             return null
         }
         val outPutFileText = File(scmInfoFile).readText()
@@ -628,10 +666,25 @@ object ScanComposer {
         params["buildId"] = commandParam.landunParam.buildId
         params["projectId"] = commandParam.landunParam.devopsProjectId
         params["deleteFiles"] = deleteFileList
+        val rootPaths = mutableSetOf<String>()
+        if (commandParam.repos.isNullOrEmpty()) {
+            rootPaths.add(commandParam.projectBuildPath)
+        } else {
+            commandParam.repos.forEach { repo ->
+                rootPaths.add(
+                    CommonUtils.changePathToDocker(
+                        commandParam.projectBuildPath + File.separator + repo.relPath
+                    )
+                )
+            }
+        }
+        params["rootPaths"] = rootPaths
         params["repoWhiteList"] = commandParam.subCodePathList
         LogUtils.printLog("repoWhiteList is ${params["repoWhiteList"]}")
         params["triggerToolNames"] = commandParam.scanTools.toUpperCase().split(",")
         LogUtils.printLog("triggerToolNames is ${params["triggerToolNames"]}")
+        params["repoRelativePathList"] = commandParam.repoRelativePathList
+        LogUtils.printLog("repoRelativePathList is ${params["repoRelativePathList"]}")
 
         return params
     }

@@ -1,0 +1,72 @@
+{
+  "title": "title",
+  "normalLegend": [
+    {
+      "key": "Issue Count",
+      "value": "newfile_total_defect_count"
+    },
+    {
+      "key": "File Count",
+      "value": "newfile_total_count"
+    }
+  ],
+  "normalKey": "File Count",
+  "normalVal": "newfile_total_count",
+  "normalChange": "newfile_changed_count",
+  "activeKey": "Issue Count",
+  "activeVal": "newfile_total_defect_count",
+  "activeChange": "newfile_changed_defect_count",
+  "mainKey": "Total Issue Count",
+  "mainVal": "newfile_total_defect_count",
+  "hasChange": true,
+  "changeNormalVal": "newfile_changed_count",
+  "changeActiveVal": "newfile_changed_defect_count",
+  "charts": [
+    {
+      "type": "Bar",
+      "title": "To be fixed severity",
+      "opts": [
+        {
+          "key": "total_new_serious",
+          "text": "High",
+          "color": "#3c96ff"
+        },
+        {
+          "key": "total_new_normal",
+          "text": "Medium",
+          "color": "#7fcaff"
+        },
+        {
+          "key": "total_new_prompt",
+          "text": "Low",
+          "color": "#a1eaee"
+        }
+      ],
+      "enable": true
+    },
+    {
+      "type": "AuthorBar",
+      "title": "Author of issue to be fixed",
+      "xkey": "name",
+      "ykey": "prompt_count",
+      "opts": [
+        {
+          "key": "serious_count",
+          "text": "High",
+          "color": "#3c96ff"
+        },
+        {
+          "key": "normal_count",
+          "text": "Medium",
+          "color": "#7fcaff"
+        },
+        {
+          "key": "prompt_count",
+          "text": "Low",
+          "color": "#a1eaee"
+        }
+      ],
+      "enable": true
+    }
+  ]
+}

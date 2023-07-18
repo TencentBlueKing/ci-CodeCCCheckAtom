@@ -1,7 +1,7 @@
 package com.tencent.devops.utils.script
 
-import com.tencent.devops.pojo.exception.CodeccTaskExecException
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.user.CodeCCUserException
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.charset.Charset
@@ -30,16 +30,17 @@ object BatScriptUtil {
     fun execute(
         script: String,
         runtimeVariables: Map<String, String>,
-        dir: File,
+        dir: File?,
         prefix: String = "",
-        printErrorLog: Boolean = true
+        printErrorLog: Boolean = true,
+        print2Logger: Boolean = true
     ): String {
         val file = getCommandFile(script, dir, runtimeVariables)
         try {
             val result = CommandLineUtils.execute(
                 command = "cmd.exe /C \"${file.canonicalPath}\"",
                 workspace = dir,
-                print2Logger = true,
+                print2Logger = print2Logger,
                 prefix = prefix,
                 printException = printErrorLog
             )
@@ -47,13 +48,16 @@ object BatScriptUtil {
             return result
         } catch (e: Throwable) {
             if (printErrorLog) logger.error("Fail to execute bat script: ${e.message}")
-            throw CodeccUserConfigException("Fail to execute bat script: ${e.message}")
+            throw CodeCCUserException(
+                ErrorCode.USER_EXEC_SCRIPT_FAIL,
+                "Fail to execute bat script: ${e.message}"
+            )
         }
     }
 
     fun getCommandFile(
         script: String,
-        dir: File,
+        dir: File?,
         runtimeVariables: Map<String, String>
     ): File {
         val tmpDir = System.getProperty("java.io.tmpdir")
@@ -68,7 +72,6 @@ object BatScriptUtil {
 
         command.append("@echo off")
             .append("\r\n")
-            .append("set $WORKSPACE_ENV=${dir.absolutePath}\r\n")
             .append("set DEVOPS_BUILD_SCRIPT_FILE=${file.absolutePath}\r\n")
             .append("\r\n")
 

@@ -1,5 +1,6 @@
 package com.tencent.devops.hash.core
 
+import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.hash.constant.*
 import com.tencent.devops.hash.pojo.BlockHashContext
 import com.tencent.devops.hash.pojo.FuzzyState
@@ -64,14 +65,14 @@ object FuzzyHashGenerate {
         var bi = 0
         //如果输入的字符串长度超过上限，则报错
         if (inputStr.length.toULong() > SSDEEP_TOTAL_SIZE_MAX) {
-            println("input string too long!")
+            LogUtils.printStr("input string too long!")
             return false
         }
         //如果是固定的状态，但是固定长度不等于输入字符串长度，则报错
         if (fuzzyContext.flags and FUZZY_STATE_SIZE_FIXED > 0 &&
                 fuzzyContext.fixedSize != inputStr.length.toLong()
         ) {
-            println("fixed size state, but size not equal!")
+            LogUtils.printStr("fixed size state, but size not equal!")
             return false
         }
         fuzzyContext.flags = fuzzyContext.flags or FUZZY_STATE_SIZE_FIXED
@@ -113,7 +114,7 @@ object FuzzyHashGenerate {
         }
         //判断几个条件，如果都通过了则进行分片的逻辑
         if (horg == 0u) {
-            println("rolling hash zero result")
+            LogUtils.printStr("rolling hash zero result")
             return
         }
         if ((h.toInt() and fuzzyContext.rollMask) != 0) {
@@ -214,16 +215,16 @@ object FuzzyHashGenerate {
         var result: String
 
         if(fuzzyContext.bhStart > fuzzyContext.bhEnd){
-            println("start point is larger than end")
+            LogUtils.printStr("start point is larger than end")
             return null
         }
         if (!(bi == 0 || blockSizeShift(bi).toLong() / 2 * SPAMSUM_LENGTH < fuzzyContext.fixedSize)) {
-            println("length with blocksize shift $bi is to large")
+            LogUtils.printStr("length with blocksize shift $bi is to large")
             return null
         }
 
         if (fuzzyContext.fixedSize.toULong() > SSDEEP_TOTAL_SIZE_MAX) {
-            println("fixed size is larger then limit")
+            LogUtils.printStr("fixed size is larger then limit")
             return null
         }
 
@@ -240,7 +241,7 @@ object FuzzyHashGenerate {
             bi--
         }
         if (bi > 0 && (null == fuzzyContext.bh[bi] || fuzzyContext.bh[bi]!!.dIndex < SPAMSUM_LENGTH / 2)) {
-            println("block size length is smaller than spamsum length")
+            LogUtils.printStr("block size length is smaller than spamsum length")
             return null
         }
 
@@ -252,7 +253,7 @@ object FuzzyHashGenerate {
         result =
                 "${blockSizeShift(bi)}:${String(fuzzyContext.bh[bi]!!.digest).filter {it != Char.MIN_VALUE}}"
         if (result.length > FUZZY_MAX_RESULT - 1) {
-            println("result length is smaller than fuzzy max result")
+            LogUtils.printStr("result length is smaller than fuzzy max result")
             return null
         }
 
@@ -260,7 +261,7 @@ object FuzzyHashGenerate {
         if (bi < fuzzyContext.bhEnd - 1) {
             ++bi
             if (null == fuzzyContext.bh[bi]) {
-                println("fuzzy context is null")
+                LogUtils.printStr("fuzzy context is null")
                 return null
             }
             var secondHash = String(fuzzyContext.bh[bi]!!.digest).filter { it != Char.MIN_VALUE }
@@ -280,7 +281,7 @@ object FuzzyHashGenerate {
             result = "$result:$secondHash"
         } else if (h != 0u) {
             if (bi != 0 && bi != NUM_BLOCKHASHES - 1) {
-                println("block index is not equal to number blockhashes")
+                LogUtils.printStr("block index is not equal to number blockhashes")
                 return null
             }
             result = if(bi == 0) {
@@ -295,7 +296,7 @@ object FuzzyHashGenerate {
         }
 //        result = result.plus(0.toChar())
         if (result.length > FUZZY_MAX_RESULT) {
-            println("result length is larger than fuzzy max result")
+            LogUtils.printStr("result length is larger than fuzzy max result")
             return null
         }
         return result

@@ -26,6 +26,7 @@
 
 package com.tencent.devops.utils
 
+import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.pojo.CodeccExecuteConfig
 import com.tencent.devops.utils.script.BatScriptUtil
 import java.io.File
@@ -67,7 +68,7 @@ class WindowsCodeccUtils : CodeccUtils() {
             )
             return "py -3"
         } catch (e: Exception) {
-            System.err.println(e.message)
+            LogUtils.printErrorLog(e.message)
         }
 
         try {
@@ -79,7 +80,7 @@ class WindowsCodeccUtils : CodeccUtils() {
             )
             return "python3"
         } catch (e: Exception) {
-            System.err.println(e.message)
+            LogUtils.printErrorLog(e.message)
         }
 
         return "python"

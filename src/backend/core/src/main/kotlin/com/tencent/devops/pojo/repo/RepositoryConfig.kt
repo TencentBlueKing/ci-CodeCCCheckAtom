@@ -27,7 +27,8 @@
 package com.tencent.devops.pojo.repo
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.user.CodeCCUserException
 import java.net.URLEncoder
 
 /**
@@ -43,17 +44,26 @@ class RepositoryConfig(
     fun getRepositoryId(): String {
         return when (repositoryType) {
             RepositoryType.ID -> if (repositoryHashId.isNullOrBlank()) {
-                throw CodeccUserConfigException("代码库HashId为空")
+                throw CodeCCUserException(
+                    ErrorCode.USER_REPO_INFO_MISSING,
+                    "Code repository HashId is empty"
+                )
             } else {
                 repositoryHashId!!
             }
             RepositoryType.NAME -> if (repositoryName.isNullOrBlank()) {
-                throw CodeccUserConfigException("代码库名为空")
+                throw CodeCCUserException(
+                    ErrorCode.USER_REPO_INFO_MISSING,
+                    "Code repository name is empty"
+                )
             } else {
                 repositoryName!!
             }
             RepositoryType.URL -> if (repositoryName.isNullOrBlank()) {
-                throw CodeccUserConfigException("代码库URL为空")
+                throw CodeCCUserException(
+                    ErrorCode.USER_REPO_INFO_MISSING,
+                    "Code repository URL is empty"
+                )
             } else {
                 repositoryName!!
             }

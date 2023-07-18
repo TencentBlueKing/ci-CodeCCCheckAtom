@@ -26,6 +26,7 @@ class ToolMetaDetailVO : ToolMetaBaseVO() {
     var toolVersion: String? = null
     var toolHistoryVersion: List<String>? = null
     var toolOptions: List<ToolOption>? = null
+    var processList: List<String>? = null
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

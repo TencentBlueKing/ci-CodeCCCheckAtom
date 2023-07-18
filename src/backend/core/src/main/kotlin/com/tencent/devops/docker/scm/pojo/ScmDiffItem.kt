@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ScmDiffItem(
+    val latestRevision: String,
     val deleteFileList: List<String>,
     val diffFileList: List<DiffFileItem>,
     val updateFileList: List<String>

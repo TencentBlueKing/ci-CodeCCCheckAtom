@@ -34,7 +34,7 @@ data class CodeccCallback(
     @JsonProperty("bs_pipeline_id")
     val pipelineId: String? = "",
     @JsonProperty("task_id")
-    val taskId: String? = "",
+    var taskId: String? = "",
     @JsonProperty("bs_build_id")
     val buildId: String? = "",
     @JsonProperty("tool_snapshot_list")
@@ -94,19 +94,19 @@ data class CodeccCallback(
 字段名 类型 描述
 start_time Long 分析开始时间
 end_time Long 分析结束时间
-latest_new_add_count Int 最近一次（本次）分析新增的告警数
-latest_closed_count Int 最近一次（本次）分析关闭的告警数
-latest_exist_count Int 最近一次（本次）分析遗留的告警数
-total_new Int 当前所有待修复告警个数
-total_close Int 当前所有已修复告警个数
-total_ignore Int 当前所有已忽略告警个数
-total_excluded Int 当前所有已屏蔽告警个数
-total_new_serious Int 待修复告警级别严重个数
-total_new_normal Int 待修复告警级别一般个数
-total_new_prompt Int 待修复告警级别提示个数
-author_list JSONArray 待修复告警作者列表
+latest_new_add_count Int 最近一次（本次）分析新增的问题数
+latest_closed_count Int 最近一次（本次）分析关闭的问题数
+latest_exist_count Int 最近一次（本次）分析遗留的问题数
+total_new Int 当前所有待修复问题个数
+total_close Int 当前所有已修复问题个数
+total_ignore Int 当前所有已忽略问题个数
+total_excluded Int 当前所有已屏蔽问题个数
+total_new_serious Int 待修复问题级别严重个数
+total_new_normal Int 待修复问题级别一般个数
+total_new_prompt Int 待修复问题级别提示个数
+author_list JSONArray 待修复问题作者列表
 tool_name_cn String 工具名称
-defect_detail_url String 工具告警详情页面url
+defect_detail_url String 工具问题详情页面url
 defect_report_url String 工具报表页面url
 result_status String 结果状态（success/failed）
 result_message String 结果描述（成功为空，失败则为具体失败原因）

@@ -1,5 +1,6 @@
 {
   "atomCode": "CodeCCCheckAtom",
+  "defaultLocaleLanguage": "zh_CN",
   "execution": {
     "packagePath": "CodeCCCheckAtom.jar",
     "language": "java",
@@ -8,15 +9,44 @@
     "target": "$bk_java_path -Dfile.encoding=utf8 -jar CodeCCCheckAtom.jar"
   },
   "input": {
+    "beAutoLang": {
+      "default": false,
+      "type": "enum-input",
+      "label": "语言",
+      "list": [
+        {
+          "value": false,
+          "label": "自主配置"
+        }
+      ],
+      "tabName": "basic",
+      "inline": true
+    },
     "languages": {
       "rule": {},
       "type": "atom-checkbox-list",
       "required": true,
-      "label": "工程语言",
+      "label": "",
       "list": [],
       "default": [],
       "desc": "不同代码语言，可选择相匹配的工具",
       "tabName": "basic"
+    },
+    "checkerSetType": {
+      "rule": {},
+      "type": "enum-input",
+      "label": "规则集",
+      "list": [
+        {
+          "value": "normal",
+          "label": "自主配置",
+          "disabled": false
+        }
+      ],
+      "default": "normal",
+      "desc": "",
+      "tabName": "basic",
+      "inline": true
     },
     "tools": {
       "rule": {},
@@ -56,7 +86,7 @@
       "required": true,
       "tabName": "async",
       "inline": true,
-      "list": {},
+      "list": [],
       "default": "",
       "rely": {},
       "desc": "可选择CodeCC服务中自建任务，也可以直接输入任务ID。ID可从CodeCC链接中获取到，例如/codecc/myproj/task/25324/中的数字。支持流水线变量。"
@@ -67,7 +97,7 @@
       "label": "GOPATH",
       "default": "",
       "required": false,
-      "desc": "可帮助工具查找依赖库代码路径，更好地扫描告警",
+      "desc": "可帮助工具查找依赖库代码路径，更好地扫描问题",
       "placeholder": "${WORKSPACE}下相对路径,多路径请用英文逗号分割,支持使用流水线变量",
       "tabName": "basic",
       "inline": true,
@@ -77,6 +107,10 @@
           {
             "key": "tools",
             "value": "GOML"
+          },
+          {
+            "key": "checkerSetType",
+            "value": "normal"
           }
         ]
       }
@@ -105,6 +139,10 @@
           {
             "key": "tools",
             "value": "PYLINT"
+          },
+          {
+            "key": "checkerSetType",
+            "value": "normal"
           }
         ]
       }
@@ -152,7 +190,7 @@
       "required": true,
       "tabName": "basic",
       "inline": true,
-      "list": {},
+      "list": [],
       "default": [],
       "rely": {
         "operation": "AND",
@@ -164,15 +202,220 @@
         ]
       }
     },
-    "multiPipelineMark": {
+    "checkerSetEnvType": {
       "rule": {},
+      "type": "rule-set-env-select",
+      "label": "版本",
+      "required": false,
+      "tabName": "basic",
+      "inline": true,
+      "list": [],
+      "default": "prod",
+      "rely": {}
+    },
+    "multiPipelineMark": {
+      "rule": {
+        "markVariable": true
+      },
       "label": "附加标识",
-      "placeholder": "默认可不填。仅支持数字、字母和下划线。",
+      "placeholder": "默认可不填。仅支持字母，数字，中划线，下划线或流水线变量",
       "type": "vuex-input",
       "default": "",
       "tabName": "basic",
       "desc": "若流水线有多个代码分析插件可用此字段区分。",
       "inline": true
+    },
+    "rtxReceiverType": {
+      "type": "selector",
+      "label": "接收人",
+      "default": "1",
+      "options": [
+        {
+          "id": "4",
+          "name": "遗留问题处理人"
+        },
+        {
+          "id": "0",
+          "name": "所有人员"
+        },
+        {
+          "id": "1",
+          "name": "仅管理员"
+        },
+        {
+          "id": "2",
+          "name": "自定义"
+        },
+        {
+          "id": "3",
+          "name": "无（不发送）"
+        }
+      ],
+      "inline": true
+    },
+    "rtxReceiverList": {
+      "type": "company-staff-input",
+      "label": "自定义接收人",
+      "default": [],
+      "rely": {
+        "operation": "AND",
+        "expression": [
+          {
+            "key": "rtxReceiverType",
+            "value": "2"
+          }
+        ]
+      },
+      "inline": true
+    },
+    "botWebhookUrl": {
+      "label": "Webhook地址",
+      "placeholder": "代码检查完成后推送Coverity、Klocwork遗留问题数至群中",
+      "type": "vuex-input",
+      "default": "",
+      "inline": true
+    },
+    "botContent": {
+      "label": "通知内容"
+    },
+    "botRemindRange": {
+      "type": "enum-input",
+      "default": "2",
+      "label": "问题",
+      "list": [
+        {
+          "value": "2",
+          "label": "新+存量问题"
+        },
+        {
+          "value": "1",
+          "label": "新问题"
+        }
+      ],
+      "innerTab": true,
+      "inline": true
+    },
+    "botRemindSeverity": {
+      "type": "selector",
+      "default": "7",
+      "options": [
+        {
+          "id": "7",
+          "name": "总问题数"
+        },
+        {
+          "id": "3",
+          "name": "严重 + 一般问题数"
+        },
+        {
+          "id": "1",
+          "name": "严重问题数"
+        }
+      ],
+      "innerTab": true,
+      "inline": true
+    },
+    "botRemaindTools": {
+      "type": "selector",
+      "default": [],
+      "label": "工具",
+      "innerTab": true,
+      "inline": true,
+      "optionsConf": {
+        "multiple": true
+      }
+    },
+    "emailReceiverType": {
+      "type": "selector",
+      "label": "接收人",
+      "default": "1",
+      "options": [
+        {
+          "id": "4",
+          "name": "遗留问题处理人"
+        },
+        {
+          "id": "0",
+          "name": "所有人员"
+        },
+        {
+          "id": "1",
+          "name": "仅管理员"
+        },
+        {
+          "id": "2",
+          "name": "自定义"
+        },
+        {
+          "id": "3",
+          "name": "无（不发送）"
+        }
+      ],
+      "inline": true
+    },
+    "emailReceiverList": {
+      "type": "company-staff-input",
+      "label": "自定义接收人",
+      "default": [],
+      "rely": {
+        "operation": "AND",
+        "expression": [
+          {
+            "key": "emailReceiverType",
+            "value": "2"
+          }
+        ]
+      },
+      "inline": true
+    },
+    "emailCCReceiverList": {
+      "type": "company-staff-input",
+      "label": "抄送人",
+      "default": [],
+      "inline": true,
+      "inputType": "all"
+    },
+    "instantReportStatus": {
+      "label": "即时报告",
+      "default": "2",
+      "type": "enum-input",
+      "inline": true,
+      "list": [
+        {
+          "value": "1",
+          "label": "启用"
+        },
+        {
+          "value": "2",
+          "label": "停用"
+        }
+      ]
+    },
+    "timerEmail": {
+      "label": "定时报告"
+    },
+    "reportDate": {
+      "default": [],
+      "label": "每周",
+      "type": "week-selector",
+      "innerTab": true,
+      "inline": true
+    },
+    "reportTime": {
+      "default": "",
+      "label": "时间",
+      "innerTab": true,
+      "inline": true
+    },
+    "reportTools": {
+      "type": "selector",
+      "default": [],
+      "label": "工具",
+      "innerTab": true,
+      "inline": true,
+      "optionsConf": {
+        "multiple": true
+      }
     },
     "toolScanType": {
       "rule": {},
@@ -181,37 +424,68 @@
       "required": true,
       "list": [
         {
-          "label": "增量扫描（推荐）",
+          "label": "快速全量扫描",
           "value": "1"
-        },
-        {
-          "label": "MR/PR扫描",
-          "value": "2"
         },
         {
           "label": "全量扫描",
           "value": "0"
+        },
+        {
+          "label": "差异扫描",
+          "value": "6"
+        },
+        {
+          "label": "MR/PR扫描",
+          "value": "2"
         }
       ],
       "default": "1",
-      "desc": "增量扫描：扫描本次构建与上次构建的差异代码。首次为全量扫描。\nMR/PR扫描：扫描MR/PR的源分支与目标分支的差异代码。源分支代码需拉取到工作空间。\n全量扫描：扫描全部代码。Klocwork、Pinpoint、Gometalinter、重复率仅支持该扫描方式。"
+      "descLinkText": "了解更多",
+      "desc": "快速全量扫描：首次会扫描全部文件。后续扫描未变更文件会复用之前的扫描结果，提升扫描速度。\n全量扫描：每次都扫描全部文件。Klocwork、Pinpoint、Gometalinter、重复率仅支持该扫描方式。\n差异扫描：扫描当前工作空间分支与对比分支的差异文件。\nMR/PR扫描：扫描MR/PR的源分支与目标分支的差异，默认为差异行，可选择差异文件。源分支代码需拉取到工作空间。MR/PR扫描不支持手动执行或流水线重试。"
     },
-    "mrCommentEnable": {
-      "label": "",
-      "default": true,
-      "type": "atom-checkbox",
-      "text": "将扫描出的问题同步到工蜂代码查看页面"
-    },
-    "newDefectJudgeFromDate": {
+    "diffBranch": {
+      "tabName": "diffbr",
+      "required": true,
+      "label": "对比分支",
+      "placeholder": "例如master, 支持流水线变量",
+      "type": "vuex-input",
       "default": "",
-      "label": "新告警判定",
-      "desc": "所选日期之后产生的告警为新告警"
+      "desc": "",
+      "inline": true
+    },
+    "byFile": {
+      "tabName": "mrpr",
+      "label": "",
+      "default": false,
+      "type": "atom-checkbox",
+      "text": "展示源分支与目标分支的差异文件的全部问题"
+    },
+    "prohibitIgnore": {
+      "tabName": "scan",
+      "rule": {},
+      "type": "radio-group",
+      "label": "禁止页面忽略问题",
+      "required": true,
+      "list": [
+        {
+          "label": "允许页面忽略",
+          "value": false
+        },
+        {
+          "label": "禁止页面忽略",
+          "value": true
+        }
+      ],
+      "default": false,
+      "descLinkText": "了解更多",
+      "desc": "禁止直接从页面忽略问题，可在代码行末或上一行使用注释忽略，例如// NOCC:rule1(ignore reason)。目前Coverity、Klocwork、Pinpoint暂不支持该功能。"
     },
     "transferAuthorList": {
       "default": [],
       "type": "author-transfer",
       "label": "处理人转换",
-      "desc": "各工具原处理人的告警都将自动转给新处理人"
+      "desc": "各工具原处理人的问题都将自动转给新处理人"
     },
     "path": {
       "default": [],
@@ -221,6 +495,12 @@
       "default": [],
       "type": "item-edit"
     },
+    "scanTestSource": {
+      "default": false,
+      "type": "atom-checkbox",
+      "disabled": false,
+      "text": "对test_source项依然进行代码规范检查"
+    },
     "openScanPrj": {
       "label": "",
       "default": false,
@@ -228,6 +508,17 @@
       "type": "atom-checkbox",
       "text": "是否是开源扫描项目",
       "desc": "选中则走开源扫描流程",
+      "required": false,
+      "disabled": false,
+      "hidden": true
+    },
+    "openScanFilterEnable": {
+      "label": "",
+      "default": false,
+      "placeholder": "",
+      "type": "atom-checkbox",
+      "text": "是否允许开源扫描设置过滤路径",
+      "desc": "选中则允许开源扫描设置过滤路径",
       "required": false,
       "disabled": false,
       "hidden": true
@@ -254,7 +545,7 @@
     "os": ["LINUX", "MACOS", "WINDOWS"],
     "labelCodes": [],
     "summary":"支持Linux、MacOS、Windows系统下执行所有CodeCC代码检查工具，包括代码缺陷（bkcheck等）、安全漏洞（敏感信息、高危组件等）、代码规范（CppLint、CheckStyle等）、圈复杂度、重复率等。",
-    "description": "${{indexFile(\"docs/aboutCodeCC.md\")}}",
+    "description": "${{indexFile(\"docs/desc.md\")}}",
     "configInfo": {
       "frontendType": "SPECIAL"
     },

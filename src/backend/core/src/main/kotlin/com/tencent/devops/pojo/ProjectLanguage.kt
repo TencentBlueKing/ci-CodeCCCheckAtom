@@ -26,7 +26,8 @@
 
 package com.tencent.devops.pojo
 
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.user.CodeCCUserException
 
 enum class ProjectLanguage(val value: String) {
     C("c"),
@@ -51,6 +52,9 @@ enum class ProjectLanguage(val value: String) {
     companion object {
         fun fromValue(value: String) =
             values().associateBy(ProjectLanguage::value)[value]
-                ?: throw CodeccUserConfigException("The project language($value) is not exist")
+                ?: throw CodeCCUserException(
+                    ErrorCode.PLUGIN_DECRYPT_ERROR,
+                    "The project language($value) is not exist"
+                )
     }
 }

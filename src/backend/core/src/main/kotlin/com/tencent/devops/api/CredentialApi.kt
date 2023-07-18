@@ -11,7 +11,7 @@ class CredentialApi : BaseApi() {
     fun get(credentialId: String, publicKey: String): Result<CredentialInfo> {
         val path = "/ms/ticket/api/build/credentials/$credentialId?publicKey=${encode(publicKey)}"
         val request = buildGet(path)
-        val responseContent = request(request, "获取凭据失败")
+        val responseContent = request(request, "Fetching credentials failed")
         return JsonUtil.to(responseContent, object : TypeReference<Result<CredentialInfo>>() {})
     }
 }

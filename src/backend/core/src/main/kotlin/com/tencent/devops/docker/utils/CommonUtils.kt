@@ -2,7 +2,8 @@ package com.tencent.devops.docker.utils
 
 import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.pojo.OSType
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.plugin.CodeCCBusinessException
 import com.tencent.devops.utils.CodeccEnvHelper
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -46,7 +47,10 @@ object CommonUtils {
                     }
                 }
                 else -> {
-                    throw CodeccUserConfigException("image name invalid: $imageNameStr")
+                    throw CodeCCBusinessException(
+                        ErrorCode.CODECC_IMAGE_NAME_INVALID,
+                        "image name invalid: $imageNameStr"
+                    )
                 }
             }
         } else if (arry.size == 3) {
@@ -55,14 +59,23 @@ object CommonUtils {
                 val tail = imageNameStr.removePrefix(str[0] + "/")
                 val nameAndTag = tail.split(":")
                 if (nameAndTag.size != 2) {
-                    throw CodeccUserConfigException("image name invalid: $imageNameStr")
+                    throw CodeCCBusinessException(
+                        ErrorCode.CODECC_IMAGE_NAME_INVALID,
+                        "image name invalid: $imageNameStr"
+                    )
                 }
                 return Triple(str[0], nameAndTag[0], nameAndTag[1])
             } else {
-                throw CodeccUserConfigException("image name invalid: $imageNameStr")
+                throw CodeCCBusinessException(
+                    ErrorCode.CODECC_IMAGE_NAME_INVALID,
+                    "image name invalid: $imageNameStr"
+                )
             }
         } else {
-            throw CodeccUserConfigException("image name invalid: $imageNameStr")
+            throw CodeCCBusinessException(
+                ErrorCode.CODECC_IMAGE_NAME_INVALID,
+                "image name invalid: $imageNameStr"
+            )
         }
     }
 
@@ -84,13 +97,20 @@ object CommonUtils {
             var tmp = path
             while (tmp.startsWith("/")) {
                 tmp = tmp.removePrefix("/")
+                tmp = tmp.replaceFirst("/", ":/")
             }
-
-            tmp = tmp.replaceFirst("/", ":/")
             LogUtils.printDebugLog("change path to $tmp")
             tmp
         } else {
             path
+        }
+    }
+
+    fun changePathToCurrentOS(path: String): String {
+        return if(CodeccEnvHelper.getOS() == OSType.WINDOWS){
+            changePathToWindows(path)
+        }else{
+            changePathToDocker(path)
         }
     }
 }

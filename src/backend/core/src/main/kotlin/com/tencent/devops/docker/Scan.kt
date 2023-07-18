@@ -5,7 +5,14 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.tencent.bk.devops.plugin.utils.JsonUtil
 import com.tencent.devops.api.CodeccSdkApi
-import com.tencent.devops.docker.pojo.*
+import com.tencent.devops.docker.pojo.AnalyzeConfigInfo
+import com.tencent.devops.docker.pojo.CommandParam
+import com.tencent.devops.docker.pojo.DefectsEntity
+import com.tencent.devops.docker.pojo.FileDefects
+import com.tencent.devops.docker.pojo.Gather
+import com.tencent.devops.docker.pojo.ScanType
+import com.tencent.devops.docker.pojo.ToolConstants
+import com.tencent.devops.docker.pojo.ToolOptions
 import com.tencent.devops.docker.scan.ToolOutputItem
 import com.tencent.devops.docker.scm.pojo.ScmDiffItem
 import com.tencent.devops.docker.tools.FileUtil
@@ -13,18 +20,22 @@ import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.docker.utils.CodeccConfig
 import com.tencent.devops.docker.utils.CodeccWeb
 import com.tencent.devops.docker.utils.CommonUtils
-import com.tencent.devops.hash.core.HashGenerateProcess
 import com.tencent.devops.pojo.LinuxCodeccConstants
+import com.tencent.devops.pojo.OSType
 import com.tencent.devops.pojo.scan.LARGE_REPORT_HEAD_HTML
 import com.tencent.devops.pojo.scan.LARGE_REPORT_TAIL_HTML
 import com.tencent.devops.pojo.scan.ScanRepo
+import com.tencent.devops.utils.CodeccEnvHelper
 import com.tencent.devops.utils.CodeccParamsHelper
-import com.tencent.devops.utils.CodeccUtils
+import com.tencent.devops.utils.I18NUtils
+import com.tencent.devops.utils.ToolUtils
 import com.tencent.devops.utils.script.ScriptUtils
 import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.exception.ExceptionUtils
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class Scan(
     private val commandParam: CommandParam,
@@ -36,89 +47,99 @@ class Scan(
 ) {
 
     // 单工具mainScan
+    @ExperimentalUnsignedTypes
     fun scan(): Boolean {
         // 生成inputFile,outputFile
         val inputFile = getToolDataPath() + File.separator + "tool_scan_input.json"
+        val ignoreFile = getToolDataPath() + File.separator + "tool_scan_ignore.json"
+        val ocHeadFile = getToolDataPath() + File.separator + "tool_scan_headfile.json"
         val outputFile = getToolDataPath() + File.separator + "tool_scan_output.json"
-
-        // 生成toolScanInput
-//        LogUtils.printLog("Generate tool scan input file: $inputFile")
-        if (!generateToolScanInput(inputFile)) {
-            LogUtils.printLog("There are not open checkers to scan!")
-            File(inputFile).writeText("{\"defects\": []")
-            return true
-        }
-        LogUtils.printLog("Generate tool scan input file success")
-        LogUtils.printLog("toolName: $toolName")
-        LogUtils.printLog("compile_tools: ${ToolConstants.COMPILE_TOOLS}")
-        if (toolName in ToolConstants.COMPILE_TOOLS) {
-            var toolFolder = "/data/codecc_software/${toolName}_scan"
-            val command = CodeccConfig.getConfig("${toolName.toUpperCase()}_SCAN_COMMAND")!!
-                .replace("##", " ")
-                .replace("{input.json}", inputFile)
-                .replace("{output.json}", outputFile)
-            LogUtils.printLog("command: $command")
-            if (toolName == ToolConstants.RESHARPER) {
-                toolFolder = CodeccConfig.getConfig("RESHARPER_HOME_BIN") ?: "C:\\data\\codecc_software\\resharper_scan"
-                CodeccUtils().downloadResharper(toolFolder)
+        try {
+            // 生成toolScanInput
+            if (!generateToolScanInput(inputFile)) {
+                LogUtils.printLog("There are not open checkers to scan!")
+                File(inputFile).writeText("{\"defects\": []")
+                return true
             }
-            if (File(toolFolder).exists()) {
-                LogUtils.printLog("enter tool folder: $toolFolder")
-                LogUtils.printLog("tool scan command: $command")
-                val constants = LinuxCodeccConstants(commandParam.projectBuildPath)
-                val python3Path = CodeccParamsHelper.getPython3Path(constants)
-                ScriptUtils.executeCodecc(script = command, dir = File(toolFolder), prefix = toolName, exportEnv = mapOf("PATH" to python3Path), printScript = true)
+            LogUtils.printLog("Generate tool scan input file success")
+            LogUtils.printLog("toolName: $toolName")
+            LogUtils.printLog("compile_tools: ${ToolConstants.COMPILE_TOOLS}")
+            if (toolName in ToolConstants.COMPILE_TOOLS) {
+                val toolFolder = commandParam.projectBuildPath + File.separator + ".temp" + File.separator + "codecc_scan" +
+                        File.separator + "codecc_agent" + File.separator + "bin" + File.separator + toolName
+                val command = CodeccConfig.getConfig("${toolName.toUpperCase()}_SCAN_COMMAND")!!
+                        .replace("##", " ")
+                        .replace("{input.json}", inputFile)
+                        .replace("{output.json}", outputFile)
+                LogUtils.printLog("command: $command")
+                if (File(toolFolder).exists()) {
+                    LogUtils.printLog("enter tool folder: $toolFolder")
+                    LogUtils.printLog("tool scan command: $command")
+                    val constants = LinuxCodeccConstants(commandParam.projectBuildPath)
+                    val python3Path = CodeccParamsHelper.getPython3Path(constants)
+                    ScriptUtils.executeCodecc(script = command, dir = File(toolFolder), prefix = toolName, exportEnv = mapOf("PATH" to python3Path), printScript = true)
+                } else {
+                    LogUtils.printLog("$toolName bin dir not exists")
+                }
             } else {
-                LogUtils.printLog("$toolName bin dir not exists")
+                val image = CodeccConfig.getImage(toolName)
+                val realCmdList = mutableListOf<String>()
+                val dockerInputFile = CommonUtils.changePathToDocker(inputFile)
+                val dockerOutputFile = CommonUtils.changePathToDocker(outputFile)
+                image.command.forEach {
+                    realCmdList.add(it.replace("{input.json}", dockerInputFile).replace("{output.json}", dockerOutputFile))
+                }
+                image.command = realCmdList
+                LogUtils.printLog(image)
+                DockerRun.runImage(image, commandParam, toolName)
             }
-        } else {
-            val image = CodeccConfig.getImage(toolName)
-            val realCmdList = mutableListOf<String>()
-            val dockerInputFile = CommonUtils.changePathToDocker(inputFile)
-            val dockerOutputFile = CommonUtils.changePathToDocker(outputFile)
-            image.command.forEach {
-                realCmdList.add(it.replace("{input.json}", dockerInputFile).replace("{output.json}", dockerOutputFile))
+
+            if (toolName == ToolConstants.RIPS && File(outputFile).exists()) {
+                skipOutputTemp(commandParam, streamName, toolName)
             }
-            image.command = realCmdList
-//            DockerRun.runCmd(image, commandParam.streamCodePath)
-            LogUtils.printLog(image)
-            DockerRun.runImage(image, commandParam, toolName)
+
+            // diff 模式过滤掉非本次变更的文件内容
+            if ((analyzeConfigInfo.scanType == ScanType.DIFF
+                            || analyzeConfigInfo.scanType == ScanType.DIFF_FILE
+                            || analyzeConfigInfo.scanType == ScanType.DIFF_BRANCH)
+                && toolName !in ToolConstants.NO_DIFF_CODE_TOOLS) {
+                LogUtils.printLog("diff tool scan output file ...")
+                diffToolScanOutput(commandParam, streamName, toolName, analyzeConfigInfo.scanType)
+                LogUtils.printLog("diff tool scan output file success...")
+            }
+        } catch (e: Throwable) {
+            LogUtils.printErrorLog("scan exception: $e ${ExceptionUtils.getStackTrace(e)}")
+            return false
         }
 
-        if (toolName == ToolConstants.RIPS && File(outputFile).exists()){
-            skipOutputTemp(commandParam, streamName, toolName)
+        if (toolName == ToolConstants.SCC) {
+            LogUtils.printLog("scc tool name to read ignore defect info, ignore file: $ignoreFile")
+            IgnoreDefectParser.getIgnoreDefectInfo(ignoreFile, analyzeConfigInfo.taskId, commandParam, streamName)
+            OCHeaderFileParser.getOcHeadFileInfo(ocHeadFile, analyzeConfigInfo.taskId, commandParam, streamName)
         }
-
-        // diff 模式过滤掉非本次变更的文件内容
-        if (analyzeConfigInfo.scanType == ScanType.DIFF && toolName !in ToolConstants.CODE_TOOLS_ACOUNT) {
-            LogUtils.printLog("diff tool scan output file ...")
-            diffToolScanOutput(commandParam, streamName, toolName)
-            LogUtils.printLog("diff tool scan output file success...")
-        }
-
+        val newDefectProcessor = commandParam.extraPrams["newDefectProcessor"] ?: "true"
         // hashOutPut
         return if (File(outputFile).exists()) {
-//            CodeccWeb.upload(landunParam = commandParam.landunParam,
-//                    filePath = outputFile,
-//                    resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_tool_scan_output.json",
-//                    uploadType = "SCM_JSON",
-//                    toolName = toolName)
             LogUtils.printLog("scan success, pp hash output file")
-            if (toolName != "githubstatistic"  && toolName !in ToolConstants.CODE_TOOLS_ACOUNT) {
-                newHashOutput(toolName)
-//                CodeccWeb.upload(landunParam = commandParam.landunParam,
-//                        filePath = outputFile,
-//                        resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_tool_scan_output_hash.json",
-//                        uploadType = "SCM_JSON",
-//                        toolName = toolName)
+            if (toolName != "githubstatistic") {
+                if(newDefectProcessor.toBoolean()) {
+                    processToolOutputDefects()
+                } else {
+                    if (toolName !in ToolConstants.CODE_TOOLS_ACOUNT) {
+                        hashOutput()
+                    }
+                }
             }
             LogUtils.printLog("pp hash output file success, update language")
             updateLanguage()
             LogUtils.printLog("updateLanguage success, gather the defects")
             LogUtils.printLog("gather the defects success, upload outputFile")
-//            CodeccWeb.upload(commandParam.landunParam, outputFile, streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_tool_scan.json", "SCM_JSON")
             if (toolName !in ToolConstants.NOLINT_TOOLS) {
-                val newOutputFile = outputFormatUpdate()
+                val newOutputFile = if(newDefectProcessor.toBoolean()) {
+                    getToolDataPath() + File.separator + "tool_scan_output_file.json"
+                } else {
+                    outputFormatUpdate()
+                }
                 LogUtils.printLog("gather the defects success, upload new outputFile")
                 CodeccWeb.upload(landunParam = commandParam.landunParam,
                     filePath = newOutputFile,
@@ -151,7 +172,7 @@ class Scan(
                     CodeccWeb.upload(
                         landunParam = commandParam.landunParam,
                         filePath = zipResultFile,
-                        resultName = streamName + "_" + toolName.toUpperCase() + "_failed_result.zip",
+                        resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_failed_result.zip",
                         uploadType = "FAIL_RESULT",
                         toolName = toolName)
                 }
@@ -178,7 +199,8 @@ class Scan(
         outputFile.writeText(JsonUtil.getObjectMapper().writeValueAsString(newOutputFileMap))
     }
 
-    private fun diffToolScanOutput(commandParam: CommandParam, streamName: String, toolName: String) {
+    private fun diffToolScanOutput(
+        commandParam: CommandParam, streamName: String, toolName: String, scanType: ScanType) {
         val outputFile = File(ScanComposer.generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "tool_scan_output.json")
         val diffOutputFile = File(ScanComposer.generateToolDataPath(commandParam.dataRootPath, streamName, toolName) + File.separator + "git_branch_diff_output.json")
         if (!outputFile.exists() || !diffOutputFile.exists()) return
@@ -195,22 +217,31 @@ class Scan(
         val outputFileList = JsonUtil.getObjectMapper().readValue<ToolOutputItem>(outputFile.readText()).defects
 
         // 过滤没用的文件
-        val filterOutputFileList = if (toolName.equals(ToolConstants.CCN, true)) {
-            outputFileList.filter { outputEntity ->
-                val startLine = outputEntity.startLine!!.toInt()
-                val endLine = outputEntity.endLine!!.toInt()
-                val diffFileLines = diffFileMap[File(outputEntity.filePath!!).canonicalPath] ?: mutableSetOf()
-                diffFileLines.forEach {
-                    if (it in startLine..endLine) return@filter true
+        val filterOutputFileList = if (scanType == ScanType.DIFF) {
+            if (toolName.equals(ToolConstants.CCN, true)) {
+                outputFileList.filter { outputEntity ->
+                    val startLine = outputEntity.startLine!!.toInt()
+                    val endLine = outputEntity.endLine!!.toInt()
+                    val diffFileLines =
+                        diffFileMap[File(outputEntity.filePath!!).canonicalPath] ?: mutableSetOf()
+                    diffFileLines.forEach {
+                        if (it in startLine..endLine) return@filter true
+                    }
+                    return@filter false
                 }
-                return@filter false
+            } else {
+                outputFileList.filter { outputEntity ->
+                    val diffFileLines = diffFileMap[File(outputEntity.filePath!!).canonicalPath] ?: mutableSetOf()
+                    LogUtils.printDebugLog(outputEntity.filePath + " " + outputEntity.line + " " + diffFileLines + " " + diffFileLines.contains(outputEntity.line!!.toLong()))
+                    diffFileLines.contains(outputEntity.line!!.toLong())
+                }
             }
         } else {
             outputFileList.filter { outputEntity ->
-                val diffFileLines = diffFileMap[File(outputEntity.filePath!!).canonicalPath] ?: mutableSetOf()
-                diffFileLines.contains(outputEntity.line!!.toLong())
+                diffFileMap[File(outputEntity.filePath!!).canonicalPath] != null
             }
         }
+
 
         val noDiffOutputFile = File(outputFile.parent, "tool_scan_output_no_diff.json")
         noDiffOutputFile.writeText(outputFile.readText())
@@ -261,9 +292,17 @@ class Scan(
                                 checkerName = defect.checkerName,
                                 description = defect.description,
                                 line = defect.line,
-                                pinpointHash = defect.pinpointHash))
+                                pinpointHash = defect.pinpointHash,
+                                language =  defect.language,
+                                langValue = defect.langValue))
                         } else {
-                            filesMap[filePath] = mutableListOf(defect)
+                            filesMap[filePath] = mutableListOf(DefectsEntity(
+                                checkerName = defect.checkerName,
+                                description = defect.description,
+                                line = defect.line,
+                                pinpointHash = defect.pinpointHash,
+                                language =  defect.language,
+                                langValue = defect.langValue))
                         }
                     }
                 }
@@ -290,22 +329,30 @@ class Scan(
                     defects.forEachIndexed { _, it ->
                         val defectStr = jacksonObjectMapper().writeValueAsString(it)
                         val defect = JsonUtil.to(defectStr, object : TypeReference<DefectsEntity>() {})
-                        val filePath = defect.filePath ?: (defect.file_path ?: (defect.filePathname ?: (defect.filename
+                        var filePath = defect.filePath ?: (defect.file_path ?: (defect.filePathname ?: (defect.filename
                             ?: "")))
-
+                        when (CodeccEnvHelper.getOS()) {
+                            OSType.WINDOWS -> {
+                                filePath = CommonUtils.changePathToWindows(filePath)
+                            }
+                        }
                         if (null != filesMap[filePath]) {
                             val fileDefectsList = filesMap[filePath] as MutableList<DefectsEntity>
                             fileDefectsList.add(DefectsEntity(
                                 checkerName = defect.checkerName,
                                 description = defect.description,
                                 line = defect.line,
-                                pinpointHash = defect.pinpointHash))
+                                pinpointHash = defect.pinpointHash,
+                                language =  defect.language,
+                                langValue = defect.langValue))
                         } else {
                             filesMap[filePath] = mutableListOf(DefectsEntity(
                                 checkerName = defect.checkerName,
                                 description = defect.description,
                                 line = defect.line,
-                                pinpointHash = defect.pinpointHash))
+                                pinpointHash = defect.pinpointHash,
+                                language =  defect.language,
+                                langValue = defect.langValue))
                         }
                     }
                 }
@@ -341,7 +388,7 @@ class Scan(
                     }
                 }
                 val newOutputFileText = jacksonObjectMapper().writeValueAsString(fileDefects)
-                File(newOutputFile).writeText(newOutputFileText)
+                File(newOutputFile).bufferedWriter().use { out -> out.write(newOutputFileText) }
             }
         } catch (e: Throwable) {
             LogUtils.printLog("Format defects exception: ${e.message}")
@@ -350,42 +397,15 @@ class Scan(
 
     private fun updateLanguage() {
         val param = LocalParam.param.get()
-        if (toolName in ToolConstants.CODE_TOOLS_ACOUNT && param?.openScanPrj == true) {
+        if (toolName == "scc" && param?.openScanPrj == true) {
             LogUtils.printLog("Tool is code tool acount update language.")
-            val outputFile = File(getToolDataPath() + File.separator + "tool_scan_output.json")
-            if (outputFile.exists()) {
-                LogUtils.printLog("outputFile exist: $outputFile")
-                val outputData = JsonUtil.to(outputFile.readText(), object : TypeReference<Map<String, Any>>() {})
-                val defects = outputData["defects"]
-                if (defects is List<*>) {
-                    LogUtils.printLog("defects is list, size: ${defects.size}")
-                    val languageSet = mutableSetOf<String>()
-                    defects.forEachIndexed { _, it ->
-                        val defectStr = jacksonObjectMapper().writeValueAsString(it)
-                        val defect = JsonUtil.to(defectStr, object : TypeReference<DefectsEntity>() {})
-                        if (defect.language != null) {
-                            languageSet.add(defect.language)
-                        }
-                    }
-                    LogUtils.printLog("languageSet size: ${languageSet.size}")
-                    if (languageSet.isNotEmpty()) {
-                        param.languages = jacksonObjectMapper().writeValueAsString(languageSet.toList())
-                        LogUtils.printLog("update language to ${param.languages}")
-                        CodeccSdkApi.updateTask(param, param.openScanPrj)
-                    }
-                }
+            val languageSet = ToolUtils.getClocLangSet(toolName, streamName, commandParam.dataRootPath).second
+            LogUtils.printLog("languageSet size: ${languageSet.size}")
+            if (languageSet.isNotEmpty()) {
+                param.languages = jacksonObjectMapper().writeValueAsString(languageSet.toList())
+                LogUtils.printLog("update language to ${param.languages}")
+                CodeccSdkApi.updateTask(param, param.openScanPrj)
             }
-        }
-    }
-
-    @ExperimentalUnsignedTypes
-    private fun newHashOutput(toolName: String){
-        val inputFile = getToolDataPath() + File.separator + "tool_scan_output.json"
-        val outputFile = getToolDataPath() + File.separator + "tool_scan_output_hash.json"
-        if (toolName == ToolConstants.CCN) {
-            HashGenerateProcess.hashCCNMethod(inputFile, outputFile)
-        } else if(toolName !in ToolConstants.NOLINT_TOOLS) {
-            HashGenerateProcess.hashMethod(5, inputFile, outputFile)
         }
     }
 
@@ -415,6 +435,40 @@ class Scan(
             outFile.copyTo(inFile, true)
 
             LogUtils.printLog("copy success")
+        }
+    }
+
+
+    @ExperimentalUnsignedTypes
+    private fun processToolOutputDefects() {
+        val inputFile = getToolDataPath() + File.separator + "tool_scan_output.json"
+        when (toolName) {
+            ToolConstants.CCN -> {
+                CCNDefectProcessor.generateCCNListDefect(
+                    inputFileName = inputFile,
+                    commandParam = commandParam,
+                    toolName = toolName,
+                    streamName = streamName
+                )
+//            HashGenerateProcess.hashCCNMethod(inputFile, outputFile)
+            }
+            !in ToolConstants.NOLINT_TOOLS -> {
+                LintDefectProcessor.generateLintDefectList(
+                    inputFileName = inputFile,
+                    commandParam = commandParam,
+                    toolName = toolName,
+                    streamName = streamName
+                )
+//            HashGenerateProcess.hashMethod(5, inputFile, outputFile)
+            }
+            else -> {
+                CommonDefectProcessor.generateLintDefectList(
+                    inputFileName = inputFile,
+                    commandParam = commandParam,
+                    toolName = toolName,
+                    streamName = streamName
+                )
+            }
         }
     }
 
@@ -486,7 +540,7 @@ class Scan(
                     && toolName == ToolConstants.COVERITY){
                 //添加过滤条件，对于oteam项目，并且配置了ci.yml的，需要放开编译型语言
                 if(!(null != System.getenv("OTeam") && System.getenv("OTeam") == "true")){
-                    println("non-oteam-ci opensource project need to remove compiled language")
+                    LogUtils.printStr("non-oteam-ci opensource project need to remove compiled language")
                     //C#
                     if((inputLanguage and 1L) > 0){
                         inputLanguage -= 1L
@@ -535,17 +589,40 @@ class Scan(
                         }
                     }
                 } else {
-                    val subWhitePathList = traverseWhitePath(whitePath)
-                    whitePathList?.let { list1 -> subWhitePathList?.let(list1::addAll) }
+                    if (File(inputData["scanPath"].toString() + whitePath).exists()){
+                        whitePathList.add(inputData["scanPath"].toString() + whitePath)
+                    }else{
+                        val subWhitePathList = traverseWhitePath(whitePath)
+                        whitePathList?.let { list1 -> subWhitePathList?.let(list1::addAll) }
+                    }
                 }
             }
         }
 
-        LogUtils.printDebugLog("set input data white path param: ${commandParam.repoRelPathMap}")
-        if (whitePathList.size == 0 && commandParam.repoRelPathMap.filterNot { it.key.isBlank() }.isNotEmpty() && !ToolConstants.COMPILE_TOOLS.contains(toolName)) {
-            commandParam.repoRelPathMap.forEach { repoRelPath ->
-                val codePath = CommonUtils.changePathToDocker(commandParam.landunParam.streamCodePath + File.separator + repoRelPath.value)
-                whitePathList.add(codePath)
+        if (whitePathList.size == 0 && commandParam.repos.filterNot { it.relPath.isBlank() }.isNotEmpty() && !ToolConstants.COMPILE_TOOLS.contains(toolName)) {
+            commandParam.repos.forEach { repo ->
+                val relPath = when {
+                    repo.relPath.startsWith("./") -> {
+                        repo.relPath.substring(2)
+                    }
+                    repo.relPath.startsWith("/") -> {
+                        repo.relPath.substring(1)
+                    }
+                    else -> {
+                        repo.relPath
+                    }
+                }
+                val codePath = CommonUtils.changePathToDocker(commandParam.landunParam.streamCodePath + File.separator + relPath)
+                var isAddToWhite = true
+                whitePathList.forEach { path ->
+                    if (path.contains(codePath)) {
+                        isAddToWhite = false;
+                        return@forEach
+                    }
+                }
+                if (isAddToWhite) {
+                    whitePathList.add(codePath)
+                }
             }
         }
 
@@ -646,9 +723,20 @@ class Scan(
             } else {
                 analyzeConfigInfo.toolOptions.plus(option)
             }
-            val toolConfigPlatform = CodeccWeb.getSpecConfig(commandParam.landunParam, analyzeConfigInfo.taskId)
+            val toolConfigPlatform = CodeccWeb.getSpecConfig(commandParam.landunParam, analyzeConfigInfo.taskId, toolName.toUpperCase())
             if (!toolConfigPlatform.specConfig.isNullOrBlank()) {
                 inputData["specConfig"] = toolConfigPlatform.specConfig!!
+            }
+        }
+        if (toolName == ToolConstants.PVS) {
+            val option = ToolOptions(
+                optionName = "subPath",
+                optionValue = commandParam.pvsHomeBin
+            )
+            inputData["toolOptions"] = if (analyzeConfigInfo.toolOptions == null) {
+                listOf(option)
+            } else {
+                analyzeConfigInfo.toolOptions.plus(option)
             }
         }
         if (toolName == ToolConstants.KLOCWORK) {
@@ -661,6 +749,10 @@ class Scan(
             } else {
                 analyzeConfigInfo.toolOptions.plus(option)
             }
+            val toolConfigPlatform = CodeccWeb.getSpecConfig(commandParam.landunParam, analyzeConfigInfo.taskId, toolName.toUpperCase())
+            if (!toolConfigPlatform.specConfig.isNullOrBlank()) {
+                inputData["specConfig"] = toolConfigPlatform.specConfig!!
+            }
         }
 
         inputData["scanType"] = if (ScanType.FULL.name == analyzeConfigInfo.scanType.name.toUpperCase()) {
@@ -669,10 +761,6 @@ class Scan(
             ScanType.INCREMENT.name.toLowerCase()
         }
         var skipPathList = mutableSetOf<String>()
-        if (CodeccConfig.getConfig("SKIP_ITEMS") != null) {
-            LogUtils.printLog("SKIP_ITEMS value is: ${CodeccConfig.getConfig("SKIP_ITEMS")}")
-            skipPathList.addAll(CodeccConfig.getConfig("SKIP_ITEMS")!!.split(";").toList())
-        }
         if (analyzeConfigInfo.skipPaths != null) {
             val skipList = mutableSetOf<String>()
             analyzeConfigInfo.skipPaths!!.split(";").toList().forEach { subskipPath ->
@@ -756,9 +844,13 @@ class Scan(
         }
 
         // add repo info
-        inputData["repos"] = CodeccParamsHelper.transferStrToMap(commandParam.repoUrlMap).map {
-            ScanRepo(it.value, commandParam.scmType)
+        inputData["repos"] = commandParam.repos.map{
+            ScanRepo(it.url, commandParam.scmType)
         }
+
+        inputData["commitSince"] = analyzeConfigInfo.commitSince
+        inputData["codeccWorkspacePath"] = commandParam.codeccWorkspacePath
+        inputData["languageTag"] = I18NUtils.getLanguageTag()
 
         val inputFileText = jacksonObjectMapper().writeValueAsString(inputData)
         File(inputFile).writeText(inputFileText)
@@ -784,35 +876,84 @@ class Scan(
         val fileCount = largeFileDefects.size
         val totalDefectCount = largeFileDefects.sumBy { it.defects!!.size }
 
-        System.err.println("[${LocalParam.toolName.get()}] 共 $fileCount 个文件告警数超过阈值${commandParam.gatherDefectThreshold}，已经将这些文件共 $totalDefectCount 个问题收敛归档。可前往CodeCC工具分析记录下载文件查看详情")
+        LogUtils.printErrorLog(" A total of $fileCount defect files, the threshold ${commandParam
+            .gatherDefectThreshold} has been exceeded, these files have been converged and archived for a total of " +
+            "$totalDefectCount defects. You can go to the CodeCC tool analysis record download file to view details")
+
         val curTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
         val detailFile = File(commandParam.dataRootPath + File.separator + "codecc_defect_detail.html")
         val indexHtmlBody = StringBuilder()
-        indexHtmlBody.append(LARGE_REPORT_HEAD_HTML)
-        indexHtmlBody.append("<span>共 $fileCount 个文件， $totalDefectCount 个问题</span> - 生成于 $curTime")
-        indexHtmlBody.append("</div>\n" +
-            "    </div>\n" +
-            "    <table>\n" +
-            "        <tbody>")
-        var fileNo = 0
-        largeFileDefects.forEach {
-            val fileDefectCount = if (it.defects == null) 0 else it.defects.size
-            indexHtmlBody.append("<tr class=\"bg-2\" data-group=\"f-${fileNo}\">\n" +
-                "                <th colspan=\"4\">\n" +
-                "                    [+] ${it.file}\n" +
-                "                    <span>$fileDefectCount 个问题</span>\n" +
-                "                </th>\n" +
-                "            </tr>\n")
-            if (it.defects != null && it.defects.isNotEmpty()) {
-                it.defects.forEach { defect ->
-                    indexHtmlBody.append("<tr style=\"display:none\" class=\"f-${fileNo}\">\n" +
-                        "                <td>${defect.line ?: ""}</td>\n" +
-                        "                <td class=\"clr-2\">${defect.checkerName ?: ""}</td>\n" +
-                        "                <td>${defect.description ?: ""}</td>\n" +
-                        "            </tr>")
+
+        val baseHtml = LARGE_REPORT_HEAD_HTML.replace("large.report.head.html.title",
+            I18NUtils.getMessage("large.report.head.html.title")).replace("large.report.head.html.h1",
+            I18NUtils.getMessage("large.report.head.html.h1"))
+
+        indexHtmlBody.append(baseHtml)
+        if (I18NUtils.currentLanguageIsZhCN()) {
+            indexHtmlBody.append("<span>共 $fileCount 个文件， $totalDefectCount 个问题</span> - 生成于 $curTime")
+            indexHtmlBody.append(
+                "</div>\n" +
+                    "    </div>\n" +
+                    "    <table>\n" +
+                    "        <tbody>"
+            )
+            var fileNo = 0
+            largeFileDefects.forEach {
+                val fileDefectCount = if (it.defects == null) 0 else it.defects.size
+                indexHtmlBody.append(
+                    "<tr class=\"bg-2\" data-group=\"f-${fileNo}\">\n" +
+                        "                <th colspan=\"4\">\n" +
+                        "                    [+] ${it.file}\n" +
+                        "                    <span>$fileDefectCount 个问题</span>\n" +
+                        "                </th>\n" +
+                        "            </tr>\n"
+                )
+                if (it.defects != null && it.defects.isNotEmpty()) {
+                    it.defects.forEach { defect ->
+                        indexHtmlBody.append(
+                            "<tr style=\"display:none\" class=\"f-${fileNo}\">\n" +
+                                "                <td>${defect.line ?: ""}</td>\n" +
+                                "                <td class=\"clr-2\">${defect.checkerName ?: ""}</td>\n" +
+                                "                <td>${defect.description ?: ""}</td>\n" +
+                                "            </tr>"
+                        )
+                    }
                 }
+                fileNo++
             }
-            fileNo++
+        } else {
+            indexHtmlBody.append("<span>Total $fileCount files， $totalDefectCount defects</span> - Generated" +
+                " on $curTime")
+            indexHtmlBody.append(
+                "</div>\n" +
+                    "    </div>\n" +
+                    "    <table>\n" +
+                    "        <tbody>"
+            )
+            var fileNo = 0
+            largeFileDefects.forEach {
+                val fileDefectCount = if (it.defects == null) 0 else it.defects.size
+                indexHtmlBody.append(
+                    "<tr class=\"bg-2\" data-group=\"f-${fileNo}\">\n" +
+                        "                <th colspan=\"4\">\n" +
+                        "                    [+] ${it.file}\n" +
+                        "                    <span>$fileDefectCount Issues</span>\n" +
+                        "                </th>\n" +
+                        "            </tr>\n"
+                )
+                if (it.defects != null && it.defects.isNotEmpty()) {
+                    it.defects.forEach { defect ->
+                        indexHtmlBody.append(
+                            "<tr style=\"display:none\" class=\"f-${fileNo}\">\n" +
+                                "                <td>${defect.line ?: ""}</td>\n" +
+                                "                <td class=\"clr-2\">${defect.checkerName ?: ""}</td>\n" +
+                                "                <td>${defect.description ?: ""}</td>\n" +
+                                "            </tr>"
+                        )
+                    }
+                }
+                fileNo++
+            }
         }
         indexHtmlBody.append(LARGE_REPORT_TAIL_HTML)
         detailFile.writeText(indexHtmlBody.toString())

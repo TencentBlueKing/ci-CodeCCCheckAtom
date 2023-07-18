@@ -13,7 +13,7 @@ data class ScmInfoItem(
     val commitID: String?,
     val scmType: String?,
     val url: String,
-    val rootUrl: String?,
+    val rootUrl: String? = "",
     val subModules: List<SubModule>?,
     var repoId: String?,
     var taskId: String?,
@@ -23,5 +23,6 @@ data class ScmInfoItem(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SubModule(
         val subModule: String?,
-        val url: String?
+        val url: String?,
+        val commitId: String?
 )

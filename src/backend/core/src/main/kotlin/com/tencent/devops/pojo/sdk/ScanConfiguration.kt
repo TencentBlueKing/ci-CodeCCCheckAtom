@@ -31,7 +31,9 @@ data class ScanConfiguration(
     val timeAnalysisConfig: TimeAnalysisConfig?,
     val transferAuthorList: List<TransferAuthorPair>?,
     val newDefectJudge: NewDefectJudge,
-    val mrCommentEnable: Boolean?
+    val mrCommentEnable: Boolean?,
+    val prohibitIgnore: Boolean?,
+    val compileCommand: String?
 ) {
     data class NewDefectJudge(
         val fromDate: String?,

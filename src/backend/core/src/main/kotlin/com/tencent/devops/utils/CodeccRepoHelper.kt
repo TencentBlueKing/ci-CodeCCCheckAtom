@@ -27,9 +27,12 @@
 package com.tencent.devops.utils
 
 import com.tencent.devops.api.PipelineTaskResourceApi
+import com.tencent.devops.docker.tools.LogUtils
 import com.tencent.devops.pojo.CodeccExecuteConfig
-import com.tencent.devops.pojo.exception.CodeccDependentException
-import com.tencent.devops.pojo.exception.CodeccUserConfigException
+import com.tencent.devops.pojo.exception.ErrorCode
+import com.tencent.devops.pojo.exception.third.ThirdParty
+import com.tencent.devops.pojo.exception.third.ThirdPartyException
+import com.tencent.devops.pojo.exception.user.CodeCCUserException
 import com.tencent.devops.pojo.process.PipelineBuildTaskInfo
 import com.tencent.devops.pojo.repo.CodeGitRepository
 import com.tencent.devops.pojo.repo.CodeGitlabRepository
@@ -55,7 +58,13 @@ object CodeccRepoHelper {
 
     fun getCodeccRepos(variables: Map<String, String>): List<CodeccExecuteConfig.RepoItem> {
         val repoItemList = mutableSetOf<CodeccExecuteConfig.RepoItem>()
-        val buildTasks = pipelineBuildTaskApi.getAllBuildTask().data ?: throw CodeccDependentException("get build task fail")
+        val buildTasks = pipelineBuildTaskApi.getAllBuildTask().data
+            ?: throw ThirdPartyException(
+                ErrorCode.THIRD_REQUEST_FAIL,
+                "get build task fail",
+                emptyArray(),
+                ThirdParty.BK_CI
+            )
 
         val containerId = variables["BK_CI_BUILD_JOB_ID"]
 
@@ -92,14 +101,19 @@ object CodeccRepoHelper {
                     )
                 }
                 else -> {
-                    throw CodeccUserConfigException("get codecc task fail with repo type: ${it.taskType}", "")
+                    throw CodeCCUserException(
+                        ErrorCode.USER_REPO_TYPE_UNKNOWN,
+                        "get codecc task fail with repo type: ${it.taskType}"
+                    )
                 }
             }
             repoItemList.add(item)
         }
 
         // 新的拉代码插件接入模式
-        val newRepoTaskIds = variables.filter { it.key.contains("bk_repo_taskId_") }.values
+        val newRepoTaskIds = variables.filter {
+            it.key.contains("bk_repo_taskId_")
+        }.values
         newRepoTaskIds.filter { taskId ->
             val repoContainerId = getEndWithValue(variables, "bk_repo_container_id_$taskId")
             repoContainerId.isNullOrBlank() || repoContainerId == containerId
@@ -108,19 +122,39 @@ object CodeccRepoHelper {
             val repoType = getEndWithValue(variables, "bk_repo_type_$taskId") ?: ""
             val localPath = getEndWithValue(variables, "bk_repo_local_path_$taskId") ?: ""
             val relativePath = getEndWithValue(variables, "bk_repo_code_path_$taskId") ?: ""
+            val gitRelativePath = getEndWithValue(variables, "bk_repo_include_path_$taskId") ?: ""
+            val perforceTicketId = getEndWithValue(variables, "bk_repo_ticket_id_$taskId") ?: ""
+            val perforceDepotUrl = getEndWithValue(variables, "bk_repo_depot_port_$taskId") ?: ""
+            val perforceStream = getEndWithValue(variables, "bk_repo_depot_stream_$taskId") ?: ""
+            val perforceCharset = getEndWithValue(variables, "bk_repo_depot_p4_charset_$taskId") ?: ""
+            val perforceClientName = getEndWithValue(variables, "bk_repo_p4_client_name_$taskId") ?: ""
 
             val item = if (repoConfigType.isNullOrBlank()) {
-                val url = getEndWithValue(variables, "bk_repo_code_url_$taskId")!!
-                val authType = getEndWithValue(variables, "bk_repo_auth_type_$taskId")!!
-                CodeccExecuteConfig.RepoItem(
-                    repositoryConfig = buildConfig(url, RepositoryType.URL),
-                    type = repoType,
-                    relPath = localPath,
-                    relativePath = relativePath,
-                    url = url,
-                    authType = authType,
-                    repoHashId = taskId
-                )
+                val url = getEndWithValue(variables, "bk_repo_code_url_$taskId") ?: ""
+                val authType = getEndWithValue(variables, "bk_repo_auth_type_$taskId") ?: ""
+
+                if (repoType != "perforce") {
+                    CodeccExecuteConfig.RepoItem(
+                        repositoryConfig = buildConfig(url, RepositoryType.URL),
+                        type = repoType,
+                        relPath = localPath,
+                        relativePath = if (relativePath.isNullOrBlank()) gitRelativePath else relativePath,
+                        url = url,
+                        authType = authType,
+                        repoHashId = taskId
+                    )
+                } else {
+                    CodeccExecuteConfig.RepoItem(
+                        type = repoType,
+                        relPath = localPath,
+                        perforceTicketId = perforceTicketId,
+                        perforceDepotUrl = perforceDepotUrl,
+                        perforceStream = perforceStream,
+                        perforceCharset = perforceCharset,
+                        perforceClientName = perforceClientName,
+                        repositoryConfig = null
+                    )
+                }
             } else {
                 val value = if (repoConfigType == RepositoryType.ID.name) {
                     getEndWithValue(variables, "bk_repo_hashId_$taskId")
@@ -131,7 +165,7 @@ object CodeccRepoHelper {
                     repositoryConfig = buildConfig(value!!, RepositoryType.valueOf(repoConfigType!!)),
                     type = repoType,
                     relPath = localPath,
-                    relativePath = relativePath
+                    relativePath = if (relativePath.isNullOrBlank()) gitRelativePath else relativePath
                 )
             }
             repoItemList.add(item)
@@ -166,12 +200,13 @@ object CodeccRepoHelper {
                 }
             }
             it
-        }
+        }.toMutableList()
 
         if (newRepoItemList.isEmpty()) {
-            System.err.println("repo list is empty...")
+            LogUtils.printErrorLog("repo list is empty...")
         }
 
+        LogUtils.printLog("new RepoItemList is: $newRepoItemList")
         return newRepoItemList
     }
 
@@ -202,7 +237,10 @@ object CodeccRepoHelper {
                     task.getTaskParam("repositoryName"),
                     RepositoryType.parseType(task.getTaskParam("repositoryType"))
                 )
-            else -> throw CodeccUserConfigException("Unknown code element -> ${task.taskType}", "")
+            else -> throw CodeCCUserException(
+                ErrorCode.USER_REPO_TYPE_UNKNOWN,
+                "Unknown code element -> ${task.taskType}"
+            )
         }
     }
 
