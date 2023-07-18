@@ -156,12 +156,11 @@ allprojects {
         archiveName "CodeCCCheckAtom_en.zip"
     }
 
-//    task buildAndCopyZip(type: Copy, dependsOn: [buildZipCn, buildZipEn]) {
-//        from "build/distributions"
-//        into "build/distributions"
-//    }
+    task buildAndCopyZip(type: Copy, dependsOn: [buildZipWithEn]) {
 
-    check.dependsOn ktlint
+    }
+
+//    check.dependsOn ktlint
 
     // 固定入口类 不要改
     mainClassName = "com.tencent.bk.devops.atom.AtomRunner"
