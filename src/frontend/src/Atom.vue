@@ -42,7 +42,6 @@
                 </template>
             </bk-tab>
         </div>
-        <bk-button @click="handleToggleLang">国际化</bk-button>
     </section>
 </template>
 
