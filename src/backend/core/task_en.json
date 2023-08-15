@@ -543,7 +543,7 @@
     "jobType": "AGENT",
     "os": ["LINUX", "MACOS", "WINDOWS"],
     "labelCodes": [],
-    "summary":"Support all CodeCC code inspection tools under Linux, MacOS, and Windows systems, including code defects (bkcheck, etc.), security vulnerabilities (sensitive information, high-risk components, etc.), code specifications (CppLint, CheckStyle, etc.), cyclomatic complexity, repetition rate, etc. .",
+    "summary":"Support all CodeCC code-check tools, including code defects (bkcheck, etc.), security vulnerabilities (sensitive infomation, etc.), code style (CppLint, etc.), ccn, duplicated rate, etc. .",
     "description": "${{indexFile(\"docs/desc_en.md\")}}",
     "configInfo": {
       "frontendType": "SPECIAL"
