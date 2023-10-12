@@ -20,6 +20,7 @@
                     v-bind="obj" 
                     v-validate.initial="Object.assign({}, obj.rule, { required: !!obj.required })">
                 </component>
+                <a v-if="key === 'asyncTask'" :href="linkUrl" target="_blank" class="codecc-link">{{$t('前往CodeCC')}}</a>
             </form-field>
         </template>
         <div class="container-arrow" :class="{'arrow-right': atomValue.asyncTask}"></div>
@@ -29,17 +30,17 @@
                 <bk-tab-panel
                     v-for="(panel, index) in panels"
                     v-bind="panel"
-                    :key="index"
-                >
+                    render-directive="if"
+                    :key="index">
                     <span slot="label" @click="handleRedPoint(panel.name)">
                         <span>{{panel.label}}</span>
                         <i v-if="tabRedTips[panel.name]" class="red-point"></i>
                     </span>
                     <component :is="panel.name" :atom-props-model="atomModel" :atom-props-value="atomValue" :atom-props-container-info="containerInfo"></component>
                 </bk-tab-panel>
-                <template slot="setting">
-                    <a :href="linkUrl" target="_blank" class="codecc-link">{{ $t('前往CodeCC') }}</a>
-                </template>
+                <!-- <template slot="setting">
+                    <a :href="linkUrl" target="_blank" class="codecc-link">前往CodeCC</a>
+                </template> -->
             </bk-tab>
         </div>
     </section>
@@ -49,36 +50,53 @@
     import { atomMixin }from 'bkci-atom-components'
     import { getQueryParams } from '@/utils/util'
     import Basic from '@/components/Basic'
+    import Report from '@/components/Report'
     import Scan from '@/components/Scan'
+    import Issue from '@/components/Issue'
     import Shield from '@/components/Shield'
     import Async from '@/components/Async'
-    import { toggleLang } from './i18n'
+    import DEPLOY_ENV from '@/constants/env';
 
     export default {
         name: 'atom',
         mixins: [atomMixin],
         components: {
             Basic,
+            Report,
             Scan,
+            Issue,
             Shield,
             Async
         },
         data () {
+            const panels = (DEPLOY_ENV === 'tencent' 
+            ? [
+                { name: 'basic', label: this.$t('基础设置') },
+                { name: 'report', label: this.$t('通知报告') },
+                { name: 'issue', label: this.$t('问题提单') },
+                { name: 'scan', label: this.$t('扫描配置') },
+                { name: 'shield', label: this.$t('路径屏蔽') }
+              ]
+            : [
+                { name: 'basic', label: this.$t('基础设置') },
+                { name: 'scan', label: this.$t('扫描配置') },
+                { name: 'shield', label: this.$t('路径屏蔽') }
+              ]
+            )
             return {
-                panels: [
-                    { name: 'basic', label: this.$t('基础设置') },
-                    { name: 'scan', label: this.$t('扫描配置') },
-                    { name: 'shield', label: this.$t('路径屏蔽') }
-                ],
+                panels,
                 active: 'basic',
-                tabRedTips: {}
+                tabRedTips: {
+                    'issue': false
+                }
             }
         },
         computed: {
             linkUrl () {
                 const query = getQueryParams(location.href)
+                const { host, protocol } = location;
                 const projectId = query && query.projectId || ''
-                return `${DEVOPS_SITE_URL}/console/codecc/${projectId}/task/list`
+                return `${protocol}//${host}/console/codecc/${projectId}/task/list`
             },
             mainModel () {
                 const model = Object.keys(this.atomModel).reduce((model, obj) => {
@@ -99,7 +117,7 @@
                 immediate: true
             },
             active: function (newValue, oldValue) {
-                this.tabRedTips['scan'] = !window.localStorage.getItem('mr-20200702')
+                this.tabRedTips['issue'] = !window.localStorage.getItem('tapd-20210628')
             }
         },
         created () {
@@ -113,12 +131,9 @@
                 this.atomValue[name] = value
             },
             handleRedPoint (name) {
-                if (name === 'scan') {
-                    window.localStorage.setItem('mr-20200702', '1')
+                if (name === 'issue') {
+                    window.localStorage.setItem('tapd-20210628', '1')
                 }
-            },
-            handleToggleLang() {
-                toggleLang()
             }
         }
     }
@@ -127,6 +142,15 @@
 <style lang="scss">
     .bk-options .bk-option-content .bk-option-icon {
         right: 5px !important;
+    }
+    .codecc-link {
+        padding-right: 12px;
+        text-decoration: none;
+        color: #3a84ff;
+        cursor: pointer;
+        position: absolute;
+        top: 1px;
+        right: 0;
     }
     .codecc-tab {
         .bk-tab-section {
@@ -140,12 +164,6 @@
         }
         .staff-selector .tag-info {
             line-height: 18px;
-        }
-        .codecc-link {
-            padding-right: 12px;
-            text-decoration: none;
-            color: #3a84ff;
-            cursor: pointer;
         }
     }
     ::-webkit-scrollbar {

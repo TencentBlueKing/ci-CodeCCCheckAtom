@@ -166,7 +166,8 @@
                 return target || []
             },
             linkUrl () {
-                return `${DEVOPS_SITE_URL}/console/codecc/${this.projectId}/checkerset/list#new`
+                const { host, protocol } = location;
+                return `${protocol}//${host}/console/codecc/${this.projectId}/checkerset/list#new`
             },
             classifyCodeList () {
                 if (this.categoryList.length) {
@@ -250,13 +251,21 @@
                     this.isOpen = false
                 })
                 // this.checkerSetList = this.pageChange ? this.checkerSetList.concat(res.content) : res.content
-                this.checkerSetList = res.content
+                const list = res.content || []
+                this.checkerSetList = list.sort((a, b) => this.selectedList.some(item => item.checkerSetId === b.checkerSetId) - this.selectedList.some(item => item.checkerSetId === a.checkerSetId))
                 this.loadEnd = res.last
                 this.pageChange = false
                 this.isLoadingMore = false
             },
             checkIsSelected (checkerSetId) {
                 return this.selectedList.some(item => item.checkerSetId === checkerSetId)
+            },
+            // 点击规则集名称,跳转到规则详情页
+            checkerSetNameClick (checkerSet) {
+                const version = checkerSet.version
+                const checkerSetId = checkerSet.checkerSetId
+                const href = `${window.DEVOPS_SITE_URL}/console/codecc/${this.projectId}/checkerset/${checkerSetId}/${version}/manage`
+                window.open(href, '_blank')
             },
             getSelectText (checkerSet, index) {
                 let txt = ''
@@ -287,12 +296,13 @@
             handleKeyWordSearch (value) {
                 this.keyWord = value.trim()
                 this.params.quickSearch = this.keyWord
+                this.classifyCode = 'store'
                 this.resetScroll()
                 this.requestList(false, this.params)
             },
             handleClear (str) {
                 if (str === '') {
-                    this.keyValue = ''
+                    this.keyWord = ''
                     this.handleKeyWordSearch('')
                 }
             },
@@ -301,7 +311,7 @@
                 if (this.keyWord === '') {
                     this.requestList(true)
                 } else {
-                    this.keyValue = this.keyValue.trim()
+                    this.keyWord = this.keyWord.trim()
                     const params = { quickSearch: this.keyWord }
                     this.requestList(true, params)
                 }
@@ -511,6 +521,10 @@
                     font-size: 14px;
                     font-weight: bold;
                     text-overflow: ellipsis;
+                    &:hover {
+                        color: #3a84ff;
+                        cursor: pointer;
+                    }
                 }
                 .use-mark {
                     margin-left: 8px;
@@ -559,7 +573,7 @@
                 font-size: 12px;
                 color: #bbbbbb;
                 span:first-child {
-                    width: 120px;
+                    width: 150px;
                     display: inline-block;
                 }
                 span:last-child {
@@ -590,11 +604,11 @@
                 }
             }
             &.selected {
-                background-color: #E9F4FF;
+                background-color: #f3f7fe;
             }
         }
         .info-card:hover {
-            background-color: #f3f7fe;
+            background-color: #E9F4FF;
         }
         .search-result {
             .info-card:first-child {

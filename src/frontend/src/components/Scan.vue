@@ -20,16 +20,27 @@
             </component>
         </form-field>
 
-        <form-field v-if="atomValue.toolScanType === '2'" key="mrCommentEnable" class="head-level" :desc="atomModel.mrCommentEnable.desc" :required="atomModel.mrCommentEnable.required" :label="atomModel.mrCommentEnable.label" :is-error="errors.has('mrCommentEnable')" :error-msg="errors.first('mrCommentEnable')">
-            <component 
-                :is="atomModel.mrCommentEnable.type" 
-                name="mrCommentEnable"
-                :value="atomValue.mrCommentEnable" 
-                :handle-change="handleUpdate" 
-                :text="atomModel.mrCommentEnable.text"
-            >
-            </component>
-        </form-field>
+        <template v-for="(obj, key) in customTabModel">
+            <form-field class="head-level"
+                :key="key" 
+                :desc="obj.desc" 
+                :inline="obj.inline" 
+                :required="obj.required" 
+                :label="obj.label" 
+                :is-error="errors.has(key)" 
+                :error-msg="errors.first(key)">
+                <component 
+                    :is="obj.type" 
+                    :atom-value="atomValue"
+                    :name="key"
+                    :value="atomValue[key]" 
+                    :handle-change="handleUpdate" 
+                    v-bind="obj" 
+                    v-validate.initial="Object.assign({}, obj.rule, { required: !!obj.required })"
+                >
+                </component>
+            </form-field>
+        </template>
 
         <form-field key="transferAuthorList" class="head-level" :desc="atomModel.transferAuthorList.desc" :required="atomModel.transferAuthorList.required" :label="atomModel.transferAuthorList.label" :is-error="errors.has('transferAuthorList')" :error-msg="errors.first('transferAuthorList')">
             <component 
@@ -40,6 +51,27 @@
             >
             </component>
         </form-field>
+        <template v-for="(obj, key) in scanTabModel">
+            <form-field class="head-level"
+                :key="key" 
+                :desc="obj.desc" 
+                :inline="obj.inline" 
+                :required="obj.required" 
+                :label="obj.label" 
+                :is-error="errors.has(key)" 
+                :error-msg="errors.first(key)">
+                <component 
+                    :is="obj.type" 
+                    :atom-value="atomValue"
+                    :name="key"
+                    :value="atomValue[key]" 
+                    :handle-change="handleUpdate" 
+                    v-bind="obj" 
+                    v-validate.initial="Object.assign({}, obj.rule, { required: !!obj.required })"
+                >
+                </component>
+            </form-field>
+        </template>
     </section>
 </template>
 
@@ -63,6 +95,21 @@
                     return model
                 }, {})
                 return model
+            },
+            customTabModel () {
+                const tabMap = {
+                    '2': 'mrpr',
+                    '6': 'diffbr'
+                }
+                const tabName = tabMap[this.atomValue.toolScanType]
+                if (!tabName) return {}
+                const model = Object.keys(this.atomModel).reduce((model, obj) => {
+                    if (this.atomModel[obj] && this.atomModel[obj].tabName === tabName) {
+                        model = Object.assign(model, { [obj]: this.atomModel[obj]})
+                    }
+                    return model
+                }, {})
+                return model
             }
         },
         created () {
@@ -80,3 +127,9 @@
         }
     }
 </script>
+
+<style scoped>
+    :deep() .bkdevops-radio {
+        line-height: 30px;
+    }
+</style>
