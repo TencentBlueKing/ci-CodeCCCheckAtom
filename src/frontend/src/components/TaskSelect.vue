@@ -69,11 +69,6 @@
                 const query = getQueryParams(location.href)
                 return (query && query.projectId) || ''
             },
-            env () {
-                const host = location.host
-                const env = host.split('.').includes('dev') ? 'dev.' : host.split('.').includes('test') ? 'test.' : ''
-                return env
-            },
             filterTaskList () {
                 return this.taskList.filter(task => `${task.nameCn} (ID: ${task.taskId})`.includes(this.curValue || ''))
             }
@@ -126,11 +121,13 @@
                 this.optionsVisible = false
             },
             handleNewTask () {
-                const href = `${DEVOPS_SITE_URL}/console/codecc/${this.projectId}/task/new`
+                const { host, protocol } = location;
+                const href = `${protocol}//${host}/console/codecc/${this.projectId}/task/new`
                 window.open(href)
             },
             handleDeleteOption (option) {
-                const href = `${DEVOPS_SITE_URL}/console/codecc/${option.projectId}/task/${option.taskId}/settings/code`
+                const { host, protocol } = location;
+                const href = `${protocol}//${host}/console/codecc/${this.projectId}/task/${option.taskId}/settings/code`
                 window.open(href)
             }
         }

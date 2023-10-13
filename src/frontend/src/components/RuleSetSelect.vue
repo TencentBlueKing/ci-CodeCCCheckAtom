@@ -72,6 +72,17 @@
                         }
                     })
                 }
+            },
+            renderList (newVal) { // 把语言对应的规则集保存起来，拿到语言对应的工具列表来判断是非显示脚本输入框
+                const value = []
+                if (newVal && newVal.length) {
+                    newVal.forEach(item => {
+                        const { toolList } = item
+                        value.push({toolList})
+                    })
+                }
+                const name = this.name.replace('_RULE', '_TOOL')
+                this.handleChange(name, value)
             }
         },
         created () {

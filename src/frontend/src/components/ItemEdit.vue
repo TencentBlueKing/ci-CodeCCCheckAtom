@@ -11,7 +11,7 @@
                             :data-vv-scope="`param-${index}`"
                             :disabled="disabled"
                             :handle-change="(name, value) => handleParamChange(value, index)"
-                            v-validate.initial="itemRule"
+                            v-validate.initial="Object.assign({}, itemRule)"
                             name="path"
                             :value="param" />
                     </form-field>
@@ -21,13 +21,14 @@
             </template>
             <a class="text-link hover-click" v-if="!disabled" @click.stop.prevent="editParam(paramList.length, true)">
                 <i class="bk-icon icon-plus-circle" />
-                <span>{{$t(addBtnText)}}</span>
+                <span>{{ addBtnText }}</span>
             </a>
         </ul>
     </div>
 </template>
 
 <script>
+import i18n from '../i18n'
 
     export default {
         name: 'params',
@@ -42,7 +43,7 @@
             },
             addBtnText: {
                 type: String,
-                default: '新增路径'
+                default: i18n.t('新增路径')
             },
             disabled: {
                 type: Boolean,
@@ -66,7 +67,7 @@
             return {
                 paramList: [],
                 keyRules: [
-                    { required: true, message: 'Key不允许为空', trigger: 'blur' }
+                    { required: true, message: this.$t('Key不允许为空'), trigger: 'blur' }
                 ]
             }
         },

@@ -1,246 +1,750 @@
 {
-  "atomCode": "CodeCCCheckAtom",
-  "execution": {
-    "packagePath": "CodeCCCheckAtom.jar",
-    "language": "java",
-    "minimumVersion": "1.8",
-    "deFmands": [],
-    "target": "$bk_java_path -Dfile.encoding=utf8 -jar CodeCCCheckAtom.jar"
-  },
-  "input": {
-    "languages": {
-      "rule": {},
-      "type": "atom-checkbox-list",
-      "required": true,
-      "label": "Programming Language",
-      "list": [],
-      "default": [],
-      "desc": "tools will match different programming language",
-      "tabName": "basic"
-    },
-    "tools": {
-      "rule": {},
-      "required": true,
-      "hidden": true,
-      "type": "atom-checkbox-list",
-      "label": "Code Review Tool",
-      "list": [],
-      "default": [],
-      "tabName": "basic"
-    },
-    "asyncTask": {
-      "rule": {},
-      "type": "enum-input",
-      "label": "Sync Method",
-      "list": [
-        {
-          "value": false,
-          "label": "Synchronize"
+    "input": {
+        "beAutoLang": {
+            "default": false,
+            "type": "enum-input",
+            "label": "语言",
+            "list": [
+                {
+                    "value": false,
+                    "label": "自主配置"
+                },
+                {
+                    "value": true,
+                    "label": "自动识别"
+                }
+            ],
+            "tabName": "basic",
+            "inline": true
         },
-        {
-          "value": true,
-          "label": "Asynchronous"
-        }
-      ],
-      "default": false,
-      "desc": "",
-      "tabName": "main",
-      "inline": true
-    },
-    "asyncTaskId": {
-      "rule": {
-        "asyncTaskRequired": true
-      },
-      "type": "task-select",
-      "label": "Task",
-      "required": true,
-      "tabName": "async",
-      "inline": true,
-      "list": {},
-      "default": "",
-      "rely": {},
-      "desc": "You can choose to create a task yourself in the CodeCC service, or you can directly enter the task ID. The task ID can be obtained from the CodeCC link (in /codecc/myproj/task/25324/, 25324 is the task ID). Support pipeline variables."
-    },
-    "goPath": {
-      "rule": {},
-      "type": "vuex-input",
-      "label": "GOPATH",
-      "default": "",
-      "required": false,
-      "desc": "Help find the code path of the dependent library to get a more useful result",
-      "placeholder": "Relative paths under {WORKSPACE}, please use comma to separate multiple paths, support pipeline variables",
-      "tabName": "basic",
-      "inline": true,
-      "rely": {
-        "operation": "AND",
-        "expression": [
-          {
-            "key": "tools",
-            "value": "GOML"
-          }
-        ]
-      }
-    },
-    "pyVersion": {
-      "rule": {},
-      "type": "enum-input",
-      "label": "Python Version",
-      "required": true,
-      "list": [
-        {
-          "label": "Python2",
-          "value": "py2"
+        "languages": {
+            "rule": {},
+            "type": "atom-checkbox-list",
+            "required": true,
+            "label": "",
+            "list": [],
+            "default": [],
+            "desc": "不同代码语言，可选择相匹配的工具",
+            "tabName": "basic"
         },
-        {
-          "label": "Python3",
-          "value": "py3"
-        }
-      ],
-      "default": "py3",
-      "tabName": "basic",
-      "inline": true,
-      "rely": {
-        "operation": "AND",
-        "expression": [
-          {
-            "key": "tools",
-            "value": "PYLINT"
-          }
-        ]
-      }
-    },
-    "scriptType": {
-      "rule": {},
-      "type": "enum-input",
-      "label": "Script Type",
-      "required": true,
-      "hidden": false,
-      "list": [
-        {
-          "id": "sh",
-          "value": "SHELL",
-          "label": "Shell"
-        }
-      ],
-      "default": "SHELL",
-      "tabName": "basic",
-      "lang": "sh",
-      "inline": true
-    },
-    "script": {
-      "rule": {
-        "scriptRequired": true
-      },
-      "label": "Script",
-      "hidden": false,
-      "default": "#Coverity/Klocwork will compile your code by calling the compilation script to identify defects\n# Please use build tools such as maven/cmake to write a compilation script build.sh\n# Make sure build.sh can compile the code\n# cd path/to/build.sh\n# sh build.sh",
-      "required": true,
-      "type": "atom-ace-editor",
-      "desc": "The corresponding tool will use this script to compile the code in order to track the compilation process and find code defects",
-      "tabName": "basic"
-    },
-    "languageRuleSetMap": {
-      "hidden": true,
-      "default": {}
-    },
-    "C_CPP_RULE": {
-      "rule": {
-        "ruleSetRequired": true
-      },
-      "type": "rule-set-select",
-      "label": "C/C++",
-      "required": true,
-      "tabName": "basic",
-      "inline": true,
-      "list": {},
-      "default": [],
-      "rely": {
-        "operation": "AND",
-        "expression": [
-          {
-            "key": "languages",
-            "value": "C_CPP"
-          }
-        ]
-      }
-    },
-    "multiPipelineMark": {
-      "rule": {},
-      "label": "label",
-      "placeholder": "Optional. Only numbers, letters, and underscores are supported.",
-      "type": "vuex-input",
-      "default": "",
-      "tabName": "basic",
-      "desc": "If the pipeline has multiple code analysis plugins, a label can be used to distinguish them.",
-      "inline": true
-    },
-    "toolScanType": {
-      "rule": {},
-      "type": "radio-group",
-      "label": "Scan Method",
-      "required": true,
-      "list": [
-        {
-          "label": "Incremental Scan（recommended)",
-          "value": "1"
+        "checkerSetType": {
+            "rule": {},
+            "type": "enum-input",
+            "label": "规则集",
+            "list": [
+                {
+                    "value": "normal",
+                    "label": "自主配置",
+                    "disabled": false
+                },
+                {
+                    "value": "openScan",
+                    "label": "内网开源治理",
+                    "disabled": false
+                },
+                {
+                    "value": "communityOpenScan",
+                    "label": "外网开源",
+                    "disabled": false
+                },
+                {
+                    "value": "epcScan",
+                    "label": "PCG EPC",
+                    "disabled": false
+                }
+            ],
+            "default": "normal",
+            "desc": "",
+            "tabName": "basic",
+            "inline": true
         },
-        {
-          "label": "MR/PR Scan",
-          "value": "2"
+        "tools": {
+            "rule": {},
+            "required": true,
+            "hidden": true,
+            "type": "atom-checkbox-list",
+            "label": "代码检查工具",
+            "list": [],
+            "default": [],
+            "tabName": "basic"
         },
-        {
-          "label": "Full Scan",
-          "value": "0"
+        "asyncTask": {
+            "rule": {},
+            "type": "enum-input",
+            "label": "执行方式",
+            "list": [
+                {
+                    "value": false,
+                    "label": "同步"
+                },
+                {
+                    "value": true,
+                    "label": "异步"
+                }
+            ],
+            "default": false,
+            "desc": "",
+            "tabName": "main",
+            "inline": true
+        },
+        "asyncTaskId": {
+            "rule": {
+                "asyncTaskRequired": true
+            },
+            "type": "task-select",
+            "label": "任务",
+            "required": true,
+            "tabName": "async",
+            "inline": true,
+            "list": {},
+            "default": "",
+            "rely": {},
+            "desc": "可选择CodeCC服务中自建任务，也可以直接输入任务ID。ID可从CodeCC链接中获取到，例如/codecc/myproj/task/25324/中的数字。支持流水线变量。"
+        },
+        "goPath": {
+            "rule": {},
+            "type": "vuex-input",
+            "label": "GOPATH",
+            "default": "",
+            "required": false,
+            "desc": "可帮助工具查找依赖库代码路径，更好地扫描问题",
+            "placeholder": "${WORKSPACE}下相对路径,多路径请用英文逗号分割,支持使用流水线变量",
+            "tabName": "basic",
+            "inline": true,
+            "rely": {
+                "operation": "AND",
+                "expression": [
+                    {
+                        "key": "tools",
+                        "value": "GOML"
+                    },
+                    {
+                        "key": "checkerSetType",
+                        "value": "normal"
+                    }
+                ]
+            }
+        },
+        "pyVersion": {
+            "rule": {},
+            "type": "enum-input",
+            "label": "Python版本",
+            "required": true,
+            "list": [
+                {
+                    "label": "Python2",
+                    "value": "py2"
+                },
+                {
+                    "label": "Python3",
+                    "value": "py3"
+                }
+            ],
+            "default": "py3",
+            "tabName": "basic",
+            "inline": true,
+            "rely": {
+                "operation": "AND",
+                "expression": [
+                    {
+                        "key": "tools",
+                        "value": "PYLINT"
+                    },
+                    {
+                        "key": "checkerSetType",
+                        "value": "normal"
+                    }
+                ]
+            }
+        },
+        "bkcheckDebug": {
+            "type": "enum-input",
+            "label": "bkcheck缓存",
+            "default": false,
+            "desc": "开启后bkcheck工具执行完会缓存中间结果并归档，用于提升下次扫描的速度。提速适用于“快速全量扫描”、“MR/PR扫描”、“差异扫描”三类扫描方式。",
+            "tabName": "basic",
+            "inline": true,
+            "list": [
+                {
+                    "value": false,
+                    "label": "关闭"
+                },
+                {
+                    "value": true,
+                    "label": "开启"
+                }
+            ],
+            "rely": {
+                "operation": "AND",
+                "expression": [
+                    {
+                        "key": "tools",
+                        "value": "BKCHECK"
+                    },
+                    {
+                        "key": "checkerSetType",
+                        "value": "normal"
+                    }
+                ]
+            }
+        },
+        "bkcheckCustomMacros": {
+            "type": "item-edit",
+            "addBtnText": "新增宏定义",
+            "label": "bkcheck宏扫描",
+            "default": [],
+            "desc": "宏自定义支持宏定义或取消定义。格式参考编译指定，-D表示宏定义，-U表示取消宏定义。e.g: -DBUFSIZE=10; -U_LINUX_",
+            "tabName": "basic",
+            "inline": true,
+            "rely": {
+                "operation": "AND",
+                "expression": [
+                    {
+                        "key": "languages",
+                        "value": "C_CPP"
+                    },
+                    {
+                        "key": "tools",
+                        "value": "BKCHECK"
+                    },
+                    {
+                        "key": "checkerSetType",
+                        "value": "normal"
+                    }
+                ]
+            }
+        },
+        "scriptType": {
+            "rule": {},
+            "type": "enum-input",
+            "label": "脚本类型",
+            "required": true,
+            "hidden": false,
+            "list": [
+                {
+                    "id": "sh",
+                    "value": "SHELL",
+                    "label": "Shell"
+                }
+            ],
+            "default": "SHELL",
+            "tabName": "basic",
+            "lang": "sh",
+            "inline": true
+        },
+        "script": {
+            "rule": {
+                "scriptRequired": true
+            },
+            "label": "脚本内容",
+            "hidden": false,
+            "default": "# Coverity/Klocwork将通过调用编译脚本来编译您的代码，以追踪深层次的缺陷\n# 请使用依赖的构建工具如maven/cmake等写一个编译脚本build.sh\n# 确保build.sh能够编译代码\n# cd path/to/build.sh\n# sh build.sh",
+            "required": true,
+            "type": "atom-ace-editor",
+            "desc": "相应工具将使用该脚本编译代码，以便追踪编译过程，发现代码缺陷",
+            "tabName": "basic"
+        },
+        "languageRuleSetMap": {
+            "hidden": true,
+            "default": {}
+        },
+        "C_CPP_RULE": {
+            "rule": {
+                "ruleSetRequired": true
+            },
+            "type": "rule-set-select",
+            "label": "C/C++",
+            "required": true,
+            "tabName": "basic",
+            "inline": true,
+            "list": {},
+            "default": [],
+            "rely": {
+                "operation": "AND",
+                "expression": [
+                    {
+                        "key": "languages",
+                        "value": "C_CPP"
+                    }
+                ]
+            }
+        },
+        "checkerSetEnvType": {
+            "rule": {},
+            "type": "rule-set-env-select",
+            "label": "版本",
+            "required": false,
+            "tabName": "basic",
+            "inline": true,
+            "list": {},
+            "default": "prod",
+            "rely": {}
+        },
+        "multiPipelineMark": {
+            "rule": {
+                "markVariable": true
+            },
+            "label": "附加标识",
+            "placeholder": "默认可不填。仅支持字母，数字，中划线，下划线或流水线变量",
+            "type": "vuex-input",
+            "default": "",
+            "tabName": "basic",
+            "desc": "若流水线有多个代码分析插件可用此字段区分。",
+            "inline": true
+        },
+        "rtxReceiverType": {
+            "type": "selector",
+            "label": "接收人",
+            "default": "1",
+            "options": [
+                {
+                    "id": "4",
+                    "name": "遗留问题处理人"
+                },
+                {
+                    "id": "0",
+                    "name": "所有人员"
+                },
+                {
+                    "id": "1",
+                    "name": "仅管理员"
+                },
+                {
+                    "id": "2",
+                    "name": "自定义"
+                },
+                {
+                    "id": "3",
+                    "name": "无（不发送）"
+                }
+            ],
+            "inline": true
+        },
+        "rtxReceiverList": {
+            "type": "company-staff-input",
+            "label": "自定义接收人",
+            "default": [],
+            "rely": {
+                "operation": "AND",
+                "expression": [
+                    {
+                        "key": "rtxReceiverType",
+                        "value": "2"
+                    }
+                ]
+            },
+            "inline": true
+        },
+        "botWebhookUrl": {
+            "label": "Webhook地址",
+            "placeholder": "代码检查完成后推送Coverity、Klocwork遗留问题数至群中",
+            "type": "vuex-input",
+            "default": "",
+            "inline": true
+        },
+        "botContent": {
+            "label": "通知内容"
+        },
+        "botRemindRange": {
+            "type": "enum-input",
+            "default": "2",
+            "label": "问题",
+            "list": [
+                {
+                    "value": "2",
+                    "label": "新+存量问题"
+                },
+                {
+                    "value": "1",
+                    "label": "新问题"
+                }
+            ],
+            "innerTab": true,
+            "inline": true
+        },
+        "botRemindSeverity": {
+            "type": "selector",
+            "default": "7",
+            "label": "问题",
+            "options": [
+                {
+                    "id": "7",
+                    "name": "总问题数"
+                },
+                {
+                    "id": "3",
+                    "name": "严重 + 一般问题数"
+                },
+                {
+                    "id": "1",
+                    "name": "严重问题数"
+                }
+            ],
+            "innerTab": true,
+            "inline": true
+        },
+        "botRemaindTools": {
+            "type": "selector",
+            "default": [],
+            "label": "工具",
+            "innerTab": true,
+            "inline": true,
+            "optionsConf": {
+                "multiple": true
+            }
+        },
+        "emailReceiverType": {
+            "type": "selector",
+            "label": "接收人",
+            "default": "1",
+            "options": [
+                {
+                    "id": "4",
+                    "name": "遗留问题处理人"
+                },
+                {
+                    "id": "0",
+                    "name": "所有人员"
+                },
+                {
+                    "id": "1",
+                    "name": "仅管理员"
+                },
+                {
+                    "id": "2",
+                    "name": "自定义"
+                },
+                {
+                    "id": "3",
+                    "name": "无（不发送）"
+                }
+            ],
+            "inline": true
+        },
+        "emailReceiverList": {
+            "type": "company-staff-input",
+            "label": "自定义接收人",
+            "default": [],
+            "rely": {
+                "operation": "AND",
+                "expression": [
+                    {
+                        "key": "emailReceiverType",
+                        "value": "2"
+                    }
+                ]
+            },
+            "inline": true
+        },
+        "emailCCReceiverList": {
+            "type": "company-staff-input",
+            "label": "抄送人",
+            "default": [],
+            "inline": true,
+            "inputType": "all"
+        },
+        "instantReportStatus": {
+            "label": "即时报告",
+            "default": "2",
+            "type": "enum-input",
+            "inline": true,
+            "list": [
+                {
+                    "value": "1",
+                    "label": "启用"
+                },
+                {
+                    "value": "2",
+                    "label": "停用"
+                }
+            ]
+        },
+        "timerEmail": {
+            "label": "定时报告"
+        },
+        "reportDate": {
+            "default": [],
+            "label": "每周",
+            "type": "week-selector",
+            "innerTab": true,
+            "inline": true
+        },
+        "reportTime": {
+            "default": "",
+            "label": "时间",
+            "innerTab": true,
+            "inline": true
+        },
+        "reportTools": {
+            "type": "selector",
+            "default": [],
+            "label": "工具",
+            "innerTab": true,
+            "inline": true,
+            "optionsConf": {
+                "multiple": true
+            }
+        },
+        "toolScanType": {
+            "rule": {},
+            "type": "radio-group",
+            "label": "扫描方式",
+            "required": true,
+            "list": [
+                {
+                    "label": "快速全量扫描",
+                    "value": "1"
+                },
+                {
+                    "label": "全量扫描",
+                    "value": "0"
+                },
+                {
+                    "label": "差异扫描",
+                    "value": "6"
+                },
+                {
+                    "label": "MR/PR扫描",
+                    "value": "2"
+                }
+            ],
+            "default": "1",
+            "descLink": "",
+            "descLinkText": "了解更多",
+            "desc": "快速全量扫描：首次会扫描全部文件。后续扫描未变更文件会复用之前的扫描结果，提升扫描速度。\n全量扫描：每次都扫描全部文件。Klocwork、Pinpoint、Gometalinter、重复率仅支持该扫描方式。\n差异扫描：扫描当前工作空间分支与对比分支的差异文件。\nMR/PR扫描：扫描MR/PR的源分支与目标分支的差异，默认为只展示差异行的问题，会导致部分函数级或文件级规则漏报。可选择展示差异文件的全部问题。源分支代码需拉取到工作空间。MR/PR扫描不支持手动执行或流水线重试。"
+        },
+        "prohibitIgnore": {
+            "tabName": "scan",
+            "rule": {},
+            "type": "radio-group",
+            "label": "禁止页面忽略问题",
+            "required": true,
+            "list": [
+                {
+                    "label": "允许页面忽略",
+                    "value": false
+                },
+                {
+                    "label": "禁止页面忽略",
+                    "value": true
+                }
+            ],
+            "default": false,
+            "descLink": "",
+            "descLinkText": "了解更多",
+            "desc": "禁止直接从页面忽略问题，可在代码行末或上一行使用注释忽略，例如// NOCC:rule1(ignore reason)。目前Coverity、Klocwork、Pinpoint暂不支持该功能。"
+        },
+        "diffBranch": {
+            "tabName": "diffbr",
+            "required": true,
+            "label": "对比分支",
+            "placeholder": "例如master, 支持流水线变量",
+            "type": "vuex-input",
+            "default": "",
+            "desc": "",
+            "inline": true
+        },
+        "byFile": {
+            "tabName": "mrpr",
+            "label": "",
+            "default": false,
+            "type": "atom-checkbox",
+            "text": "展示源分支与目标分支的差异文件的全部问题"
+        },
+        "mrCommentEnable": {
+            "tabName": "mrpr",
+            "label": "",
+            "default": true,
+            "type": "atom-checkbox",
+            "text": "将扫描出的问题同步到工蜂代码查看页面"
+        },
+        "transferAuthorList": {
+            "default": [],
+            "type": "author-transfer",
+            "label": "处理人转换",
+            "desc": "各工具原处理人的问题都将自动转给新处理人"
+        },
+        "path": {
+            "default": [],
+            "type": "item-edit",
+            "rule": {
+                "regexVariable": true
+            }
+        },
+        "customPath": {
+            "default": [],
+            "type": "item-edit",
+            "rule": {
+                "regexVariable": true
+            }
+        },
+        "scanTestSource": {
+            "default": false,
+            "type": "atom-checkbox",
+            "disabled": false,
+            "text": "对test_source项依然进行代码规范检查"
+        },
+        "openScanPrj": {
+            "label": "",
+            "default": false,
+            "placeholder": "",
+            "type": "atom-checkbox",
+            "text": "是否是开源扫描项目",
+            "desc": "选中则走开源扫描流程",
+            "required": false,
+            "disabled": false,
+            "hidden": true
+        },
+        "issueSystem": {
+            "default": "TAPD",
+            "type": "enum-input",
+            "label": "提单类型",
+            "list": [],
+            "tabName": "issue",
+            "inline": true
+        },
+        "issueSubSystem": {
+            "default": "",
+            "type": "issue-system",
+            "label": "Tapd库",
+            "tabName": "issue",
+            "inline": true
+        },
+        "issueResolvers": {
+            "rule": {},
+            "type": "company-staff-input",
+            "label": "缺陷处理人",
+            "default": [],
+            "required": false,
+            "desc": "",
+            "placeholder": "",
+            "tabName": "issue",
+            "inline": true,
+            "rely": {}
+        },
+        "issueReceivers": {
+            "rule": {},
+            "type": "company-staff-input",
+            "label": "缺陷抄送人",
+            "default": [],
+            "required": false,
+            "desc": "",
+            "placeholder": "",
+            "tabName": "issue",
+            "inline": true,
+            "rely": {}
+        },
+        "issueFindByVersion": {
+            "rule": {},
+            "type": "vuex-input",
+            "label": "发现版本",
+            "default": "",
+            "required": false,
+            "desc": "",
+            "placeholder": "",
+            "tabName": "issue",
+            "inline": true,
+            "rely": {}
+        },
+        "maxIssue": {
+            "rule": {},
+            "type": "input-number",
+            "inputType": "number",
+            "min": 0,
+            "max": 10000,
+            "label": "提单上限",
+            "default": 10000,
+            "required": false,
+            "desc": "若Tapd库中待修复问题数超过提单上限，将不再提单",
+            "placeholder": "默认为10000条",
+            "tabName": "issue",
+            "inline": true,
+            "rely": {}
+        },
+        "issueAutoCommit": {
+            "rule": {},
+            "type": "switcher",
+            "label": "自动提单",
+            "default": false,
+            "required": false,
+            "desc": "",
+            "placeholder": "",
+            "tabName": "issue",
+            "inline": true,
+            "rely": {}
+        },
+        "issueTools": {
+            "rule": {},
+            "type": "selector",
+            "default": [],
+            "label": "工具",
+            "innerTab": true,
+            "inline": true,
+            "optionsConf": {
+                "multiple": true
+            },
+            "options": [],
+            "required": false,
+            "desc": "",
+            "placeholder": "",
+            "tabName": "issue",
+            "rely": {
+                "operation": "AND",
+                "expression": [
+                    {
+                        "key": "issueAutoCommit",
+                        "value": true
+                    }
+                ]
+            }
+        },
+        "issueSeverities": {
+            "rule": {},
+            "type": "selector",
+            "default": [],
+            "label": "级别",
+            "innerTab": true,
+            "inline": true,
+            "optionsConf": {
+                "multiple": true
+            },
+            "options": [
+                {
+                    "id": "1",
+                    "name": "严重"
+                },
+                {
+                    "id": "2",
+                    "name": "一般"
+                },
+                {
+                    "id": "4",
+                    "name": "提示"
+                }
+            ],
+            "required": false,
+            "desc": "",
+            "placeholder": "",
+            "tabName": "issue",
+            "rely": {
+                "operation": "AND",
+                "expression": [
+                    {
+                        "key": "issueAutoCommit",
+                        "value": true
+                    }
+                ]
+            }
         }
-      ],
-      "default": "1",
-      "desc": "Incremental scan: Scan the difference code between current build and previous build. Full scan will be used in the first time.\nMR/PR Scan: Scan the difference code between the source branch and the target branch of MR/PR. The source branch code needs to be pulled to the workspace\nFull Scan: Scan all codes. Klocwork, Pinpoint, Gometalinter, and repetition rate only support this scanning method."
     },
-    "mrCommentEnable": {
-      "label": "",
-      "default": true,
-      "type": "atom-checkbox",
-      "text": "Sync the defect info to Tencent internal Git viewing page"
-    },
-    "newDefectJudgeFromDate": {
-      "default": "",
-      "label": "New Alerts Threshold",
-      "desc": "Alerts sent after the selected date are New Alerts"
-    },
-    "transferAuthorList": {
-      "default": [],
-      "type": "author-transfer",
-      "label": "change owner",
-      "desc": "Alerts will sent to the new owner when the tools's ownership changed "
-    },
-    "path": {
-      "default": [],
-      "type": "item-edit"
-    },
-    "customPath": {
-      "default": [],
-      "type": "item-edit"
-    },
-    "openScanPrj": {
-      "label": "",
-      "default": false,
-      "placeholder": "",
-      "type": "atom-checkbox",
-      "text": "use open sourced tool to scan project",
-      "desc": "Use open sourced scanning tool when selected",
-      "required": false,
-      "disabled": false,
-      "hidden": true
+    "output": {
+        "BK_CI_CODECC_TASK_ID": {
+            "type": "string",
+            "description": "CodeCC的任务id"
+        },
+        "BK_CI_CODECC_TASK_STATUS": {
+            "type": "string",
+            "description": "CodeCC任务是否运行成功，成功则未true，不然取不到"
+        }
     }
-  },
-  "output": {
-    "BK_CI_CODECC_TASK_ID": {
-      "type": "string",
-      "description": "CodeCC task id"
-    },
-    "BK_CI_CODECC_TASK_STATUS": {
-      "type": "string",
-      "description": "Whether the CodeCC task runs successfully"
-    }
-  }
 }

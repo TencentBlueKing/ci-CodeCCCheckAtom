@@ -1,6 +1,6 @@
 <template>
     <div :class="{ &quot;codecc-accordion&quot;: true, &quot;showCheckbox&quot;: showCheckbox }">
-        <header :active="isShow" @click="toggleContent" class="header var">
+        <header :active="isShow" class="header var">
             <header class="var-header codecc-header" slot="header">
                 <span class="title" v-if="!labelDesc">{{ label }}</span>
                 <span class="title" v-else>
@@ -13,8 +13,8 @@
                     </bk-popover>
                 </span>
                 <span v-if="desc" class="desc" v-bk-tooltips.top="desc">{{ desc }}</span>
-                <span class="fold-open"> 
-                    {{ isShow ? $t('收起') : $t('展开') }}
+                <span class="fold-open" @click="toggleContent"> 
+                    {{ isShow ? $t('收起') : $t('展开') }} 
                     <i class="bk-icon icon-angle-down" style="display:inline-block">
                     </i>
                 </span>
@@ -96,14 +96,14 @@
     .codecc-accordion {
         // border: 1px solid $borderColor;
         border-radius: 3px;
-        margin: 5px 0;
+        margin: 4px 0;
         font-size: 12px;
         .header {
             font-size: 12px;
             display: flex;
             color: #63656e;
             background-color: #fff;
-            padding: 10px 0px;
+            padding: 5px 0px;
             align-items: center;
             cursor: pointer;
 

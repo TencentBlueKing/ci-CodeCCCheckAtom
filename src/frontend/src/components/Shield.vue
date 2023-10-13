@@ -10,10 +10,11 @@
                                 :name="key"
                                 v-validate.initial="Object.assign({}, atomModel[key].rule, { required: !!atomModel[key].required })"
                                 :value="atomValue[key]" 
+                                :disabled="atomModel[key].disabled"
                                 :handle-change="handleUpdate" 
                                 v-bind="atomModel[key]" 
                                 :placeholder="getPlaceholder(atomModel[key], atomValue)"
-                                :itemRule="{}">
+                                :item-rule="atomModel[key].rule">
                             </component>
                         </form-field>
                     </template>
@@ -27,6 +28,8 @@
     import { atomMixin }from 'bkci-atom-components'
     import ItemEdit from './ItemEdit'
     import CodeccAccordion from './CodeccAccordion'
+    import DEPLOY_ENV from '@/constants/env';
+    
     export default {
         name: 'shield',
         mixins: [atomMixin],
@@ -35,29 +38,34 @@
             CodeccAccordion
         },
         data () {
+            const pathUrl = DEPLOY_ENV === 'tencent' ? `\n<a href='${window.IWIKI_SITE_URL}/p/679617074' target='_blank' style='color: #3a84ff'>${this.$t('了解更多')}>></a>` : ''
             return {
                 groupList: [
                     {
                         label: this.$t('路径白名单'),
                         item: ['path'],
-                        desc: this.$t(`以绝对路径/data/landun/workspace/CodeCCTest/cpp/为例：
-扫描相对路径可输入/CodeCCTest/cpp/，只输入/cpp/不会生效
-扫描某类文件如protobuffer生成的*.pb.cc，可以输入.*/.*\\.pb\\.cc
-扫描工作空间中某个文件夹如P2PLive，可以输入.*/P2PLive/.* 
-只扫描某个文件夹下某类文件如P2PLive下*.c，可以输入.*/P2PLive/.*\\.c
-若一行中输入多个路径或路径匹配式可用英文逗号分隔
-支持流水线变量`)
+                        desc: this.$t('路径白名单描述') + pathUrl
                     },
                     {
                         label: this.$t('路径黑名单'),
                         item: ['customPath'],
-                        desc: this.$t(`屏蔽某类文件如protobuffer生成的*.pb.cc，可以输入.*/.*\\.pb\\.cc
-屏蔽所有分支中某个文件夹如P2PLive，可以输入.*/P2PLive/.* 
-屏蔽某个文件夹下某类文件如P2PLive下*.c，可以输入.*/P2PLive/.*\\.c
-若一行中输入多个路径匹配式可用英文逗号分隔
-支持流水线变量`)
+                        desc: this.$t('路径黑名单描述') + pathUrl
+                    },
+                    {
+                        label: 'YAML',
+                        item: ['scanTestSource'],
+                        desc: this.$t('yaml描述')
                     }
                 ]
+            }
+        },
+        watch: {
+            'atomValue.checkerSetType' (value) {
+                if (value === 'epcScan') {
+                    this.atomModel.scanTestSource && (this.atomModel.scanTestSource.disabled = true)
+                } else {
+                    this.atomModel.scanTestSource && (this.atomModel.scanTestSource.disabled = false)
+                }
             }
         },
         methods: {
