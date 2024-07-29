@@ -14,12 +14,24 @@
                             :value="param.sourceAuthor" />
                     </form-field>
                     <form-field :is-error="errors.has(`param-${index}.targetAuthor`)" :error-msg="errors.first(`param-${index}.targetAuthor`)">
-                        <vuex-input
+                        <bk-user-selector
+                            v-if="isInnerSite"
+                            :api="userApiUrl"
                             :data-vv-scope="`param-${index}`"
-                            :disabled="disabled"
+                            name="targetAuthor"
+                            :placeholder="$t('目标处理人')"
+                            :disabled="disabled" 
+                            v-validate.initial="`required`"
+                            :value="param.targetAuthor ? param.targetAuthor.split(',') : []" 
+                            @change="(value) => handleParamChange('targetAuthor', value.join(','), index)"
+                        ></bk-user-selector>
+                        <vuex-input
+                            v-else
+                            :data-vv-scope="`param-${index}`"
+                            name="targetAuthor"
+                            :disabled="disabled" 
                             :handle-change="(name, value) => handleParamChange(name, value, index)"
                             v-validate.initial="`required`"
-                            name="targetAuthor"
                             :placeholder="$t('目标处理人')"
                             :value="param.targetAuthor" />
                     </form-field>
@@ -35,6 +47,9 @@
 </template>
 
 <script>
+    import BkUserSelector from '@blueking/user-selector';
+    import DEPLOY_ENV from '@/constants/env';
+
     export default {
         name: 'author-transfer',
         props: {
@@ -55,9 +70,14 @@
                 default: () => () => {}
             }
         },
+        components: {
+            BkUserSelector
+        },
         data () {
             return {
-                paramList: []
+                paramList: [],
+                isInnerSite: DEPLOY_ENV === 'tencent',
+                userApiUrl: window.USER_API_URL
             }
         },
         watch: {
@@ -67,6 +87,11 @@
         },
         async created () {
             this.paramList = this.value
+        },
+        mounted() {
+            setTimeout(() => {
+                this.$forceUpdate()
+            }, 500)
         },
         methods: {
             editParam (index, isAdd) {
@@ -126,5 +151,13 @@
             color: #3a84ff;
             font-size: 12px;
         }
+    }
+    .user-selector {
+        display: block;
+        width: 245px;
+    }
+    .is-danger .user-selector-container {
+        border-color: #ff5656!important;
+        color: #ff5656;
     }
 </style>

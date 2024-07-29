@@ -33,37 +33,37 @@
                 weekList: [
                     {
                         id: 1,
-                        name: '一',
+                        name: this.$t('一'),
                         label: 'Mon'
                     },
                     {
                         id: 2,
-                        name: '二',
+                        name: this.$t('二'),
                         label: 'Tues'
                     },
                     {
                         id: 3,
-                        name: '三',
+                        name: this.$t('三'),
                         label: 'Wed'
                     },
                     {
                         id: 4,
-                        name: '四',
+                        name: this.$t('四'),
                         label: 'Thur'
                     },
                     {
                         id: 5,
-                        name: '五',
+                        name: this.$t('五'),
                         label: 'Fri'
                     },
                     {
                         id: 6,
-                        name: '六',
+                        name: this.$t('六'),
                         label: 'Sat'
                     },
                     {
                         id: 7,
-                        name: '日',
+                        name: this.$t('日'),
                         label: 'Sun'
                     }
                 ]

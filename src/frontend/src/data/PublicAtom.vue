@@ -71,6 +71,8 @@
                     this.currentUserInfo = e.data.currentUserInfo
                     window.CODECC_SITE_URL = e.data.envConf.BK_CODECC_PUBLIC_URL
                     window.DEVOPS_SITE_URL = e.data.envConf.BK_CI_PUBLIC_URL
+                    window.IWIKI_SITE_URL = e.data.envConf.IWIKI_SITE_URL
+                    window.USER_API_URL = e.data.envConf.USER_API_URL
                     this.hasInitData = true
                 }
             })
@@ -83,10 +85,11 @@
                 })
             },
             getAtomValue (atomValue = {}, atomProps = {}) {
-                return Object.keys(atomProps).reduce((formProps, key) => {
+                const newAtomValue =  Object.keys(atomProps).reduce((formProps, key) => {
                     formProps[key] = atomValue[key] || atomProps[key].default
                     return formProps
                 }, {})
+                return Object.assign(newAtomValue, atomValue)
             }
         }
     }

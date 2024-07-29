@@ -37,8 +37,8 @@
             }
         },
         beforeCreate () {
-            window.CODECC_SITE_URL = 'BK_CODECC_PUBLIC_URL'
-            window.DEVOPS_SITE_URL = 'BK_CI_PUBLIC_URL'
+            window.CODECC_SITE_URL = '//test-codecc.tencent.com'
+            window.DEVOPS_SITE_URL = '//test.devops.tencent.com'
         },
         computed: {
             taskJson () {
