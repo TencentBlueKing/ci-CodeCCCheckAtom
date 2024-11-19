@@ -44,7 +44,7 @@ jobs:
         gradle-version: 6.7.1
         arguments: clean buildZipWithEn -DmavenCredUserName=${{ secrets.NAME }} -DmavenCredPassword=${{ secrets.GITHUB_TOKEN }} -DmavenRepoUrl=http://maven.aliyun.com/nexus/content/groups/public/
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: CodeCCCheckAtom.zip
         # A file, directory or wildcard pattern that describes what to upload
