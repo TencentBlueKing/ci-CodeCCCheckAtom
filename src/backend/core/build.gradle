@@ -2,8 +2,8 @@ buildscript {
     repositories {
         mavenLocal()
         jcenter()
-        maven { url "https://repo.maven.apache.org/maven2" }
         mavenCentral()
+        maven { url "https://repo.maven.apache.org/maven2" }
     }
 
     dependencies {
@@ -69,8 +69,8 @@ allprojects {
     repositories {
         mavenLocal()
         jcenter()
-        maven { url "https://repo.maven.apache.org/maven2" }
         mavenCentral()
+        maven { url "https://repo.maven.apache.org/maven2" }
     }
 
     dependencies {
