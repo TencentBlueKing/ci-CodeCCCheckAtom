@@ -58,8 +58,12 @@
             ])
         },
         created () {
+            const trustedOrigins = ['https://www.example.com']; // Add trusted origins here
             window.addEventListener('message', (e) => {
-                // if (location.href.indexOf(e.origin) === 0) return
+                if (!trustedOrigins.includes(e.origin)) {
+                    console.warn(`Untrusted origin: ${e.origin}`);
+                    return;
+                }
                 if (e.data && e.data.atomPropsValue && e.data.atomPropsModel) {
                     // 把用户的值和默认值合起来
                     const atomPropsValue = this.getAtomValue(e.data.atomPropsValue, e.data.atomPropsModel)
