@@ -9,8 +9,7 @@ reports/
 .DS_Store
 *.log
 gradle/
-gradlew
-gradlew.bat
+
 version.txt
 input.json
 output.json
