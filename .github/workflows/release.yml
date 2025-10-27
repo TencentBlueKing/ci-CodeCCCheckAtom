@@ -32,8 +32,6 @@ jobs:
         java-version: 1.8
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
-    - name: Make gradlew executable
-      run: chmod +x src/backend/gradlew
     - name: Build with Gradle
       run: cd src/backend && chmod +x ./gradlew && ./gradlew clean buildZipWithEn -DmavenCredUserName=${{ secrets.NAME }} -DmavenCredPassword=${{ secrets.GITHUB_TOKEN }} -DmavenRepoUrl=http://maven.aliyun.com/nexus/content/groups/public/
     - name: Upload a Build Artifact
