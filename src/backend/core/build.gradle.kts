@@ -131,22 +131,23 @@ tasks.register<Copy>("copyImages") {
 // 构建中文版ZIP包
 tasks.register<Zip>("buildZipCn") {
     dependsOn("shadowJar", "copyFrontend", "cleanTarget", "copyDocs", "copyImages")
-    from("build/libs", "task.json", "quality.json", "../../frontend/target", "../../../target")
+    from("build/libs", "task.json", "quality.json", "../../frontend/target", "../../../target/file")
     into("CodeCCCheckAtom")
     archiveFileName.set("CodeCCCheckAtom.zip")
 }
 
 // 重命名英文task.json任务
 tasks.register<Copy>("renameEnTaskJson") {
+    dependsOn("cleanTarget")
     from("task_en.json")
-    into("../../../target/")
+    into("../../../target/en")
     rename { "task.json" }
 }
 
 // 构建英文版ZIP包
 tasks.register<Zip>("buildZipWithEn") {
     dependsOn("buildZipCn", "renameEnTaskJson")
-    from("build/libs", "quality.json", "../../frontend/target", "../../../target")
+    from("build/libs", "quality.json", "../../frontend/target", "../../../target/file", "../../../target/en")
     into("CodeCCCheckAtom")
     archiveFileName.set("CodeCCCheckAtom_en.zip")
 }
