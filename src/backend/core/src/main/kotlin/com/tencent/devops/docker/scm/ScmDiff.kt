@@ -109,7 +109,7 @@ class ScmDiff(
         LogUtils.printLog("scm increment failed, upload the input file...")
         CodeccWeb.upload(landunParam = commandParam.landunParam,
             filePath = inputFile,
-            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_$inputFileName",
+            resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_$inputFileName",
             uploadType = "SCM_JSON",
             toolName = toolName)
     }
@@ -117,7 +117,7 @@ class ScmDiff(
     override fun uploadInputFile(inputFile: String) {
         CodeccWeb.upload(landunParam = commandParam.landunParam,
             filePath = inputFile,
-            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_$inputFileName",
+            resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_$inputFileName",
             uploadType = "SCM_JSON",
             toolName = toolName)
     }
@@ -126,7 +126,7 @@ class ScmDiff(
         parseOutputFile(outputFile)
         CodeccWeb.upload(landunParam = commandParam.landunParam,
                 filePath = outputFile,
-                resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_git_branch_diff_output.json",
+                resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_git_branch_diff_output.json",
                 uploadType = "SCM_JSON",
                 toolName = toolName)
         LogUtils.printLog("scm increment success.")

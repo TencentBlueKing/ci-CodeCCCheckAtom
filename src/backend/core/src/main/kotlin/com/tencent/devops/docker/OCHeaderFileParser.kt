@@ -54,7 +54,7 @@ object OCHeaderFileParser {
                             CodeccWeb.upload(
                                 landunParam = commandParam.landunParam,
                                 filePath = ocHeadFileName,
-                                resultName = streamName + "_" + ToolConstants.SCC.toUpperCase() + "_" + commandParam.landunParam.buildId + "_tool_scan_headfile.json",
+                                resultName = streamName + "_" + ToolConstants.SCC.uppercase() + "_" + commandParam.landunParam.buildId + "_tool_scan_headfile.json",
                                 uploadType = "SCM_JSON",
                                 toolName = ToolConstants.SCC
                             )

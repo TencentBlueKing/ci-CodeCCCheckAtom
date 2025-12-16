@@ -264,7 +264,7 @@ object ScanComposer {
 
         if (ToolConstants.COVERITY == toolName || ToolConstants.KLOCWORK == toolName) {
             LogUtils.printDebugLog("enter coverity branch")
-            val zipResultFileName = commandParam.dataRootPath + File.separator + streamName + "_${toolName.toUpperCase()}_result.zip"
+            val zipResultFileName = commandParam.dataRootPath + File.separator + streamName + "_${toolName.uppercase()}_result.zip"
             val zipResultFile = File(zipResultFileName)
             if (zipResultFile.exists()) {
                 val toolPrefix = when (toolName) {
@@ -573,7 +573,7 @@ object ScanComposer {
             LogUtils.printDebugLog("append md5 success upload outputFile...")
             CodeccWeb.upload(landunParam = commandParam.landunParam,
                 filePath = outputFile,
-                resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_md5.json",
+                resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_md5.json",
                 uploadType = "SCM_JSON",
                 toolName = toolName)
         }
@@ -620,7 +620,7 @@ object ScanComposer {
             LogUtils.printDebugLog("append md5 success upload outputFile...")
             CodeccWeb.upload(landunParam = commandParam.landunParam,
                 filePath = outputFile,
-                resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_md5.json",
+                resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_md5.json",
                 uploadType = "SCM_JSON",
                 toolName = toolName)
         }
@@ -660,7 +660,7 @@ object ScanComposer {
         val outPutFileText = File(scmInfoFile).readText()
         val outPutFileObj = jacksonObjectMapper().readValue<List<Map<String, Any?>>>(outPutFileText)
         val params: MutableMap<String, Any?> = mutableMapOf()
-        params["toolName"] = toolName.toUpperCase()
+        params["toolName"] = toolName.uppercase()
         params["repoList"] = outPutFileObj
         params["taskId"] = taskId.toString()
         params["buildId"] = commandParam.landunParam.buildId
@@ -681,7 +681,7 @@ object ScanComposer {
         params["rootPaths"] = rootPaths
         params["repoWhiteList"] = commandParam.subCodePathList
         LogUtils.printLog("repoWhiteList is ${params["repoWhiteList"]}")
-        params["triggerToolNames"] = commandParam.scanTools.toUpperCase().split(",")
+        params["triggerToolNames"] = commandParam.scanTools.uppercase().split(",")
         LogUtils.printLog("triggerToolNames is ${params["triggerToolNames"]}")
         params["repoRelativePathList"] = commandParam.repoRelativePathList
         LogUtils.printLog("repoRelativePathList is ${params["repoRelativePathList"]}")

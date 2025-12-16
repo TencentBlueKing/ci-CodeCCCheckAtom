@@ -4,7 +4,7 @@
   "execution": {
     "packagePath": "CodeCCCheckAtom.jar",
     "language": "java",
-    "minimumVersion": "1.8",
+    "runtimeVersion": "17",
     "deFmands": [],
     "target": "$bk_java_path -Dfile.encoding=utf8 -jar CodeCCCheckAtom.jar"
   },

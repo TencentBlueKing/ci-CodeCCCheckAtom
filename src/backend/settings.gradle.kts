@@ -1,0 +1,3 @@
+rootProject.name = "CodeCCCheckAtom"
+
+include (":core")

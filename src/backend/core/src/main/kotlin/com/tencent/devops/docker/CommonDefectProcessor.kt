@@ -176,7 +176,7 @@ object CommonDefectProcessor {
             LogUtils.printLog("append md5 success upload outputFile...")
             CodeccWeb.upload(landunParam = commandParam.landunParam,
                     filePath = md5OutputFileName,
-                    resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_md5.json",
+                    resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_md5.json",
                     uploadType = "SCM_JSON",
                     toolName = toolName)
         }

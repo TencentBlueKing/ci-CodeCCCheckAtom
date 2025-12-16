@@ -97,7 +97,7 @@ object Build {
         // 如果选定开源扫描规则集，则过滤编译形语言
         scanFilterService.filterScanCheckerSet(param.checkerSetType, param)
 
-        val scanToolsUperCase = scanTools.map { toolName -> toolName.toUpperCase() }
+        val scanToolsUperCase = scanTools.map { toolName -> toolName.uppercase() }
         CodeccSdkApi.uploadActualExeTools(param, scanToolsUperCase)
 
 
@@ -261,7 +261,7 @@ object Build {
                 )
             }
             if (data["toolSet"] != null) {
-                scanTools.addAll((data["toolSet"] as List<String>).map { it.toLowerCase() })
+                scanTools.addAll((data["toolSet"] as List<String>).map { it.lowercase() })
             }
             if (data["codeLang"] != null) {
                 val codeLang = data["codeLang"] as Int

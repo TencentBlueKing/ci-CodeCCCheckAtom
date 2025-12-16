@@ -113,7 +113,7 @@ class ScmInfo(
         CodeccWeb.upload(
             landunParam = commandParam.landunParam,
             filePath = inputFile,
-            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_info_input.json",
+            resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_scm_info_input.json",
             uploadType = "SCM_JSON",
             toolName = toolName
         )
@@ -123,7 +123,7 @@ class ScmInfo(
         CodeccWeb.upload(
             landunParam = commandParam.landunParam,
             filePath = inputFile,
-            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_info_input.json",
+            resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_scm_info_input.json",
             uploadType = "SCM_JSON",
             toolName = toolName
         )
@@ -135,7 +135,7 @@ class ScmInfo(
         CodeccWeb.upload(
             landunParam = commandParam.landunParam,
             filePath = outputFile,
-            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_info.json",
+            resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_scm_info.json",
             uploadType = "SCM_JSON",
             toolName = toolName
         )

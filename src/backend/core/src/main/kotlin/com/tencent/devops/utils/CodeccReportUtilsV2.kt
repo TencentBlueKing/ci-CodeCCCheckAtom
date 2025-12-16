@@ -143,7 +143,7 @@ object CodeccReportUtilsV2 {
         param: CodeccCheckAtomParamV3,
         reportData: CodeccCallback
     ) : File {
-        reportData.toolSnapshotList = reportData.toolSnapshotList.filter { it["tool_name_en"].toString().toLowerCase() !in ToolConstants.CODE_TOOLS_ACOUNT }.toList()
+        reportData.toolSnapshotList = reportData.toolSnapshotList.filter { it["tool_name_en"].toString().lowercase() !in ToolConstants.CODE_TOOLS_ACOUNT }.toList()
         LogUtils.printLog("call back report list: ${reportData.toolSnapshotList}")
         val chartOptionJs = File(tempDir, "chart-option.js")
         val mainJs = File(tempDir, "main.js")

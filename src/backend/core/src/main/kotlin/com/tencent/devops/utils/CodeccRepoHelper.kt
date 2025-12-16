@@ -176,11 +176,11 @@ object CodeccRepoHelper {
                 val repo = RepositoryUtils.getRepository(it.repositoryConfig)
                 val authType = when (repo) {
                     is CodeGitRepository -> {
-                        val authType = repo.authType?.name?.toUpperCase()
+                        val authType = repo.authType?.name?.uppercase()
                         if (authType.isNullOrBlank()) "HTTP" else authType!!
                     }
                     is CodeSvnRepository -> {
-                        val authType = repo.svnType?.toUpperCase()
+                        val authType = repo.svnType?.uppercase()
                         if (authType.isNullOrBlank()) "SSH" else authType!!
                     }
                     is CodeGitlabRepository -> "HTTP"
@@ -214,7 +214,7 @@ object CodeccRepoHelper {
         if (repos.isEmpty()) {
             return ""
         }
-        return repos.map { it.type }.first().toLowerCase() // 每次扫描支持一种类型代码库，其他情况先不考虑
+        return repos.map { it.type }.first().lowercase() // 每次扫描支持一种类型代码库，其他情况先不考虑
     }
 
     private fun getEndWithValue(variables: Map<String, String>, subKey: String): String? {

@@ -98,7 +98,7 @@ class ScmBlame(
         LogUtils.printLog("scm blame failed, upload input file...")
         CodeccWeb.upload(landunParam = commandParam.landunParam,
             filePath = inputFile,
-            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_blame_input.json",
+            resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_scm_blame_input.json",
             uploadType = "SCM_JSON",
             toolName = toolName)
     }
@@ -106,7 +106,7 @@ class ScmBlame(
     override fun uploadInputFile(inputFile: String) {
         CodeccWeb.upload(landunParam = commandParam.landunParam,
             filePath = inputFile,
-            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_blame_input.json",
+            resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_scm_blame_input.json",
             uploadType = "SCM_JSON",
             toolName = toolName)
     }
@@ -116,7 +116,7 @@ class ScmBlame(
         LogUtils.printLog("scm blame success, upload $outputFile")
         CodeccWeb.upload(landunParam = commandParam.landunParam,
             filePath = outputFile,
-            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_blame.json",
+            resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_scm_blame.json",
             uploadType = "SCM_JSON",
             toolName = toolName)
     }
@@ -135,7 +135,7 @@ class ScmBlame(
         }
         //get ccache Md5 file
         var ccacheMd5List = mutableListOf<MutableMap<String, String>>()
-        val ccacheMd5 = CodeccWeb.getMD5ForBlame(commandParam.landunParam, taskId, toolName.toUpperCase())
+        val ccacheMd5 = CodeccWeb.getMD5ForBlame(commandParam.landunParam, taskId, toolName.uppercase())
         val ccacheMd5FileList = jacksonObjectMapper().readValue<Map<String, Any?>>(ccacheMd5)
         if (ccacheMd5FileList["data"] != null) {
             ccacheMd5List = ccacheMd5FileList["data"] as MutableList<MutableMap<String, String>>

@@ -288,10 +288,10 @@ object CodeccSdkUtils {
         list?.forEach { subSkipPath ->
             var skipPath = subSkipPath
             val firstLetter = subSkipPath?.firstOrNull()
-            if (subSkipPath?.startsWith("/")) {
+            if (subSkipPath?.startsWith("/") == true) {
                 //匹配到第一种情况
                 processAndAddSkipPath(skipPathForProjectRoot, scanPath, scanPath + subSkipPath)
-            } else if (subSkipPath?.startsWith("^/")) {
+            } else if (subSkipPath?.startsWith("^/") == true) {
                 //匹配到第二种情况
                 processAndAddSkipPath(skipPathForProjectRoot, scanPath,
                     scanPath + subSkipPath.substring(1))
@@ -300,12 +300,12 @@ object CodeccSdkUtils {
                 processAndAddSkipPath(skipPathForProjectRoot, scanPath, "$scanPath/$subSkipPath")
             } else if(subCodeYml && !skipPath.startsWith(bkWorkspace)){
                 //子目录的.code.yml 且 过滤路径不包含根目录
-                if (subSkipPath?.startsWith("./")) {
+                if (subSkipPath?.startsWith("./") == true) {
                     processAndAddSkipPath(
                         skipPathForProjectRoot, scanPath,
                         scanPath + subSkipPath.substring(1)
                     )
-                } else if (subSkipPath.startsWith(".*/")) {
+                } else if (subSkipPath?.startsWith(".*/") == true) {
                     processAndAddSkipPath(
                         skipPathForProjectRoot, scanPath,
                         "$scanPath/(.*/)?${subSkipPath.substring(3)}"

@@ -157,7 +157,7 @@ class CodeccCheckAtom : TaskAtom<CodeccCheckAtomParamV3> {
             LogUtils.printLog("task auto lang status is equal, do scc scan first for lang: ${oldTaskInfo.codeLanguages}")
             param.languages = JsonUtil.toJson(oldTaskInfo.codeLanguages)
             CodeccSdkApi.changeScanType(oldTaskInfo.taskId,
-                SetForceFullScanReqVO(param.pipelineBuildId, listOf(ToolConstants.SCC.toUpperCase())))
+                SetForceFullScanReqVO(param.pipelineBuildId, listOf(ToolConstants.SCC.uppercase())))
             return true
         }
 
@@ -169,7 +169,7 @@ class CodeccCheckAtom : TaskAtom<CodeccCheckAtomParamV3> {
         // set force full scan
         if (oldTaskInfo != null) {
             CodeccSdkApi.changeScanType(oldTaskInfo.taskId,
-                SetForceFullScanReqVO(param.pipelineBuildId, listOf(ToolConstants.SCC.toUpperCase())))
+                SetForceFullScanReqVO(param.pipelineBuildId, listOf(ToolConstants.SCC.uppercase())))
         }
 
         param.languageRuleSetMap = JsonUtil.toJson(mapOf("OTHERS_RULE" to listOf("standard_scc")))
