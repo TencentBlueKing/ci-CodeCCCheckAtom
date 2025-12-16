@@ -33,7 +33,7 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
     - name: Build with Gradle
-      run: cd src/backend && chmod +x ./gradlew && ./gradlew clean buildZipWithEn -DmavenCredUserName=${{ secrets.NAME }} -DmavenCredPassword=${{ secrets.GITHUB_TOKEN }} -DmavenRepoUrl=http://maven.aliyun.com/nexus/content/groups/public/
+      run: cd src/backend && chmod +x ./gradlew && ./gradlew clean buildZipCn -DmavenCredUserName=${{ secrets.NAME }} -DmavenCredPassword=${{ secrets.GITHUB_TOKEN }} -DmavenRepoUrl=http://maven.aliyun.com/nexus/content/groups/public/
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v4
       with:
