@@ -53,9 +53,6 @@ tasks.register<JavaExec>("ktlintFormat") {
 
 repositories {
     mavenLocal()
-//    maven {
-//        url = uri("https://mirrors.tencent.com/repository/maven/tencent_public")
-//    }
     maven {
         url = uri("https://repo.maven.apache.org/maven2")
     }
@@ -97,10 +94,9 @@ application {
 }
 
 tasks.shadowJar {
-    // baseName为插件默认打包名+".jar"，bkdevops-plugin.jar
+    // baseName为插件默认打包名+".jar"
     // 如果修改，则要一同修改插件task.json中的target启动命令
-    // 为了省事，建议不用修改
-    archiveBaseName = "bkdevops-plugin"
+    archiveBaseName = "CodeCCCheckAtom"
     archiveClassifier = ""
     archiveVersion = ""
     isZip64 = true
