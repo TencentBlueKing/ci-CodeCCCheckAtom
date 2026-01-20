@@ -532,27 +532,5 @@
       "type": "string",
       "description": "Whether the CodeCC task runs successfully, if successful, it is not true, otherwise it cannot be obtained"
     }
-  },
-  "releaseInfo": {
-    "projectId": "demo",
-    "name": "CodeCC Code Check",
-    "language": "java",
-    "logoUrl": "${{indexFile(\"images/logo.png\")}}",
-    "category": "TASK",
-    "classifyCode": "scm",
-    "jobType": "AGENT",
-    "os": ["LINUX", "MACOS", "WINDOWS"],
-    "labelCodes": [],
-    "summary":"Support all CodeCC code-check tools, including code defects (bkcheck, etc.), security vulnerabilities (sensitive infomation, etc.), code style (CppLint, etc.), ccn, duplicated rate, etc. .",
-    "description": "${{indexFile(\"docs/desc_en.md\")}}",
-    "configInfo": {
-      "frontendType": "SPECIAL"
-    },
-    "versionInfo": {
-      "publisher": "admin",
-      "releaseType": "NEW",
-      "version": "1.0.0",
-      "versionContent": "Test"
-    }
   }
 }
