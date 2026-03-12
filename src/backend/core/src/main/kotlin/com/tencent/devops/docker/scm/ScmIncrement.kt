@@ -52,7 +52,7 @@ class ScmIncrement(
 
             analyzeConfigInfo.scanType = ScanType.FULL
 
-            val toolNames = mutableListOf(toolName.toUpperCase())
+            val toolNames = mutableListOf(toolName.uppercase())
 
             CodeccSdkApi.changeScanType(
                 analyzeConfigInfo.taskId,
@@ -122,7 +122,7 @@ class ScmIncrement(
         CodeccWeb.upload(
             landunParam = commandParam.landunParam,
             filePath = inputFile,
-            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_increment_input.json",
+            resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_scm_increment_input.json",
             uploadType = "SCM_JSON",
             toolName = toolName
         )
@@ -132,7 +132,7 @@ class ScmIncrement(
         CodeccWeb.upload(
             landunParam = commandParam.landunParam,
             filePath = inputFile,
-            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_increment_input.json",
+            resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_scm_increment_input.json",
             uploadType = "SCM_JSON",
             toolName = toolName
         )
@@ -143,7 +143,7 @@ class ScmIncrement(
         CodeccWeb.upload(
             landunParam = commandParam.landunParam,
             filePath = outputFile,
-            resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_scm_increment_output.json",
+            resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_scm_increment_output.json",
             uploadType = "SCM_JSON",
             toolName = toolName
         )

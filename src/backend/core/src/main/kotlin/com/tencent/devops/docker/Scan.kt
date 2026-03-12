@@ -67,7 +67,7 @@ class Scan(
             if (toolName in ToolConstants.COMPILE_TOOLS) {
                 val toolFolder = commandParam.projectBuildPath + File.separator + ".temp" + File.separator + "codecc_scan" +
                         File.separator + "codecc_agent" + File.separator + "bin" + File.separator + toolName
-                val command = CodeccConfig.getConfig("${toolName.toUpperCase()}_SCAN_COMMAND")!!
+                val command = CodeccConfig.getConfig("${toolName.uppercase()}_SCAN_COMMAND")!!
                         .replace("##", " ")
                         .replace("{input.json}", inputFile)
                         .replace("{output.json}", outputFile)
@@ -143,7 +143,7 @@ class Scan(
                 LogUtils.printLog("gather the defects success, upload new outputFile")
                 CodeccWeb.upload(landunParam = commandParam.landunParam,
                     filePath = newOutputFile,
-                    resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_tool_scan_file.json",
+                    resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_tool_scan_file.json",
                     uploadType = "SCM_JSON",
                     toolName = toolName)
             } else {
@@ -151,7 +151,7 @@ class Scan(
                 CodeccWeb.upload(
                     landunParam = commandParam.landunParam,
                     filePath = outputFile,
-                    resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_tool_scan_file.json",
+                    resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_tool_scan_file.json",
                     uploadType = "SCM_JSON",
                     toolName = toolName)
             }
@@ -161,18 +161,18 @@ class Scan(
             CodeccWeb.upload(
                 landunParam = commandParam.landunParam,
                 filePath = inputFile,
-                resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_tool_scan_input.json",
+                resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_tool_scan_input.json",
                 uploadType = "SCM_JSON",
                 toolName = toolName)
             if (ToolConstants.COVERITY == toolName || ToolConstants.KLOCWORK == toolName) {
-                val zipResultFile = commandParam.dataRootPath + File.separator + streamName + "_" + toolName.toUpperCase() + "_result.zip"
+                val zipResultFile = commandParam.dataRootPath + File.separator + streamName + "_" + toolName.uppercase() + "_result.zip"
                 LogUtils.printLog("zipResultFile is $zipResultFile")
                 if (File(zipResultFile).exists()) {
                     LogUtils.printLog("zipResultFile exists, upload it: $zipResultFile")
                     CodeccWeb.upload(
                         landunParam = commandParam.landunParam,
                         filePath = zipResultFile,
-                        resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_failed_result.zip",
+                        resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_failed_result.zip",
                         uploadType = "FAIL_RESULT",
                         toolName = toolName)
                 }
@@ -335,6 +335,7 @@ class Scan(
                             OSType.WINDOWS -> {
                                 filePath = CommonUtils.changePathToWindows(filePath)
                             }
+                            else -> { /* LINUX, MAC_OS, OTHER: no path conversion needed */ }
                         }
                         if (null != filesMap[filePath]) {
                             val fileDefectsList = filesMap[filePath] as MutableList<DefectsEntity>
@@ -520,7 +521,7 @@ class Scan(
         val whitePathList = mutableListOf<String>()
         commandParam.landunParam.toolImageTypes?.split(",")?.forEach {
             val toolImageType = it.split(":")
-            if (toolImageType[0].equals(toolName.toUpperCase())){
+            if (toolImageType[0].equals(toolName.uppercase())){
                 inputData["toolImageType"] = toolImageType[1]
             }
         }
@@ -723,7 +724,7 @@ class Scan(
             } else {
                 analyzeConfigInfo.toolOptions.plus(option)
             }
-            val toolConfigPlatform = CodeccWeb.getSpecConfig(commandParam.landunParam, analyzeConfigInfo.taskId, toolName.toUpperCase())
+            val toolConfigPlatform = CodeccWeb.getSpecConfig(commandParam.landunParam, analyzeConfigInfo.taskId, toolName.uppercase())
             if (!toolConfigPlatform.specConfig.isNullOrBlank()) {
                 inputData["specConfig"] = toolConfigPlatform.specConfig!!
             }
@@ -749,16 +750,16 @@ class Scan(
             } else {
                 analyzeConfigInfo.toolOptions.plus(option)
             }
-            val toolConfigPlatform = CodeccWeb.getSpecConfig(commandParam.landunParam, analyzeConfigInfo.taskId, toolName.toUpperCase())
+            val toolConfigPlatform = CodeccWeb.getSpecConfig(commandParam.landunParam, analyzeConfigInfo.taskId, toolName.uppercase())
             if (!toolConfigPlatform.specConfig.isNullOrBlank()) {
                 inputData["specConfig"] = toolConfigPlatform.specConfig!!
             }
         }
 
-        inputData["scanType"] = if (ScanType.FULL.name == analyzeConfigInfo.scanType.name.toUpperCase()) {
-            ScanType.FULL.name.toLowerCase()
+        inputData["scanType"] = if (ScanType.FULL.name == analyzeConfigInfo.scanType.name.uppercase()) {
+            ScanType.FULL.name.lowercase()
         } else {
-            ScanType.INCREMENT.name.toLowerCase()
+            ScanType.INCREMENT.name.lowercase()
         }
         var skipPathList = mutableSetOf<String>()
         if (analyzeConfigInfo.skipPaths != null) {
@@ -859,7 +860,7 @@ class Scan(
             CodeccWeb.upload(
                 landunParam = commandParam.landunParam,
                 filePath = inputFile,
-                resultName = streamName + "_" + toolName.toUpperCase() + "_" + commandParam.landunParam.buildId + "_tool_scan_input.json",
+                resultName = streamName + "_" + toolName.uppercase() + "_" + commandParam.landunParam.buildId + "_tool_scan_input.json",
                 uploadType = "SCM_JSON",
                 toolName = toolName)
             LogUtils.printLog("upload tool_scan_input.json success, return true")

@@ -87,7 +87,7 @@ object CodeccEnvHelper {
     }
 
     fun getOS(): OSType {
-        val osName = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH)
+        val osName = System.getProperty("os.name", "generic").lowercase(Locale.ENGLISH)
         return if (osName.indexOf(string = "mac") >= 0 || osName.indexOf("darwin") >= 0) {
             OSType.MAC_OS
         } else if (osName.indexOf("win") >= 0) {

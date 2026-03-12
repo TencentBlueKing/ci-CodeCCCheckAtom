@@ -60,7 +60,7 @@ object IgnoreDefectParser {
                             CodeccWeb.upload(
                                 landunParam = commandParam.landunParam,
                                 filePath = ignoreFileName,
-                                resultName = streamName + "_" + ToolConstants.SCC.toUpperCase() + "_" + commandParam.landunParam.buildId + "_tool_scan_ignore.json",
+                                resultName = streamName + "_" + ToolConstants.SCC.uppercase() + "_" + commandParam.landunParam.buildId + "_tool_scan_ignore.json",
                                 uploadType = "SCM_JSON",
                                 toolName = ToolConstants.SCC
                             )

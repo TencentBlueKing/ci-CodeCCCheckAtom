@@ -40,7 +40,7 @@ object CodeccConfig {
         }
         var toolImageTypes = mutableSetOf<String>()
         landunParam.toolNames?.split(",")?.forEach {
-            toolImageTypes.add(it.toUpperCase()+":"+propertiesInfo[it!!.toUpperCase()+"_IMAGE_VERSION_TYPE"])
+            toolImageTypes.add(it.uppercase()+":"+propertiesInfo[it!!.uppercase()+"_IMAGE_VERSION_TYPE"])
         }
         landunParam.toolImageTypes = toolImageTypes.joinToString(",")
         propertiesInfo["LANDUN_CHANNEL_CODE"] = landunParam.channelCode ?: ""
@@ -48,21 +48,21 @@ object CodeccConfig {
 
     private fun resolveToolMeta(toolMetaDetailVO: ToolMetaDetailVO, aesKey: String) {
         try {
-            val scanCommandKey = "${toolMetaDetailVO.name!!.toUpperCase()}_SCAN_COMMAND"
+            val scanCommandKey = "${toolMetaDetailVO.name!!.uppercase()}_SCAN_COMMAND"
             val scanCommandValue = toolMetaDetailVO.dockerTriggerShell ?: ""
 
-            val imagePathKey = "${toolMetaDetailVO.name!!.toUpperCase()}_IMAGE_PATH"
+            val imagePathKey = "${toolMetaDetailVO.name!!.uppercase()}_IMAGE_PATH"
             val imagePathValue = toolMetaDetailVO.dockerImageURL ?: ""
 
             val imageTagValue = toolMetaDetailVO.dockerImageVersion
 
-            val imageVersionTypeKey = "${toolMetaDetailVO.name!!.toUpperCase()}_IMAGE_VERSION_TYPE"
+            val imageVersionTypeKey = "${toolMetaDetailVO.name!!.uppercase()}_IMAGE_VERSION_TYPE"
             val imageVersionTypeValue = toolMetaDetailVO.dockerImageVersionType?: "P"
 
-            val registryUserKey = "${toolMetaDetailVO.name!!.toUpperCase()}_REGISTRYUSER"
+            val registryUserKey = "${toolMetaDetailVO.name!!.uppercase()}_REGISTRYUSER"
             val registryUserValue = toolMetaDetailVO.dockerImageAccount ?: ""
 
-            val registryPwdKey = "${toolMetaDetailVO.name!!.toUpperCase()}_REGISTRYPWD"
+            val registryPwdKey = "${toolMetaDetailVO.name!!.uppercase()}_REGISTRYPWD"
             val registryPwdValue = if (toolMetaDetailVO.dockerImagePasswd.isNullOrBlank()) {
                 ""
             } else {
@@ -85,19 +85,19 @@ object CodeccConfig {
             propertiesInfo[registryPwdKey] = registryPwdValue
 
             if (!toolMetaDetailVO.toolHomeBin.isNullOrBlank()) {
-                val toolHomeBinKey = "${toolMetaDetailVO.name!!.toUpperCase()}_HOME_BIN"
+                val toolHomeBinKey = "${toolMetaDetailVO.name!!.uppercase()}_HOME_BIN"
                 val toolHomeBinValue = toolMetaDetailVO.toolHomeBin!!
                 propertiesInfo[toolHomeBinKey] = toolHomeBinValue
             }
 
             if (toolMetaDetailVO.toolHistoryVersion != null && toolMetaDetailVO.toolHistoryVersion!!.isNotEmpty()) {
-                val toolOldVersionKey = "${toolMetaDetailVO.name!!.toUpperCase()}_OLD_VERSION"
+                val toolOldVersionKey = "${toolMetaDetailVO.name!!.uppercase()}_OLD_VERSION"
                 val toolOldVersionValue = toolMetaDetailVO.toolHistoryVersion!!.joinToString(";")
                 propertiesInfo[toolOldVersionKey] = toolOldVersionValue
             }
 
             if (!toolMetaDetailVO.toolVersion.isNullOrBlank()) {
-                val toolNewVersionKey = "${toolMetaDetailVO.name!!.toUpperCase()}_NEW_VERSION"
+                val toolNewVersionKey = "${toolMetaDetailVO.name!!.uppercase()}_NEW_VERSION"
                 val toolNewVersionValue = toolMetaDetailVO.toolVersion!!
                 propertiesInfo[toolNewVersionKey] = toolNewVersionValue
             }
@@ -145,7 +145,7 @@ object CodeccConfig {
     fun getServerHost() = propertiesInfo["CODECC_API_WEB_SERVER"]
 
     fun getImage(toolName: String): ImageParam {
-        val toolNameUpperCase = toolName.toUpperCase()
+        val toolNameUpperCase = toolName.uppercase()
         val cmd = (propertiesInfo["${toolNameUpperCase}_SCAN_COMMAND"] ?: "").split("##")
         val imageName = propertiesInfo["${toolNameUpperCase}_IMAGE_PATH"] ?: ""
         val registerUser = propertiesInfo["${toolNameUpperCase}_REGISTRYUSER"] ?: ""

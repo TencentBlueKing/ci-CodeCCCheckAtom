@@ -176,7 +176,7 @@ open class CodeccUtils {
         addCommonParams(map, codeccExecuteConfig)
 
         // 添加具体业务参数
-        map["SCAN_TOOLS"] = scanTools.joinToString(",").toLowerCase()
+        map["SCAN_TOOLS"] = scanTools.joinToString(",").lowercase()
         map["OFFLINE"] = "true"
         map["DATA_ROOT_PATH"] = codeccWorkspace.canonicalPath
         map["STREAM_CODE_PATH"] = workspace.canonicalPath
@@ -331,7 +331,7 @@ open class CodeccUtils {
             repoScmRelpathMap = CodeccParamsHelper.getRepoScmRelPathMap(codeccExecuteConfig),
             repos = codeccExecuteConfig.repos,
             subCodePathList = AtomUtils.transferPathParam(param.path),
-            scanTools = scanTools.joinToString(",").toLowerCase(),
+            scanTools = scanTools.joinToString(",").lowercase(),
             dataRootPath = codeccWorkspace.canonicalPath,
             py27Path = getPython2Path(constants),
             py35Path = getPython3Path(constants),
@@ -446,7 +446,7 @@ open class CodeccUtils {
             codeccExecuteConfig.tools
         }
 
-        scanTools = scanTools.filter { it.toLowerCase() !in ToolConstants.CODE_TOOLS_ACOUNT }
+        scanTools = scanTools.filter { it.lowercase() !in ToolConstants.CODE_TOOLS_ACOUNT }
         CodeccSdkApi.uploadActualExeTools(param, scanTools)
         if (scanTools.isEmpty()) return "scan tools is empty"
 
@@ -507,7 +507,7 @@ open class CodeccUtils {
         // 添加具体业务参数
         command.add("-DCOVERITY_NEW_VERSION=${CodeccConfig.getConfig("COVERITY_NEW_VERSION")}")
         command.add("-DKLOCWORK_NEW_VERSION=${CodeccConfig.getConfig("KLOCWORK_NEW_VERSION")}")
-        command.add("-DSCAN_TOOLS=${scanTools.joinToString(",").toLowerCase()}")
+        command.add("-DSCAN_TOOLS=${scanTools.joinToString(",").lowercase()}")
         command.add("-DOFFLINE=true")
         command.add("-DDATA_ROOT_PATH=${codeccWorkspace.canonicalPath}")
         command.add("-DSTREAM_CODE_PATH=${workspace.canonicalPath}")

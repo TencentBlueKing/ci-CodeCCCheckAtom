@@ -301,7 +301,7 @@ object CodeccWeb : BaseApi() {
         val headers = getHeader(landunParam)
         val buildId = landunParam.buildId
         val url =
-            "${CodeccConfig.getServerHost()}/ms/report/api/build/parse/notify/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/$buildId"
+            "${CodeccConfig.getServerHost()}/ms/report/api/build/parse/notify/streamName/$streamName/toolName/${toolName.uppercase()}/buildId/$buildId"
         val body = jacksonObjectMapper().writeValueAsString(mapOf<String, String>())
         LogUtils.printDebugLog("notifyCodeccFinish request url: $url")
         LogUtils.printDebugLog("notifyCodeccFinish request body: $body")
@@ -317,7 +317,7 @@ object CodeccWeb : BaseApi() {
         val headers = getHeader(landunParam)
         val buildId = landunParam.buildId
         val url =
-            "${CodeccConfig.getServerHost()}/ms/report/api/build/parse/reportStatus/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/$buildId"
+            "${CodeccConfig.getServerHost()}/ms/report/api/build/parse/reportStatus/streamName/$streamName/toolName/${toolName.uppercase()}/buildId/$buildId"
         val responseMap = JsonUtil.getObjectMapper().readValue<Map<String, Any>>(sendGetRequest(url, headers))
         if (responseMap["data"] == "PROCESSING") return false
         return true
@@ -521,7 +521,7 @@ object CodeccWeb : BaseApi() {
         retryCount: Int = 0
     ): AnalyzeConfigInfo {
         val path =
-            "${CodeccConfig.getServerHost()}/ms/task/api/build/tool/config/streamName/$streamName/toolType/${toolName.toUpperCase()}"
+            "${CodeccConfig.getServerHost()}/ms/task/api/build/tool/config/streamName/$streamName/toolType/${toolName.uppercase()}"
         val headers = getHeader(commandParam.landunParam)
         LogUtils.printDebugLog("headerParam is: $headers")
         try {
@@ -691,7 +691,7 @@ object CodeccWeb : BaseApi() {
         return mutableMapOf(
             "stream_name" to streamName,
             "toolName" to toolName,
-            "toolNames" to mutableListOf<String>(toolName.toUpperCase()),
+            "toolNames" to mutableListOf<String>(toolName.uppercase()),
             "landunBuildId" to landunParam.buildId,
             "pipelineBuildId" to landunParam.buildId,
             "task_id" to taskId
@@ -837,7 +837,7 @@ object CodeccWeb : BaseApi() {
     fun getSpecConfig(landunParam: LandunParam, taskId: Long, toolName: String): ToolConfigPlatformVO {
         val header = getHeader(landunParam)
         val url =
-            "${CodeccConfig.getServerHost()}/ms/task/api/build/task/toolConfig/info?taskId=$taskId&toolName=${toolName.toUpperCase()}"
+            "${CodeccConfig.getServerHost()}/ms/task/api/build/task/toolConfig/info?taskId=$taskId&toolName=${toolName.uppercase()}"
         val responseBody = sendGetRequest(url, header)
 
         val responseResult: Result<ToolConfigPlatformVO> = jacksonObjectMapper().readValue(responseBody)
@@ -864,9 +864,9 @@ object CodeccWeb : BaseApi() {
     ): Boolean {
         val header = getHeader(landunParam)
         val url = if (toolName == ToolConstants.COVERITY && null != openSource && openSource) {
-            "${CodeccConfig.getServerHost()}/ms/schedule/api/build/push/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/${landunParam.buildId}?createFrom=gongfeng_scan"
+            "${CodeccConfig.getServerHost()}/ms/schedule/api/build/push/streamName/$streamName/toolName/${toolName.uppercase()}/buildId/${landunParam.buildId}?createFrom=gongfeng_scan"
         } else {
-            "${CodeccConfig.getServerHost()}/ms/schedule/api/build/push/streamName/$streamName/toolName/${toolName.toUpperCase()}/buildId/${landunParam.buildId}"
+            "${CodeccConfig.getServerHost()}/ms/schedule/api/build/push/streamName/$streamName/toolName/${toolName.uppercase()}/buildId/${landunParam.buildId}"
         }
         val responseBody = sendGetRequest(url, header)
         val responseResult: Result<Boolean> = jacksonObjectMapper().readValue(responseBody)
